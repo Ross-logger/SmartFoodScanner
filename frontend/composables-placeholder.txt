@@ -1,0 +1,23 @@
+Composables Directory (Optional Enhancement)
+
+The /composables directory is for reusable Vue Composition API logic.
+
+Currently, all logic is in components and stores for simplicity.
+If you want to refactor later, you can create composables like:
+
+Example: useCamera.js
+- Extract camera logic from CameraCapture component
+- Reusable across multiple components
+
+Example: useImageUpload.js
+- Extract image upload/compression logic
+- Share between different upload scenarios
+
+Example: useNotification.js
+- Toast notifications
+- Alert messages
+
+For your FYP, the current structure is sufficient.
+Add composables only if you need shared logic across many components.
+
+

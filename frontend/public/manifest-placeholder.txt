@@ -1,0 +1,26 @@
+PWA Icons Needed:
+
+To complete PWA setup, add these icon files to the /public directory:
+
+1. pwa-192x192.png (192x192 pixels)
+2. pwa-512x512.png (512x512 pixels)
+3. apple-touch-icon.png (180x180 pixels)
+4. favicon.ico (32x32 pixels)
+
+You can generate these icons from a single source image using:
+- https://realfavicongenerator.net/
+- https://www.pwabuilder.com/imageGenerator
+
+Tips:
+- Use a simple, recognizable icon (e.g., checkmark in circle)
+- Use brand colors (green/primary color)
+- Ensure good contrast for visibility
+- Test on both light and dark backgrounds
+
+Quick Setup:
+1. Create a 512x512 source image with your logo
+2. Use an online generator to create all sizes
+3. Download and place in /public directory
+4. PWA will automatically use them (configured in vite.config.js)
+
+
