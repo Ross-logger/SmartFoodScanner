@@ -2,13 +2,70 @@ import base64
 import io
 import os
 from PIL import Image
-import easyocr
 import numpy as np
-from typing import Optional
+import easyocr
+from typing import Optional, List, Tuple
 import re
 
+from app.config import settings
 from pillow_heif import register_heif_opener
 register_heif_opener()
+
+# Global EasyOCR reader instance (singleton pattern for efficiency)
+_ocr_reader = None
+
+
+def get_ocr_reader():
+    """
+    Get or create EasyOCR reader instance.
+    Uses singleton pattern to avoid reloading models on every request.
+    
+    Returns:
+        EasyOCR Reader instance
+    """
+    global _ocr_reader
+    
+    if _ocr_reader is None:
+        try:
+            # Use GPU if available, fallback to CPU
+            _ocr_reader = easyocr.Reader(['en'], gpu=True)
+            print("✅ EasyOCR reader initialized (GPU mode)")
+        except Exception as e:
+            # Fallback to CPU if GPU fails
+            try:
+                _ocr_reader = easyocr.Reader(['en'], gpu=False)
+                print("✅ EasyOCR reader initialized (CPU mode)")
+            except Exception as cpu_error:
+                raise Exception(f"Failed to initialize EasyOCR: {str(cpu_error)}")
+    
+    return _ocr_reader
+
+
+def filter_ocr_results_by_confidence(
+    results: List[Tuple],
+    confidence_threshold: float = 0.3
+) -> List[str]:
+    """
+    Filter OCR results by confidence threshold.
+    
+    Args:
+        results: List of tuples from EasyOCR (bbox, text, confidence)
+        confidence_threshold: Minimum confidence value (0.0 to 1.0)
+        
+    Returns:
+        List of filtered text strings
+    """
+    text_lines = []
+    for result in results:
+        if len(result) >= 2:
+            text = result[1]
+            confidence = result[2] if len(result) >= 3 else 1.0
+            
+            # Only include text with confidence above threshold
+            if confidence >= confidence_threshold and text.strip():
+                text_lines.append(text.strip())
+    
+    return text_lines
 
 
 def extract_text_from_image(image_data: bytes) -> str:
@@ -49,13 +106,20 @@ def extract_text_from_image(image_data: bytes) -> str:
         # Convert PIL Image to numpy array for EasyOCR
         image_array = np.array(image)
         
+        # Get OCR reader (singleton)
+        reader = get_ocr_reader()
+        
         # Perform OCR using EasyOCR
-        reader = easyocr.Reader(['en'], gpu=False)
+        # EasyOCR returns list of tuples: (bbox, text, confidence)
         results = reader.readtext(image_array)
         
-        # Extract text from results
-        # EasyOCR returns list of tuples: (bbox, text, confidence)
-        text_lines = [result[1] for result in results]
+        # Extract text from results, filtering by confidence if enabled
+        if settings.IS_OCR_CONFIDENCE_FILTER:
+            text_lines = filter_ocr_results_by_confidence(results)
+        else:
+            # Include all results without filtering
+            text_lines = [result[1].strip() for result in results if len(result) >= 2 and result[1].strip()]
+        
         text = '\n'.join(text_lines)
         
         return text.strip()

@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10MB
     UPLOAD_DIR: str = "uploads"
     
+    # OCR settings
+    IS_OCR_CONFIDENCE_FILTER: bool = True  # Filter OCR results by confidence threshold
+    
     # Cookies
     ACCESS_TOKEN_COOKIE_NAME: str = "access_token"
     REFRESH_TOKEN_COOKIE_NAME: str = "refresh_token"

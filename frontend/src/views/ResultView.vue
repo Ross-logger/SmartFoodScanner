@@ -35,7 +35,30 @@
         />
       </div>
 
-      <!-- Detected Ingredients -->
+      <!-- Analysis Result -->
+      <div v-if="scanResult.analysis_result" class="card mb-4">
+        <div 
+          class="analysis-result-banner"
+          :class="scanResult.is_safe ? 'analysis-result-safe' : 'analysis-result-warning'"
+        >
+          <div class="analysis-result-icon">
+            <svg v-if="scanResult.is_safe" class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <svg v-else class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div class="analysis-result-content">
+            <h2 class="analysis-result-title">
+              {{ scanResult.is_safe ? 'Product is safe' : 'Warning' }}
+            </h2>
+            <p class="analysis-result-text">{{ scanResult.analysis_result }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detected Ingredients - Single Consolidated Section -->
       <div class="card mb-4">
         <h2 class="section-title mb-4">Detected Ingredients</h2>
         
@@ -48,13 +71,18 @@
             v-for="(ingredient, index) in ingredients"
             :key="index"
             class="ingredient-item"
-            :class="{ 'ingredient-warning': isProhibited(ingredient) }"
+            :class="{ 'ingredient-warning': isProhibited(ingredient) || isAllergen(ingredient) }"
           >
             <div class="ingredient-content">
               <span class="ingredient-name">{{ ingredient }}</span>
-              <span v-if="isProhibited(ingredient)" class="ingredient-badge">
-                Not suitable for you
-              </span>
+              <div class="ingredient-badges">
+                <span v-if="isAllergen(ingredient)" class="ingredient-badge allergen-badge">
+                  Allergen
+                </span>
+                <span v-if="isProhibited(ingredient)" class="ingredient-badge warning-badge">
+                  Not suitable for you
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -94,18 +122,6 @@
           </div>
         </div>
 
-        <div v-if="scanResult.analysis.allergens?.length" class="allergen-list mt-4">
-          <h3 class="font-semibold text-red-600 mb-2">⚠️ Allergen Warning</h3>
-          <div class="flex flex-wrap gap-2">
-            <span
-              v-for="allergen in scanResult.analysis.allergens"
-              :key="allergen"
-              class="allergen-badge"
-            >
-              {{ allergen }}
-            </span>
-          </div>
-        </div>
       </div>
 
       <!-- Scan Info -->
@@ -147,7 +163,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useScanStore } from '@/stores/scan'
-import IngredientList from '@/components/IngredientList.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const route = useRoute()
@@ -159,7 +174,57 @@ const error = ref(null)
 const scanResult = computed(() => scanStore.currentScan)
 const ingredients = computed(() => {
   if (!scanResult.value) return []
-  return scanResult.value.ingredients || scanResult.value.corrected_ingredients || []
+  
+  // Get ingredients from various possible sources
+  let allIngredients = []
+  
+  // Primary source: ingredients array
+  if (scanResult.value.ingredients) {
+    if (Array.isArray(scanResult.value.ingredients)) {
+      allIngredients = [...scanResult.value.ingredients]
+    } else if (typeof scanResult.value.ingredients === 'string') {
+      // Handle string format - split by common delimiters
+      allIngredients = scanResult.value.ingredients
+        .split(/[,;]\s*|\n/)
+        .map(ing => ing.trim())
+        .filter(ing => ing.length > 0)
+    }
+  }
+  
+  // Fallback to corrected_ingredients
+  if (allIngredients.length === 0 && scanResult.value.corrected_ingredients) {
+    if (Array.isArray(scanResult.value.corrected_ingredients)) {
+      allIngredients = [...scanResult.value.corrected_ingredients]
+    } else if (typeof scanResult.value.corrected_ingredients === 'string') {
+      allIngredients = scanResult.value.corrected_ingredients
+        .split(/[,;]\s*|\n/)
+        .map(ing => ing.trim())
+        .filter(ing => ing.length > 0)
+    }
+  }
+  
+  // Add allergens from analysis if they exist and aren't already in the list
+  if (scanResult.value.analysis?.allergens) {
+    const allergenSet = new Set(allIngredients.map(ing => ing.toLowerCase()))
+    scanResult.value.analysis.allergens.forEach(allergen => {
+      if (!allergenSet.has(allergen.toLowerCase())) {
+        allIngredients.push(allergen)
+      }
+    })
+  }
+  
+  // Remove duplicates (case-insensitive)
+  const uniqueIngredients = []
+  const seen = new Set()
+  allIngredients.forEach(ing => {
+    const lower = ing.toLowerCase().trim()
+    if (lower && !seen.has(lower)) {
+      seen.add(lower)
+      uniqueIngredients.push(ing.trim())
+    }
+  })
+  
+  return uniqueIngredients
 })
 
 onMounted(async () => {
@@ -180,6 +245,15 @@ function isProhibited(ingredient) {
   // Check if any warning mentions this ingredient
   return scanResult.value.warnings.some(warning => 
     warning.toLowerCase().includes(ingredient.toLowerCase())
+  )
+}
+
+function isAllergen(ingredient) {
+  if (!scanResult.value?.analysis?.allergens) return false
+  
+  // Check if ingredient is in the allergens list (case-insensitive)
+  return scanResult.value.analysis.allergens.some(allergen =>
+    allergen.toLowerCase() === ingredient.toLowerCase()
   )
 }
 
@@ -273,7 +347,7 @@ async function shareScan() {
 }
 
 .ingredient-content {
-  @apply flex items-center justify-between gap-3;
+  @apply flex items-center justify-between gap-3 flex-wrap;
 }
 
 .ingredient-name {
@@ -284,8 +358,20 @@ async function shareScan() {
   @apply text-red-900 font-semibold;
 }
 
+.ingredient-badges {
+  @apply flex gap-2 flex-wrap;
+}
+
 .ingredient-badge {
-  @apply text-xs bg-red-600 text-white px-3 py-1 rounded-full font-medium;
+  @apply text-xs px-3 py-1 rounded-full font-medium;
+}
+
+.ingredient-badge.allergen-badge {
+  @apply bg-red-600 text-white;
+}
+
+.ingredient-badge.warning-badge {
+  @apply bg-orange-600 text-white;
 }
 
 .ocr-text {
@@ -334,6 +420,34 @@ async function shareScan() {
 
 .action-buttons {
   @apply px-4 py-6 flex gap-3;
+}
+
+.analysis-result-banner {
+  @apply flex items-start gap-4 p-5 rounded-lg border-2;
+}
+
+.analysis-result-safe {
+  @apply bg-green-50 border-green-300 text-green-900;
+}
+
+.analysis-result-warning {
+  @apply bg-red-50 border-red-300 text-red-900;
+}
+
+.analysis-result-icon {
+  @apply flex-shrink-0;
+}
+
+.analysis-result-content {
+  @apply flex-1;
+}
+
+.analysis-result-title {
+  @apply text-lg font-bold mb-2;
+}
+
+.analysis-result-text {
+  @apply text-base leading-relaxed;
 }
 </style>
 

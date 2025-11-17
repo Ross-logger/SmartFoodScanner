@@ -12,13 +12,14 @@ def analyze_ingredients(
     """
     if not dietary_profile:
         return {
-            "is_safe": True,
+            "is_safe": False,
             "warnings": ["No dietary profile set"],
-            "analysis_result": "Please set your dietary preferences in your profile."
+            "analysis_result": "Please set your dietary profile to get the analysis."
         }
     
     warnings = []
-    is_safe = True
+    is_safe = False
+    analysis_result = "Please set your dietary profile to get the analysis."
     
     # Common allergens and restricted ingredients
     allergens = {
@@ -86,9 +87,12 @@ def analyze_ingredients(
     
     # Generate analysis result
     if is_safe:
-        analysis_result = "✅ This product appears safe for your dietary preferences."
+        analysis_result = "This product is safe for your dietary preferences."
     else:
-        analysis_result = "⚠️ This product may not be suitable for your dietary preferences. " + " ".join(warnings)
+        if warnings:
+            analysis_result = "This product is not suitable for your dietary preferences.\n" + "\n".join(warnings)
+        else:
+            analysis_result = "This product is not suitable for your dietary preferences."
     
     return {
         "is_safe": is_safe,
