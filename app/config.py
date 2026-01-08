@@ -59,15 +59,7 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-ML_PATH = Path(__file__).parent / "ML"
-# Initialize ML OCR corrector
-ocr_corrector = None
-try:
-    from app.ML.inference_hybrid import OcrCorrector
-    ocr_corrector = OcrCorrector(model_dir=str(ML_PATH / "models" / "hybrid"))
-    print("✅ ML OCR Corrector loaded successfully!")
-except Exception as e:
-    print(f"⚠️  ML OCR Corrector not available: {e}")
-    print("   Falling back to rule-based correction")
+# Note: ML OCR corrector removed - NLP extractor handles misspellings and OCR errors
+# using fuzzy matching against ingredient dictionary
 
 

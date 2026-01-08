@@ -9,7 +9,7 @@ from app.schemas import ScanOCRRequest, ScanOCRResponse, ScanResponse
 from app.security import get_current_user
 from app.services.ocr import extract_text_from_image, correct_ocr_text, extract_ingredients
 from app.services.analysis import analyze_ingredients
-from app.config import settings, ocr_corrector  # Import ML corrector from config
+from app.config import settings
 
 router = APIRouter(prefix="/scan", tags=["scan"])
 
@@ -51,16 +51,10 @@ def scan_ocr(
             detail=f"OCR failed: {str(e)}"
         )
     
-    # Correct OCR text using ML model (with fallback to rule-based)
-    if ocr_corrector:
-        try:
-            corrected_text = ocr_corrector.correct(ocr_text)
-        except Exception as e:
-            print(f"⚠️  ML correction failed: {e}, using rule-based fallback")
-            corrected_text = correct_ocr_text(ocr_text)
-    else:
-        # Fallback to rule-based correction
-        corrected_text = correct_ocr_text(ocr_text)
+    # Note: OCR correction is handled by NLP extractor during ingredient extraction
+    # The NLP extractor uses fuzzy matching against ingredient dictionary to correct
+    # misspellings and OCR errors automatically
+    corrected_text = correct_ocr_text(ocr_text)  # Basic rule-based correction for display
     
     # Extract ingredients
     ingredients = extract_ingredients(corrected_text)

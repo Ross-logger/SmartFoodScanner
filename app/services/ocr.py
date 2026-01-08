@@ -131,20 +131,15 @@ def correct_ocr_text(text: str) -> str:
     """
     Simple rule-based OCR correction - fix common OCR mistakes.
     
-    NOTE: This function is now used as a FALLBACK only.
-    The primary OCR correction uses the ML model (ML/models/hybrid)
-    which is automatically loaded in app/routers/scans.py
+    NOTE: This function provides basic rule-based corrections for display purposes.
+    The primary OCR error correction and misspelling handling is done by the
+    NLP extractor during ingredient extraction, which uses fuzzy matching against
+    the ingredient dictionary (896 ingredients).
     
-    The ML model provides:
-    - 90%+ accuracy on common English ingredients
-    - <1ms inference time
-    - 3,610 ingredient vocabulary
-    - Smart character-level error correction
-    
-    This rule-based function is kept for:
-    - Fallback when ML model is not available
+    This function is kept for:
+    - Basic text cleaning for display
+    - Simple rule-based corrections
     - Backwards compatibility
-    - Simple deployment scenarios
     """
     if not text:
         return text
@@ -172,48 +167,17 @@ def correct_ocr_text(text: str) -> str:
 
 def extract_ingredients(text: str) -> list:
     """
-    Extract ingredients from text.
-    This is a simple parser - in production, you'd use NLP/ML models.
+    Extract ingredients from OCR text.
+    Uses maintainable ingredient extraction service.
+    
+    Args:
+        text: OCR text to extract ingredients from
+        
+    Returns:
+        List of extracted ingredients
     """
-    if not text:
-        return []
+    from app.services.ingredient_extraction import IngredientExtractor
     
-    # Simple extraction: look for common patterns
-    # Split by common separators
-    ingredients = []
-    
-    # Try to find ingredients list (often after "Ingredients:" or "Contains:")
-    lines = text.split('\n')
-    in_ingredients_section = False
-    
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
-        
-        # Detect ingredients section
-        if 'ingredients' in line.lower() or 'contains' in line.lower():
-            in_ingredients_section = True
-            # Extract ingredients from this line too
-            line = re.sub(r'^.*?[:]\s*', '', line, flags=re.IGNORECASE)
-        
-        if in_ingredients_section or len(ingredients) == 0:
-            # Split by comma, semicolon, or newline
-            parts = re.split(r'[,;]', line)
-            for part in parts:
-                part = part.strip()
-                if part and len(part) > 2:  # Minimum length
-                    # Remove common prefixes/suffixes
-                    part = re.sub(r'^[-•\*\d\.\s]+', '', part)
-                    part = part.strip()
-                    if part:
-                        ingredients.append(part.lower())
-    
-    # If no section found, try to extract from whole text
-    if not ingredients:
-        # Simple word extraction (basic approach)
-        words = re.findall(r'\b[a-zA-Z]{3,}\b', text)
-        ingredients = list(set(words))[:20]  # Limit to 20 unique words
-    
-    return ingredients[:50]  # Limit total ingredients
+    extractor = IngredientExtractor()
+    return extractor.extract(text)
 
