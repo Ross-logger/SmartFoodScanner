@@ -7,7 +7,7 @@ from app.database import get_db
 from app.models import User, Scan, DietaryProfile
 from app.schemas import ScanOCRRequest, ScanOCRResponse, ScanResponse
 from app.security import get_current_user
-from app.services.ocr import extract_text_from_image, correct_ocr_text, extract_ingredients
+from app.services.ocr import extract_text_from_image, extract_ingredients
 from app.services.analysis import analyze_ingredients
 from app.config import settings
 
@@ -15,6 +15,19 @@ router = APIRouter(prefix="/scan", tags=["scan"])
 
 # Ensure upload directory exists
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+
+
+from langdetect import detect
+
+def extract_english_ingredients(ingredients):
+    english = []
+    for ing in ingredients:
+        try:
+            if detect(ing) == "en":
+                english.append(ing)
+        except:
+            pass
+    return english
 
 
 @router.post("/ocr", response_model=ScanOCRResponse)
@@ -51,13 +64,9 @@ def scan_ocr(
             detail=f"OCR failed: {str(e)}"
         )
     
-    # Note: OCR correction is handled by NLP extractor during ingredient extraction
-    # The NLP extractor uses fuzzy matching against ingredient dictionary to correct
-    # misspellings and OCR errors automatically
-    corrected_text = correct_ocr_text(ocr_text)  # Basic rule-based correction for display
-    
-    # Extract ingredients
-    ingredients = extract_ingredients(corrected_text)
+    # Extract ingredients using Hugging Face model
+    # The model handles OCR errors and tokenization automatically
+    ingredients = extract_english_ingredients(extract_ingredients(ocr_text))
     
     # Get user's dietary profile
     dietary_profile = db.query(DietaryProfile).filter(
@@ -79,7 +88,7 @@ def scan_ocr(
         user_id=current_user.id,
         image_path=image_path,
         ocr_text=ocr_text,
-        corrected_text=corrected_text,
+        corrected_text=ocr_text,  # No separate correction step, use OCR text directly
         ingredients=ingredients,
         is_safe=analysis["is_safe"],
         warnings=analysis["warnings"],
@@ -92,7 +101,7 @@ def scan_ocr(
     
     return ScanOCRResponse(
         ocr_text=ocr_text,
-        corrected_text=corrected_text,
+        corrected_text=ocr_text,  # No separate correction step, use OCR text directly
         ingredients=ingredients,
         is_safe=analysis["is_safe"],
         warnings=analysis["warnings"],

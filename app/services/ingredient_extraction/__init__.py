@@ -1,9 +1,8 @@
 """
 Ingredient Extraction Service
-Uses NLP-based extraction for reliable ingredient identification and correction.
+Uses Hugging Face model for ingredient extraction.
 """
 
-from app.services.ingredient_extraction.extractor import IngredientExtractor
-from app.services.ingredient_extraction.nlp_extractor import NLPIngredientExtractor
+from app.services.ingredient_extraction.extractor import extract
 
-__all__ = ['IngredientExtractor', 'NLPIngredientExtractor']
+__all__ = ['extract']

@@ -5,8 +5,6 @@ from PIL import Image
 import numpy as np
 import easyocr
 from typing import Optional, List, Tuple
-import re
-
 from app.config import settings
 from pillow_heif import register_heif_opener
 register_heif_opener()
@@ -127,48 +125,10 @@ def extract_text_from_image(image_data: bytes) -> str:
         raise Exception(f"OCR extraction failed: {str(e)}")
 
 
-def correct_ocr_text(text: str) -> str:
-    """
-    Simple rule-based OCR correction - fix common OCR mistakes.
-    
-    NOTE: This function provides basic rule-based corrections for display purposes.
-    The primary OCR error correction and misspelling handling is done by the
-    NLP extractor during ingredient extraction, which uses fuzzy matching against
-    the ingredient dictionary (896 ingredients).
-    
-    This function is kept for:
-    - Basic text cleaning for display
-    - Simple rule-based corrections
-    - Backwards compatibility
-    """
-    if not text:
-        return text
-    
-    # Common OCR corrections dictionary
-    corrections = {
-        r'\bs0\b': 'so',
-        r'\bs0y\b': 'soy',
-        r'\blicethin\b': 'lecithin',
-        r'\bs0y licethin\b': 'soy lecithin',
-        r'\bwheat\b': 'wheat',
-        r'\bgluten\b': 'gluten',
-        r'\bmi1k\b': 'milk',
-        r'\beggs\b': 'eggs',
-        r'\bpeanuts\b': 'peanuts',
-        r'\btree nuts\b': 'tree nuts',
-    }
-    
-    corrected = text
-    for pattern, replacement in corrections.items():
-        corrected = re.sub(pattern, replacement, corrected, flags=re.IGNORECASE)
-    
-    return corrected
-
-
 def extract_ingredients(text: str) -> list:
     """
     Extract ingredients from OCR text.
-    Uses maintainable ingredient extraction service.
+    Uses Hugging Face model for ingredient extraction.
     
     Args:
         text: OCR text to extract ingredients from
@@ -176,8 +136,7 @@ def extract_ingredients(text: str) -> list:
     Returns:
         List of extracted ingredients
     """
-    from app.services.ingredient_extraction import IngredientExtractor
+    from app.services.ingredient_extraction import extract
     
-    extractor = IngredientExtractor()
-    return extractor.extract(text)
+    return extract(text)
 
