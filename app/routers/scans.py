@@ -17,19 +17,6 @@ router = APIRouter(prefix="/scan", tags=["scan"])
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
 
-from langdetect import detect
-
-def extract_english_ingredients(ingredients):
-    english = []
-    for ing in ingredients:
-        try:
-            if detect(ing) == "en":
-                english.append(ing)
-        except:
-            pass
-    return english
-
-
 @router.post("/ocr", response_model=ScanOCRResponse)
 def scan_ocr(
     file: UploadFile = File(...),
@@ -66,7 +53,7 @@ def scan_ocr(
     
     # Extract ingredients using Hugging Face model
     # The model handles OCR errors and tokenization automatically
-    ingredients = extract_english_ingredients(extract_ingredients(ocr_text))
+    ingredients = extract_ingredients(ocr_text)
     
     # Get user's dietary profile
     dietary_profile = db.query(DietaryProfile).filter(

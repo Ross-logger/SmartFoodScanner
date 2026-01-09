@@ -142,14 +142,6 @@ async def correct_ocr_batch(request: BatchOcrCorrectionRequest):
         raise HTTPException(status_code=500, detail=f"Batch OCR correction failed: {str(e)}")
 
 
-@router.get("/health")
-async def health_check():
-    """Check if OCR correction service is available"""
-    return {
-        "status": "healthy",
-        "model_loaded": ocr_corrector.model is not None if hasattr(ocr_corrector, 'model') else True
-    }
-
 
 # ============================================================================
 # INTEGRATION INTO EXISTING SCAN ENDPOINT

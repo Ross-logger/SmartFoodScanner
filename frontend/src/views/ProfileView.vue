@@ -82,34 +82,186 @@
         </form>
       </div>
 
-      <!-- Dietary Preferences (Optional for future) -->
+      <!-- Dietary Preferences -->
       <div class="card mb-6">
         <h3 class="section-title mb-4">Dietary Preferences</h3>
         <p class="text-gray-600 text-sm mb-4">
-          Set your dietary preferences to get personalized alerts
+          Set your dietary preferences to get personalized alerts when scanning ingredients
         </p>
 
-        <div class="preferences-grid">
-          <label class="preference-item">
-            <input type="checkbox" v-model="preferences.vegan" class="preference-checkbox" />
-            <span>Vegan</span>
-          </label>
-
-          <label class="preference-item">
-            <input type="checkbox" v-model="preferences.vegetarian" class="preference-checkbox" />
-            <span>Vegetarian</span>
-          </label>
-
-          <label class="preference-item">
-            <input type="checkbox" v-model="preferences.glutenFree" class="preference-checkbox" />
-            <span>Gluten-Free</span>
-          </label>
-
-          <label class="preference-item">
-            <input type="checkbox" v-model="preferences.dairyFree" class="preference-checkbox" />
-            <span>Dairy-Free</span>
-          </label>
+        <div v-if="isLoadingDietary" class="loading-state">
+          <LoadingSpinner :message="'Loading dietary preferences...'" />
         </div>
+
+        <form v-else @submit.prevent="handleUpdateDietaryProfile" class="dietary-form">
+          <!-- Dietary Restrictions Grid -->
+          <div class="preferences-grid mb-6">
+            <label class="preference-item">
+              <input 
+                type="checkbox" 
+                v-model="dietaryProfile.vegan" 
+                class="preference-checkbox" 
+              />
+              <span>Vegan</span>
+            </label>
+
+            <label class="preference-item">
+              <input 
+                type="checkbox" 
+                v-model="dietaryProfile.vegetarian" 
+                class="preference-checkbox" 
+              />
+              <span>Vegetarian</span>
+            </label>
+
+            <label class="preference-item">
+              <input 
+                type="checkbox" 
+                v-model="dietaryProfile.gluten_free" 
+                class="preference-checkbox" 
+              />
+              <span>Gluten-Free</span>
+            </label>
+
+            <label class="preference-item">
+              <input 
+                type="checkbox" 
+                v-model="dietaryProfile.dairy_free" 
+                class="preference-checkbox" 
+              />
+              <span>Dairy-Free</span>
+            </label>
+
+            <label class="preference-item">
+              <input 
+                type="checkbox" 
+                v-model="dietaryProfile.nut_free" 
+                class="preference-checkbox" 
+              />
+              <span>Nut-Free</span>
+            </label>
+
+            <label class="preference-item">
+              <input 
+                type="checkbox" 
+                v-model="dietaryProfile.halal" 
+                class="preference-checkbox" 
+              />
+              <span>Halal</span>
+            </label>
+          </div>
+
+          <!-- Allergens Section -->
+          <div class="form-group mb-6">
+            <label class="form-label">Allergens</label>
+            <p class="text-gray-500 text-xs mb-2">
+              List any allergens you need to avoid (e.g., "peanuts", "shellfish", "soy")
+            </p>
+            <div class="tags-container">
+              <div 
+                v-for="(allergen, index) in dietaryProfile.allergens" 
+                :key="index"
+                class="tag"
+              >
+                <span>{{ allergen }}</span>
+                <button 
+                  type="button"
+                  @click="removeAllergen(index)"
+                  class="tag-remove"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div class="tag-input-container">
+                <input
+                  v-model="newAllergen"
+                  type="text"
+                  class="tag-input"
+                  placeholder="Add allergen..."
+                  @keydown.enter.prevent="addAllergen"
+                />
+                <button
+                  type="button"
+                  @click="addAllergen"
+                  class="tag-add-btn"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Custom Restrictions Section -->
+          <div class="form-group mb-6">
+            <label class="form-label">Custom Restrictions</label>
+            <p class="text-gray-500 text-xs mb-2">
+              Add any other dietary restrictions or preferences
+            </p>
+            <div class="tags-container">
+              <div 
+                v-for="(restriction, index) in dietaryProfile.custom_restrictions" 
+                :key="index"
+                class="tag"
+              >
+                <span>{{ restriction }}</span>
+                <button 
+                  type="button"
+                  @click="removeCustomRestriction(index)"
+                  class="tag-remove"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div class="tag-input-container">
+                <input
+                  v-model="newCustomRestriction"
+                  type="text"
+                  class="tag-input"
+                  placeholder="Add restriction..."
+                  @keydown.enter.prevent="addCustomRestriction"
+                />
+                <button
+                  type="button"
+                  @click="addCustomRestriction"
+                  class="tag-add-btn"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Success/Error Messages -->
+          <div v-if="dietaryUpdateSuccess" class="success-alert">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            Dietary preferences updated successfully!
+          </div>
+
+          <div v-if="dietaryUpdateError" class="error-alert">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+            {{ dietaryUpdateError }}
+          </div>
+
+          <button
+            type="submit"
+            :disabled="isUpdatingDietary"
+            class="btn-primary w-full"
+          >
+            {{ isUpdatingDietary ? 'Saving...' : 'Save Dietary Preferences' }}
+          </button>
+        </form>
       </div>
 
       <!-- Logout Button -->
@@ -132,6 +284,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import api from '@/services/api'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -144,18 +298,30 @@ const profileData = ref({
   username: ''
 })
 
-const preferences = ref({
-  vegan: false,
+const dietaryProfile = ref({
+  halal: false,
+  gluten_free: false,
   vegetarian: false,
-  glutenFree: false,
-  dairyFree: false
+  vegan: false,
+  nut_free: false,
+  dairy_free: false,
+  allergens: [],
+  custom_restrictions: []
 })
+
+const newAllergen = ref('')
+const newCustomRestriction = ref('')
 
 const isUpdating = ref(false)
 const updateSuccess = ref(false)
 const updateError = ref(null)
 
-onMounted(() => {
+const isUpdatingDietary = ref(false)
+const dietaryUpdateSuccess = ref(false)
+const dietaryUpdateError = ref(null)
+const isLoadingDietary = ref(false)
+
+onMounted(async () => {
   if (user.value) {
     profileData.value = {
       fullName: user.value.full_name || '',
@@ -163,7 +329,33 @@ onMounted(() => {
       username: user.value.username || ''
     }
   }
+  
+  // Load dietary profile
+  await loadDietaryProfile()
 })
+
+async function loadDietaryProfile() {
+  isLoadingDietary.value = true
+  dietaryUpdateError.value = null
+  
+  try {
+    const profile = await api.get('/dietary-profiles')
+    dietaryProfile.value = {
+      halal: profile.halal || false,
+      gluten_free: profile.gluten_free || false,
+      vegetarian: profile.vegetarian || false,
+      vegan: profile.vegan || false,
+      nut_free: profile.nut_free || false,
+      dairy_free: profile.dairy_free || false,
+      allergens: profile.allergens || [],
+      custom_restrictions: profile.custom_restrictions || []
+    }
+  } catch (err) {
+    dietaryUpdateError.value = err.message || 'Failed to load dietary profile'
+  } finally {
+    isLoadingDietary.value = false
+  }
+}
 
 async function handleUpdateProfile() {
   isUpdating.value = true
@@ -190,6 +382,60 @@ async function handleUpdateProfile() {
   } finally {
     isUpdating.value = false
   }
+}
+
+async function handleUpdateDietaryProfile() {
+  isUpdatingDietary.value = true
+  dietaryUpdateSuccess.value = false
+  dietaryUpdateError.value = null
+
+  try {
+    const profileData = {
+      halal: dietaryProfile.value.halal,
+      gluten_free: dietaryProfile.value.gluten_free,
+      vegetarian: dietaryProfile.value.vegetarian,
+      vegan: dietaryProfile.value.vegan,
+      nut_free: dietaryProfile.value.nut_free,
+      dairy_free: dietaryProfile.value.dairy_free,
+      allergens: dietaryProfile.value.allergens,
+      custom_restrictions: dietaryProfile.value.custom_restrictions
+    }
+
+    await api.post('/dietary-profiles/custom', profileData)
+    
+    dietaryUpdateSuccess.value = true
+    setTimeout(() => {
+      dietaryUpdateSuccess.value = false
+    }, 3000)
+  } catch (err) {
+    dietaryUpdateError.value = err.message || 'Failed to update dietary preferences'
+  } finally {
+    isUpdatingDietary.value = false
+  }
+}
+
+function addAllergen() {
+  const allergen = newAllergen.value.trim()
+  if (allergen && !dietaryProfile.value.allergens.includes(allergen)) {
+    dietaryProfile.value.allergens.push(allergen)
+    newAllergen.value = ''
+  }
+}
+
+function removeAllergen(index) {
+  dietaryProfile.value.allergens.splice(index, 1)
+}
+
+function addCustomRestriction() {
+  const restriction = newCustomRestriction.value.trim()
+  if (restriction && !dietaryProfile.value.custom_restrictions.includes(restriction)) {
+    dietaryProfile.value.custom_restrictions.push(restriction)
+    newCustomRestriction.value = ''
+  }
+}
+
+function removeCustomRestriction(index) {
+  dietaryProfile.value.custom_restrictions.splice(index, 1)
 }
 
 function handleLogout() {
@@ -272,11 +518,43 @@ function handleLogout() {
 }
 
 .preference-item {
-  @apply flex items-center gap-2 cursor-pointer;
+  @apply flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors;
 }
 
 .preference-checkbox {
-  @apply w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500;
+  @apply w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer;
+}
+
+.dietary-form {
+  @apply space-y-4;
+}
+
+.tags-container {
+  @apply flex flex-wrap gap-2 p-3 border border-gray-300 rounded-lg bg-gray-50 min-h-[60px];
+}
+
+.tag {
+  @apply inline-flex items-center gap-2 px-3 py-1.5 bg-primary-100 text-primary-800 rounded-full text-sm font-medium;
+}
+
+.tag-remove {
+  @apply hover:text-primary-900 transition-colors cursor-pointer;
+}
+
+.tag-input-container {
+  @apply flex items-center gap-2 flex-1 min-w-[200px];
+}
+
+.tag-input {
+  @apply flex-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+}
+
+.tag-add-btn {
+  @apply p-1.5 text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors;
+}
+
+.loading-state {
+  @apply py-8 flex items-center justify-center;
 }
 
 .logout-button {
