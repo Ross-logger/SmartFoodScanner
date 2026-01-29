@@ -54,15 +54,9 @@ class BaseLLMProvider(ABC):
     def extract(self, text: str) -> Optional[Dict[str, Any]]:
         """
         Extract ingredients from text.
-        
-        Args:
-            text: Raw text containing ingredient information
-            
-        Returns:
-            Dictionary with ingredients, detected_language, confidence or None if failed
         """
         if not self.is_available():
-            logger.debug(f"{self.name} provider is not available")
+            print(f"{self.name}: NOT AVAILABLE")
             return None
         
         try:
@@ -70,15 +64,18 @@ class BaseLLMProvider(ABC):
             response = self._call_api(prompt)
             
             if not response:
+                print(f"{self.name}: Empty response from API")
                 return None
             
             result = self._parse_response(response)
             if result:
-                logger.info(f"{self.name} extraction completed: {len(result['ingredients'])} ingredients found")
+                print(f"{self.name}: Extracted {len(result['ingredients'])} ingredients")
+            else:
+                print(f"{self.name}: Failed to parse response")
             return result
             
         except Exception as e:
-            logger.error(f"{self.name} extraction failed: {e}", exc_info=True)
+            print(f"{self.name} ERROR: {type(e).__name__}: {e}")
             return None
     
     def _build_extraction_prompt(self, text: str) -> str:
@@ -352,7 +349,7 @@ class OllamaProvider(BaseLLMProvider):
         return response.json().get("response", "")
 
 
-class LMStudioProvider(OpenAICompatibleProvider):
+class LMStudioProvider(BaseLLMProvider):
     """LM Studio local LLM provider (FREE, OpenAI-compatible API)."""
     
     def __init__(
@@ -360,16 +357,12 @@ class LMStudioProvider(OpenAICompatibleProvider):
         base_url: str = "http://localhost:1234/v1", 
         model: str = "local-model",
         temperature: float = 0.1,
-        use_json_mode: bool = False  # LM Studio may not support JSON mode
+        use_json_mode: bool = False
     ):
-        # LM Studio doesn't require an API key but OpenAI client needs a placeholder
-        super().__init__(
-            model, 
-            api_key="lm-studio",  # Placeholder, LM Studio ignores this
-            base_url=base_url,
-            temperature=temperature,
-            use_json_mode=use_json_mode
-        )
+        super().__init__(model, temperature)
+        self.base_url = base_url.rstrip("/")
+        self.use_json_mode = use_json_mode
+        self._client = None
     
     @property
     def name(self) -> str:
@@ -379,10 +372,50 @@ class LMStudioProvider(OpenAICompatibleProvider):
         """Check if LM Studio server is reachable."""
         try:
             import requests
-            response = requests.get(f"{self.base_url.rstrip('/v1')}/v1/models", timeout=2)
-            return response.status_code == 200
-        except Exception:
+            url = f"{self.base_url}/models"
+            print(f"LMStudio: Checking availability at {url}")
+            response = requests.get(url, timeout=2)
+            available = response.status_code == 200
+            print(f"LMStudio: Available = {available} (status={response.status_code})")
+            return available
+        except Exception as e:
+            print(f"LMStudio: Not available - {e}")
             return False
+    
+    def _get_client(self):
+        """Lazy initialization of OpenAI client."""
+        if self._client is None:
+            try:
+                from openai import OpenAI
+                self._client = OpenAI(
+                    api_key="lm-studio",
+                    base_url=self.base_url
+                )
+            except ImportError:
+                print("LMStudio: OpenAI library not installed!")
+                return None
+        return self._client
+    
+    def _call_api(self, prompt: str) -> Optional[str]:
+        """Make API call - no system role for Mistral compatibility."""
+        client = self._get_client()
+        if not client:
+            print("LMStudio: Failed to get client")
+            return None
+        
+        # Mistral only supports user/assistant roles - no system role!
+        full_prompt = f"{self.SYSTEM_PROMPT}\n\n{prompt}"
+        
+        print(f"LMStudio: Calling model={self.model} at {self.base_url}")
+        
+        response = client.chat.completions.create(
+            model=self.model,
+            messages=[{"role": "user", "content": full_prompt}],
+            temperature=self.temperature
+        )
+        
+        print("LMStudio: Got response successfully")
+        return response.choices[0].message.content
 
 
 class AnthropicProvider(BaseLLMProvider):
@@ -457,60 +490,50 @@ class LLMProviderFactory:
     @classmethod
     def create_from_settings(cls, settings) -> List[BaseLLMProvider]:
         """
-        Create providers from application settings.
-        Returns a list of providers in order of preference.
+        Create provider from application settings.
+        Only returns the configured provider.
         """
-        providers = []
-        primary = settings.LLM_PROVIDER.lower() if hasattr(settings, 'LLM_PROVIDER') else "groq"
+        provider = settings.LLM_PROVIDER.lower()
         
-        # Build provider instances based on available configuration
-        provider_configs = {
+        providers = {
             "groq": lambda: GroqProvider(
-                api_key=getattr(settings, 'GROQ_API_KEY', None),
-                model=getattr(settings, 'GROQ_MODEL', 'llama-3.3-70b-versatile'),
-                temperature=getattr(settings, 'LLM_TEMPERATURE', 0.1)
+                api_key=settings.GROQ_API_KEY,
+                model=settings.GROQ_MODEL,
+                temperature=settings.LLM_TEMPERATURE
             ),
             "gemini": lambda: GeminiProvider(
-                api_key=getattr(settings, 'GEMINI_API_KEY', None),
-                model=getattr(settings, 'GEMINI_MODEL', 'gemini-2.0-flash-exp'),
-                temperature=getattr(settings, 'LLM_TEMPERATURE', 0.1)
+                api_key=settings.GEMINI_API_KEY,
+                model=settings.GEMINI_MODEL,
+                temperature=settings.LLM_TEMPERATURE
             ),
             "openai": lambda: OpenAIProvider(
-                api_key=getattr(settings, 'OPENAI_API_KEY', None),
-                model=getattr(settings, 'OPENAI_MODEL', 'gpt-4o-mini'),
-                temperature=getattr(settings, 'LLM_TEMPERATURE', 0.1)
+                api_key=settings.OPENAI_API_KEY,
+                model=settings.OPENAI_MODEL,
+                temperature=settings.LLM_TEMPERATURE
             ),
             "ollama": lambda: OllamaProvider(
-                base_url=getattr(settings, 'OLLAMA_BASE_URL', 'http://localhost:11434'),
-                model=getattr(settings, 'OLLAMA_MODEL', 'llama3'),
-                temperature=getattr(settings, 'LLM_TEMPERATURE', 0.1)
+                base_url=settings.OLLAMA_BASE_URL,
+                model=settings.OLLAMA_MODEL,
+                temperature=settings.LLM_TEMPERATURE
             ),
             "lmstudio": lambda: LMStudioProvider(
-                base_url=getattr(settings, 'LMSTUDIO_BASE_URL', 'http://localhost:1234/v1'),
-                model=getattr(settings, 'LMSTUDIO_MODEL', 'local-model'),
-                temperature=getattr(settings, 'LLM_TEMPERATURE', 0.1),
-                use_json_mode=getattr(settings, 'LMSTUDIO_JSON_MODE', False)
+                base_url=settings.LMSTUDIO_BASE_URL,
+                model=settings.LMSTUDIO_MODEL,
+                temperature=settings.LLM_TEMPERATURE,
+                use_json_mode=settings.LMSTUDIO_JSON_MODE
             ),
             "anthropic": lambda: AnthropicProvider(
-                api_key=getattr(settings, 'ANTHROPIC_API_KEY', None),
-                model=getattr(settings, 'ANTHROPIC_MODEL', 'claude-3-5-sonnet-20241022'),
-                temperature=getattr(settings, 'LLM_TEMPERATURE', 0.1)
+                api_key=settings.ANTHROPIC_API_KEY,
+                model=settings.ANTHROPIC_MODEL,
+                temperature=settings.LLM_TEMPERATURE
             ),
         }
+        print("Using Provider: ", provider)
         
-        # Order: primary provider first, then fallbacks
-        fallback_order = ["groq", "gemini", "lmstudio", "ollama", "openai", "anthropic"]
+        if provider not in providers:
+            raise ValueError(f"Unknown LLM provider: {provider}")
         
-        # Primary first
-        if primary in provider_configs:
-            providers.append(provider_configs[primary]())
-        
-        # Then fallbacks (excluding primary)
-        for name in fallback_order:
-            if name != primary and name in provider_configs:
-                providers.append(provider_configs[name]())
-        
-        return providers
+        return [providers[provider]()]
 
 
 # =============================================================================
@@ -562,6 +585,7 @@ class LLMIngredientExtractor:
             }
         
         providers = self._providers or []
+        print("Providers: ", providers)
         
         if not providers:
             return {
@@ -571,14 +595,16 @@ class LLMIngredientExtractor:
             }
         
         for provider in providers:
-            logger.debug(f"Trying LLM provider for extraction: {provider.name}")
+            print(f"Trying LLM provider for extraction: {provider.name}")
+            print(f"Text to extract ingredients from: {text}")
             
             result = provider.extract(text)
+            print(f"Extracted ingredients by {provider.name}: {result}")
             
-            if result and result.get("ingredients"):
+            if result:
                 logger.info(f"Successfully extracted ingredients with {provider.name}")
                 return {
-                    "ingredients": result["ingredients"],
+                    "ingredients": result.get("ingredients", []),
                     "success": True,
                     "message": f"Extracted {len(result['ingredients'])} ingredients using {provider.name}",
                     "provider": provider.name,
@@ -586,11 +612,10 @@ class LLMIngredientExtractor:
                     "confidence": result.get("confidence", "unknown")
                 }
         
-        logger.warning("All LLM providers failed for ingredient extraction")
         return {
             "ingredients": [],
             "success": False,
-            "message": "Failed to extract ingredients - all LLM providers unavailable or failed"
+            "message": "Failed to extract ingredients."
         }
 
 
@@ -601,19 +626,6 @@ class LLMIngredientExtractor:
 def extract_ingredients_with_llm(text: str) -> Dict[str, Any]:
     """
     Extract ingredients from text using LLM.
-    Supports multiple providers: Groq (FREE), Gemini (FREE), OpenAI (Paid), 
-    Ollama (FREE Local), LM Studio (FREE Local).
-    
-    This is a backward-compatible function that uses the class-based interface internally.
-    
-    Args:
-        text: Raw text (possibly from OCR) containing ingredient information
-        
-    Returns:
-        Dictionary with:
-        - ingredients: List of extracted ingredient names in English
-        - success: Boolean indicating if extraction was successful
-        - message: Optional message about the extraction
     """
     from backend import settings
     
@@ -624,5 +636,6 @@ def extract_ingredients_with_llm(text: str) -> Dict[str, Any]:
             "message": "LLM analyzer is disabled in settings"
         }
     
+    logger.info(f"Using LLM provider: {settings.LLM_PROVIDER}")
     extractor = LLMIngredientExtractor.from_settings(settings)
     return extractor.extract(text)

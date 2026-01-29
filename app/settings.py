@@ -6,6 +6,9 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+from app.services.llm_ingredient_extractor import GeminiProvider
+from backend.services.llm_ingredient_extractor import GroqProvider
+
 load_dotenv()
 
 # =============================================================================
@@ -66,7 +69,7 @@ COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN") or None
 # =============================================================================
 
 USE_LLM_ANALYZER = os.getenv("USE_LLM_ANALYZER", "true").lower() in ("true", "1", "yes")
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "lmstudio")
 LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.3"))
 
 # OpenAI
@@ -113,21 +116,44 @@ except Exception as e:
 # Startup Status
 # =============================================================================
 
+
+LLM_MODELS = {
+            "groq": lambda: GroqProvider(
+                api_key=GROQ_API_KEY,
+                model=GROQ_MODEL,   
+                temperature=LLM_TEMPERATURE
+            ),
+            "gemini": lambda: GeminiProvider(
+                api_key=GEMINI_API_KEY,
+                model=GEMINI_MODEL,
+                temperature=LLM_TEMPERATURE
+            ),
+            "openai": lambda: OpenAIProvider(
+                api_key=OPENAI_API_KEY,
+                model=OPENAI_MODEL,
+                temperature=LLM_TEMPERATURE
+            ),  
+            "ollama": lambda: OllamaProvider(
+                base_url=OLLAMA_BASE_URL,
+                model=OLLAMA_MODEL,
+                temperature=LLM_TEMPERATURE
+            ),
+            "lmstudio": lambda: LMStudioProvider(
+                base_url=LMSTUDIO_BASE_URL,
+                model=LMSTUDIO_MODEL,
+                temperature=LLM_TEMPERATURE,
+                use_json_mode=LMSTUDIO_JSON_MODE
+            ),
+            "anthropic": lambda: AnthropicProvider(
+                api_key=ANTHROPIC_API_KEY,
+                model=ANTHROPIC_MODEL,
+                temperature=LLM_TEMPERATURE
+            ),
+}
+
 if USE_LLM_ANALYZER:
     _provider = LLM_PROVIDER.lower()
-    if _provider == "groq":
-        print(f"✅ Groq LLM configured (Model: {GROQ_MODEL})" if GROQ_API_KEY else "⚠️  GROQ_API_KEY not set")
-    elif _provider == "gemini":
-        print(f"✅ Gemini LLM configured (Model: {GEMINI_MODEL})" if GEMINI_API_KEY else "⚠️  GEMINI_API_KEY not set")
-    elif _provider == "openai":
-        print(f"✅ OpenAI LLM configured (Model: {OPENAI_MODEL})" if OPENAI_API_KEY else "⚠️  OPENAI_API_KEY not set")
-    elif _provider == "anthropic":
-        print(f"✅ Anthropic LLM configured (Model: {ANTHROPIC_MODEL})" if ANTHROPIC_API_KEY else "⚠️  ANTHROPIC_API_KEY not set")
-    elif _provider == "ollama":
-        print(f"✅ Ollama LLM configured (Model: {OLLAMA_MODEL})")
-    elif _provider == "lmstudio":
-        print(f"✅ LM Studio configured (Model: {LMSTUDIO_MODEL} @ localhost:1234)")
-    else:
-        print(f"⚠️  Unknown LLM provider: {LLM_PROVIDER}")
+    print(f"✅ {_provider} LLM configured (Model: {LLM_MODELS[_provider].model})")
 else:
     print("ℹ️  LLM Analyzer disabled")
+
