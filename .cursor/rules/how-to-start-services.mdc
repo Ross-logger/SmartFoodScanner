@@ -3,7 +3,7 @@ alwaysApply: true
 ---
 To start backend services, run the following command:
 ```bash
-uvicorn app.main:app --reload
+uvicorn backend.main:app --reload
 ```
 
 To start frontend services, run the following command:

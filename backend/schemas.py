@@ -50,6 +50,7 @@ class DietaryProfileCreate(BaseModel):
     dairy_free: bool = False
     allergens: List[str] = []
     custom_restrictions: List[str] = []
+    use_llm_ingredient_extractor: bool = False
     
     class Config:
         json_schema_extra = {
@@ -61,7 +62,8 @@ class DietaryProfileCreate(BaseModel):
                 "nut_free": False,
                 "dairy_free": False,
                 "allergens": [],
-                "custom_restrictions": []
+                "custom_restrictions": [],
+                "use_llm_ingredient_extractor": False
             }
         }
 
@@ -75,6 +77,7 @@ class DietaryProfileUpdate(BaseModel):
     dairy_free: Optional[bool] = None
     allergens: Optional[List[str]] = None
     custom_restrictions: Optional[List[str]] = None
+    use_llm_ingredient_extractor: Optional[bool] = None
     
     class Config:
         json_schema_extra = {
@@ -86,7 +89,8 @@ class DietaryProfileUpdate(BaseModel):
                 "nut_free": False,
                 "dairy_free": False,
                 "allergens": [],
-                "custom_restrictions": []
+                "custom_restrictions": [],
+                "use_llm_ingredient_extractor": False
             }
         }
 
@@ -102,11 +106,31 @@ class DietaryProfileResponse(BaseModel):
     dairy_free: bool
     allergens: List[str]
     custom_restrictions: List[str]
+    use_llm_ingredient_extractor: bool
     created_at: datetime
     updated_at: Optional[datetime]
     
     class Config:
         from_attributes = True
+
+
+# LLM Ingredient Extraction schemas
+class LLMIngredientExtractionRequest(BaseModel):
+    text: str
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "text": "Ingredients: Water, Sugar, Wheat Flour, Palm Oil, Salt, Emulsifier (E471), Flavoring"
+            }
+        }
+
+
+class LLMIngredientExtractionResponse(BaseModel):
+    ingredients: List[str]
+    original_text: str
+    success: bool
+    message: Optional[str] = None
 
 
 # Scan schemas

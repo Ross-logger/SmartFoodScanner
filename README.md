@@ -147,7 +147,7 @@ SmartFoodScanner/
 
 1. **Install PostgreSQL** and create database:
    ```bash
-   createdb foodscanner
+   createdb smartfoodscanner
    ```
 
 2. **Configure environment**:

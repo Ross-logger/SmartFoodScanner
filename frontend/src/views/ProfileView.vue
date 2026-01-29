@@ -264,6 +264,83 @@
         </form>
       </div>
 
+      <!-- LLM Ingredient Extractor -->
+      <div class="card mb-6">
+        <h3 class="section-title mb-4">LLM Ingredient Extractor</h3>
+        <p class="text-gray-600 text-sm mb-4">
+          Use AI-powered extraction to identify and translate ingredients to English. This provides more accurate results, especially for non-English labels.
+        </p>
+
+        <!-- Toggle -->
+        <div class="llm-toggle-container mb-6">
+          <label class="llm-toggle-item">
+            <input 
+              type="checkbox" 
+              v-model="dietaryProfile.use_llm_ingredient_extractor" 
+              class="preference-checkbox" 
+            />
+            <div class="toggle-content">
+              <span class="toggle-label">Enable LLM Ingredient Extractor</span>
+              <span class="toggle-description">When enabled, scans will use AI to extract and translate ingredients</span>
+            </div>
+          </label>
+        </div>
+
+        <!-- Test Area -->
+        <div class="test-area">
+          <h4 class="text-sm font-medium text-gray-700 mb-2">Test Extraction</h4>
+          <p class="text-gray-500 text-xs mb-3">
+            Paste ingredient text below to test the LLM extraction (supports multiple languages)
+          </p>
+          
+          <textarea
+            v-model="testIngredientText"
+            class="test-textarea"
+            placeholder="Paste ingredient text here... e.g., 'Zutaten: Wasser, Zucker, Weizenmehl' or 'مكونات: ماء، سكر'"
+            rows="3"
+          ></textarea>
+
+          <button
+            @click="testLLMExtraction"
+            :disabled="isTestingLLM || !testIngredientText.trim()"
+            class="btn-secondary mt-3"
+          >
+            <svg v-if="isTestingLLM" class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ isTestingLLM ? 'Extracting...' : 'Test Extraction' }}
+          </button>
+
+          <!-- Test Results -->
+          <div v-if="llmTestResult" class="test-results mt-4">
+            <div v-if="llmTestResult.success" class="success-result">
+              <div class="result-header">
+                <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-sm font-medium text-green-700">{{ llmTestResult.message }}</span>
+              </div>
+              <div class="ingredients-list">
+                <span 
+                  v-for="(ingredient, index) in llmTestResult.ingredients" 
+                  :key="index"
+                  class="ingredient-tag"
+                >
+                  {{ ingredient }}
+                </span>
+              </div>
+            </div>
+            <div v-else class="error-result">
+              <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-red-700">{{ llmTestResult.message || 'Extraction failed' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Logout Button -->
       <div class="card">
         <button
@@ -306,11 +383,17 @@ const dietaryProfile = ref({
   nut_free: false,
   dairy_free: false,
   allergens: [],
-  custom_restrictions: []
+  custom_restrictions: [],
+  use_llm_ingredient_extractor: false
 })
 
 const newAllergen = ref('')
 const newCustomRestriction = ref('')
+
+// LLM Extraction test state
+const testIngredientText = ref('')
+const isTestingLLM = ref(false)
+const llmTestResult = ref(null)
 
 const isUpdating = ref(false)
 const updateSuccess = ref(false)
@@ -348,7 +431,8 @@ async function loadDietaryProfile() {
       nut_free: profile.nut_free || false,
       dairy_free: profile.dairy_free || false,
       allergens: profile.allergens || [],
-      custom_restrictions: profile.custom_restrictions || []
+      custom_restrictions: profile.custom_restrictions || [],
+      use_llm_ingredient_extractor: profile.use_llm_ingredient_extractor || false
     }
   } catch (err) {
     dietaryUpdateError.value = err.message || 'Failed to load dietary profile'
@@ -398,7 +482,8 @@ async function handleUpdateDietaryProfile() {
       nut_free: dietaryProfile.value.nut_free,
       dairy_free: dietaryProfile.value.dairy_free,
       allergens: dietaryProfile.value.allergens,
-      custom_restrictions: dietaryProfile.value.custom_restrictions
+      custom_restrictions: dietaryProfile.value.custom_restrictions,
+      use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor
     }
 
     await api.post('/dietary-profiles/custom', profileData)
@@ -436,6 +521,28 @@ function addCustomRestriction() {
 
 function removeCustomRestriction(index) {
   dietaryProfile.value.custom_restrictions.splice(index, 1)
+}
+
+async function testLLMExtraction() {
+  if (!testIngredientText.value.trim()) return
+  
+  isTestingLLM.value = true
+  llmTestResult.value = null
+  
+  try {
+    const result = await api.post('/dietary-profiles/extract-ingredients', {
+      text: testIngredientText.value
+    })
+    llmTestResult.value = result
+  } catch (err) {
+    llmTestResult.value = {
+      success: false,
+      message: err.message || 'Failed to extract ingredients',
+      ingredients: []
+    }
+  } finally {
+    isTestingLLM.value = false
+  }
 }
 
 function handleLogout() {
@@ -559,6 +666,63 @@ function handleLogout() {
 
 .logout-button {
   @apply w-full flex items-center justify-center gap-2 px-6 py-3 bg-red-50 text-red-600 font-medium rounded-lg hover:bg-red-100 transition-colors;
+}
+
+/* LLM Extractor Styles */
+.llm-toggle-container {
+  @apply bg-gray-50 rounded-lg p-4;
+}
+
+.llm-toggle-item {
+  @apply flex items-start gap-3 cursor-pointer;
+}
+
+.toggle-content {
+  @apply flex flex-col;
+}
+
+.toggle-label {
+  @apply font-medium text-gray-900;
+}
+
+.toggle-description {
+  @apply text-sm text-gray-500 mt-0.5;
+}
+
+.test-area {
+  @apply bg-gray-50 rounded-lg p-4 border border-gray-200;
+}
+
+.test-textarea {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.test-results {
+  @apply rounded-lg border;
+}
+
+.success-result {
+  @apply p-4 bg-green-50 border-green-200 rounded-lg;
+}
+
+.error-result {
+  @apply flex items-center gap-2 p-4 bg-red-50 border-red-200 rounded-lg;
+}
+
+.result-header {
+  @apply flex items-center gap-2 mb-3;
+}
+
+.ingredients-list {
+  @apply flex flex-wrap gap-2;
+}
+
+.ingredient-tag {
+  @apply inline-block px-3 py-1.5 bg-white text-gray-800 border border-green-200 rounded-full text-sm font-medium shadow-sm;
 }
 </style>
 
