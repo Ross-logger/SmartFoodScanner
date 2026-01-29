@@ -1,5 +1,8 @@
 <template>
   <div id="app" class="min-h-screen flex flex-col">
+    <!-- Global Notifications -->
+    <NotificationToast />
+    
     <!-- Main Content -->
     <main class="flex-1 pb-20">
       <router-view v-slot="{ Component }">
@@ -66,6 +69,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import NotificationToast from '@/components/NotificationToast.vue'
 
 const authStore = useAuthStore()
 

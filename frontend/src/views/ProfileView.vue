@@ -52,19 +52,14 @@
             <input
               v-model="profileData.username"
               type="text"
-              class="input-field"
+              class="input-field input-disabled"
               placeholder="username"
+              disabled
             />
+            <p class="text-gray-500 text-xs mt-1">Username cannot be changed</p>
           </div>
 
-          <!-- Success/Error Messages -->
-          <div v-if="updateSuccess" class="success-alert">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            Profile updated successfully!
-          </div>
-
+          <!-- Error Message -->
           <div v-if="updateError" class="error-alert">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
@@ -100,6 +95,7 @@
               <input 
                 type="checkbox" 
                 v-model="dietaryProfile.vegan" 
+                @change="saveDietaryProfile"
                 class="preference-checkbox" 
               />
               <span>Vegan</span>
@@ -109,6 +105,7 @@
               <input 
                 type="checkbox" 
                 v-model="dietaryProfile.vegetarian" 
+                @change="saveDietaryProfile"
                 class="preference-checkbox" 
               />
               <span>Vegetarian</span>
@@ -118,6 +115,7 @@
               <input 
                 type="checkbox" 
                 v-model="dietaryProfile.gluten_free" 
+                @change="saveDietaryProfile"
                 class="preference-checkbox" 
               />
               <span>Gluten-Free</span>
@@ -127,6 +125,7 @@
               <input 
                 type="checkbox" 
                 v-model="dietaryProfile.dairy_free" 
+                @change="saveDietaryProfile"
                 class="preference-checkbox" 
               />
               <span>Dairy-Free</span>
@@ -136,6 +135,7 @@
               <input 
                 type="checkbox" 
                 v-model="dietaryProfile.nut_free" 
+                @change="saveDietaryProfile"
                 class="preference-checkbox" 
               />
               <span>Nut-Free</span>
@@ -145,6 +145,7 @@
               <input 
                 type="checkbox" 
                 v-model="dietaryProfile.halal" 
+                @change="saveDietaryProfile"
                 class="preference-checkbox" 
               />
               <span>Halal</span>
@@ -239,14 +240,7 @@
             </div>
           </div>
 
-          <!-- Success/Error Messages -->
-          <div v-if="dietaryUpdateSuccess" class="success-alert">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            Dietary preferences updated successfully!
-          </div>
-
+          <!-- Error Message -->
           <div v-if="dietaryUpdateError" class="error-alert">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
@@ -277,13 +271,22 @@
             <input 
               type="checkbox" 
               v-model="dietaryProfile.use_llm_ingredient_extractor" 
+              @change="handleLLMToggleChange"
               class="preference-checkbox" 
+              :disabled="isSavingLLMSetting"
             />
             <div class="toggle-content">
               <span class="toggle-label">Enable LLM Ingredient Extractor</span>
               <span class="toggle-description">When enabled, scans will use AI to extract and translate ingredients</span>
             </div>
           </label>
+          <div v-if="isSavingLLMSetting" class="saving-indicator">
+            <svg class="animate-spin h-4 w-4 text-primary-600" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-sm text-gray-500">Saving...</span>
+          </div>
         </div>
 
         <!-- Test Area -->
@@ -361,11 +364,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const notification = useNotificationStore()
 
 const user = computed(() => authStore.user)
 
@@ -395,12 +400,13 @@ const testIngredientText = ref('')
 const isTestingLLM = ref(false)
 const llmTestResult = ref(null)
 
+// LLM toggle auto-save state
+const isSavingLLMSetting = ref(false)
+
 const isUpdating = ref(false)
-const updateSuccess = ref(false)
 const updateError = ref(null)
 
 const isUpdatingDietary = ref(false)
-const dietaryUpdateSuccess = ref(false)
 const dietaryUpdateError = ref(null)
 const isLoadingDietary = ref(false)
 
@@ -443,26 +449,23 @@ async function loadDietaryProfile() {
 
 async function handleUpdateProfile() {
   isUpdating.value = true
-  updateSuccess.value = false
   updateError.value = null
 
   try {
     const success = await authStore.updateProfile({
       full_name: profileData.value.fullName,
-      email: profileData.value.email,
-      username: profileData.value.username
+      email: profileData.value.email
     })
 
     if (success) {
-      updateSuccess.value = true
-      setTimeout(() => {
-        updateSuccess.value = false
-      }, 3000)
+      notification.success('Profile updated successfully')
     } else {
       updateError.value = authStore.error || 'Failed to update profile'
+      notification.error(updateError.value)
     }
   } catch (err) {
     updateError.value = err.message || 'Failed to update profile'
+    notification.error(updateError.value)
   } finally {
     isUpdating.value = false
   }
@@ -470,7 +473,6 @@ async function handleUpdateProfile() {
 
 async function handleUpdateDietaryProfile() {
   isUpdatingDietary.value = true
-  dietaryUpdateSuccess.value = false
   dietaryUpdateError.value = null
 
   try {
@@ -487,13 +489,10 @@ async function handleUpdateDietaryProfile() {
     }
 
     await api.post('/dietary-profiles/custom', profileData)
-    
-    dietaryUpdateSuccess.value = true
-    setTimeout(() => {
-      dietaryUpdateSuccess.value = false
-    }, 3000)
+    notification.success('Dietary preferences saved')
   } catch (err) {
     dietaryUpdateError.value = err.message || 'Failed to update dietary preferences'
+    notification.error(dietaryUpdateError.value)
   } finally {
     isUpdatingDietary.value = false
   }
@@ -504,11 +503,13 @@ function addAllergen() {
   if (allergen && !dietaryProfile.value.allergens.includes(allergen)) {
     dietaryProfile.value.allergens.push(allergen)
     newAllergen.value = ''
+    saveDietaryProfile()
   }
 }
 
 function removeAllergen(index) {
   dietaryProfile.value.allergens.splice(index, 1)
+  saveDietaryProfile()
 }
 
 function addCustomRestriction() {
@@ -516,11 +517,61 @@ function addCustomRestriction() {
   if (restriction && !dietaryProfile.value.custom_restrictions.includes(restriction)) {
     dietaryProfile.value.custom_restrictions.push(restriction)
     newCustomRestriction.value = ''
+    saveDietaryProfile()
   }
 }
 
 function removeCustomRestriction(index) {
   dietaryProfile.value.custom_restrictions.splice(index, 1)
+  saveDietaryProfile()
+}
+
+async function saveDietaryProfile() {
+  try {
+    const profileData = {
+      halal: dietaryProfile.value.halal,
+      gluten_free: dietaryProfile.value.gluten_free,
+      vegetarian: dietaryProfile.value.vegetarian,
+      vegan: dietaryProfile.value.vegan,
+      nut_free: dietaryProfile.value.nut_free,
+      dairy_free: dietaryProfile.value.dairy_free,
+      allergens: dietaryProfile.value.allergens,
+      custom_restrictions: dietaryProfile.value.custom_restrictions,
+      use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor
+    }
+
+    await api.post('/dietary-profiles/custom', profileData)
+    notification.success('Changes saved')
+  } catch (err) {
+    notification.error('Failed to save changes')
+  }
+}
+
+async function handleLLMToggleChange() {
+  isSavingLLMSetting.value = true
+  
+  try {
+    const profileData = {
+      halal: dietaryProfile.value.halal,
+      gluten_free: dietaryProfile.value.gluten_free,
+      vegetarian: dietaryProfile.value.vegetarian,
+      vegan: dietaryProfile.value.vegan,
+      nut_free: dietaryProfile.value.nut_free,
+      dairy_free: dietaryProfile.value.dairy_free,
+      allergens: dietaryProfile.value.allergens,
+      custom_restrictions: dietaryProfile.value.custom_restrictions,
+      use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor
+    }
+
+    await api.post('/dietary-profiles/custom', profileData)
+    notification.success('Changes saved')
+  } catch (err) {
+    // Revert the toggle on error
+    dietaryProfile.value.use_llm_ingredient_extractor = !dietaryProfile.value.use_llm_ingredient_extractor
+    notification.error('Failed to save changes')
+  } finally {
+    isSavingLLMSetting.value = false
+  }
 }
 
 async function testLLMExtraction() {
@@ -612,6 +663,10 @@ function handleLogout() {
   @apply block text-sm font-medium text-gray-700;
 }
 
+.input-disabled {
+  @apply bg-gray-100 text-gray-500 cursor-not-allowed;
+}
+
 .success-alert {
   @apply flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm;
 }
@@ -671,6 +726,10 @@ function handleLogout() {
 /* LLM Extractor Styles */
 .llm-toggle-container {
   @apply bg-gray-50 rounded-lg p-4;
+}
+
+.saving-indicator {
+  @apply flex items-center gap-2 mt-2;
 }
 
 .llm-toggle-item {

@@ -33,6 +33,12 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
+class UserUpdate(BaseModel):
+    """Schema for updating user profile - only full_name and email are allowed"""
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+
+
 class TokenWithUser(BaseModel):
     """Token response with user information"""
     access_token: str

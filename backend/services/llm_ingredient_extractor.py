@@ -62,6 +62,7 @@ class BaseLLMProvider(ABC):
         try:
             prompt = self._build_extraction_prompt(text)
             response = self._call_api(prompt)
+            print(f"Extracted ingredients from OCR text with {self.name}: {response}")
             
             if not response:
                 print(f"{self.name}: Empty response from API")
