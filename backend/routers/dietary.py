@@ -10,8 +10,7 @@ from backend.schemas import (
     LLMIngredientExtractionResponse
 )
 from backend.security import get_current_user
-from backend.services.llm_ingredient_extractor import extract_ingredients_with_llm
-from backend import settings
+from backend.services.ingredients_extraction import extract_ingredients_with_llm
 
 router = APIRouter(prefix="/dietary-profiles", tags=["dietary"])
 
@@ -78,13 +77,14 @@ def extract_ingredients_llm(
     Extract ingredients from text using LLM.
     The LLM will identify ingredients and translate them to English.
     """
-    if not settings.USE_LLM_ANALYZER:
+    result = extract_ingredients_with_llm(request.text)
+    
+    # If extraction failed due to no provider, return 503
+    if not result["success"] and "No LLM providers configured" in result.get("message", ""):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="LLM analyzer is not enabled. Please configure LLM settings."
+            detail="LLM service is not available. Please configure LLM settings."
         )
-    
-    result = extract_ingredients_with_llm(request.text)
     
     return LLMIngredientExtractionResponse(
         ingredients=result["ingredients"],

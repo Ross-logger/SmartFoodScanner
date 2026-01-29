@@ -1,3 +1,8 @@
+"""
+Hugging Face Ingredient Extractor
+Uses OpenFoodFacts model for ingredient extraction from OCR text.
+"""
+
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 import torch
 
@@ -7,10 +12,17 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForTokenClassification.from_pretrained(MODEL_NAME)
 model.eval()
 
+
 def extract_ingredients(ocr_text: str):
     """
     Extract ingredient spans from OCR text using OpenFoodFacts model.
     Handles SentencePiece tokenization correctly.
+    
+    Args:
+        ocr_text: Raw OCR text from food label
+        
+    Returns:
+        List of extracted ingredient names
     """
 
     inputs = tokenizer(

@@ -6,8 +6,14 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-from app.services.llm_ingredient_extractor import GeminiProvider
-from backend.services.llm_ingredient_extractor import GroqProvider
+from backend.services.llm import (
+    GeminiProvider,
+    GroqProvider,
+    OpenAIProvider,
+    OllamaProvider,
+    LMStudioProvider,
+    AnthropicProvider,
+)
 
 load_dotenv()
 

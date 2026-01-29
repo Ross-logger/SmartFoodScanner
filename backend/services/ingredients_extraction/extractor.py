@@ -4,7 +4,7 @@ Uses Hugging Face model for ingredient extraction.
 """
 
 from typing import List
-from backend.services.ingredient_extraction.hugging_face_extractor import extract_ingredients
+from backend.services.ingredients_extraction.hugging_face_extractor import extract_ingredients
 
 
 def extract(text: str) -> List[str]:

@@ -8,8 +8,8 @@ from backend.models import User, Scan, DietaryProfile
 from backend.schemas import ScanOCRRequest, ScanOCRResponse, ScanResponse
 from backend.security import get_current_user
 from backend.services.ocr import extract_text_from_image, extract_ingredients
-from backend.services.analysis import analyze_ingredients
-from backend.services.llm_ingredient_extractor import extract_ingredients_with_llm
+from backend.services.ingredients_analysis import analyze_ingredients
+from backend.services.ingredients_extraction import extract_ingredients_with_llm
 from backend import settings
 
 router = APIRouter(prefix="/scan", tags=["scan"])

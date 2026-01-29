@@ -24,6 +24,7 @@ export const useScanStore = defineStore('scan', () => {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
+        timeout: 180000, // 3 minutes for OCR + LLM processing
         onUploadProgress: (progressEvent) => {
           uploadProgress.value = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total

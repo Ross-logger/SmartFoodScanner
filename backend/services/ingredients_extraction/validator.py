@@ -5,7 +5,7 @@ Validates extracted ingredients using pattern matching.
 
 import re
 from typing import List, Optional
-from backend.services.ingredient_extraction.config import IngredientExtractionConfig
+from backend.services.ingredients_extraction.config import IngredientExtractionConfig
 
 
 class IngredientValidator:
@@ -83,5 +83,3 @@ class IngredientValidator:
     def _matches_any_pattern(self, text: str, patterns: List[str]) -> bool:
         """Check if text matches any of the given patterns."""
         return any(re.search(pattern, text, re.IGNORECASE) for pattern in patterns)
-
-

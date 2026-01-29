@@ -65,9 +65,14 @@ COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN") or None
 # LLM Configuration
 # =============================================================================
 
-USE_LLM_ANALYZER = os.getenv("USE_LLM_ANALYZER", "true").lower() in ("true", "1", "yes")
+# Provider to use (groq, gemini, openai, anthropic, ollama, lmstudio)
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")
 LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.3"))
+
+# Task-specific model overrides (leave empty to use provider's default model)
+# These allow using different models for extraction vs analysis
+LLM_EXTRACTOR_MODEL = os.getenv("LLM_EXTRACTOR_MODEL", "")  # Model for ingredient extraction
+LLM_ANALYZE_MODEL = os.getenv("LLM_ANALYZE_MODEL", "")  # Model for dietary analysis
 
 # OpenAI
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") or None
@@ -113,21 +118,23 @@ except Exception as e:
 # Startup Status
 # =============================================================================
 
-if USE_LLM_ANALYZER:
-    _provider = LLM_PROVIDER.lower()
-    if _provider == "groq":
-        print(f"✅ Groq LLM configured (Model: {GROQ_MODEL})" if GROQ_API_KEY else "⚠️  GROQ_API_KEY not set")
-    elif _provider == "gemini":
-        print(f"✅ Gemini LLM configured (Model: {GEMINI_MODEL})" if GEMINI_API_KEY else "⚠️  GEMINI_API_KEY not set")
-    elif _provider == "openai":
-        print(f"✅ OpenAI LLM configured (Model: {OPENAI_MODEL})" if OPENAI_API_KEY else "⚠️  OPENAI_API_KEY not set")
-    elif _provider == "anthropic":
-        print(f"✅ Anthropic LLM configured (Model: {ANTHROPIC_MODEL})" if ANTHROPIC_API_KEY else "⚠️  ANTHROPIC_API_KEY not set")
-    elif _provider == "ollama":
-        print(f"✅ Ollama LLM configured (Model: {OLLAMA_MODEL})")
-    elif _provider == "lmstudio":
-        print(f"✅ LM Studio configured (Model: {LMSTUDIO_MODEL} @ localhost:1234)")
-    else:
-        print(f"⚠️  Unknown LLM provider: {LLM_PROVIDER}")
+_provider = LLM_PROVIDER.lower()
+if _provider == "groq":
+    print(f"✅ Groq LLM configured (Model: {GROQ_MODEL})" if GROQ_API_KEY else "⚠️  GROQ_API_KEY not set")
+elif _provider == "gemini":
+    print(f"✅ Gemini LLM configured (Model: {GEMINI_MODEL})" if GEMINI_API_KEY else "⚠️  GEMINI_API_KEY not set")
+elif _provider == "openai":
+    print(f"✅ OpenAI LLM configured (Model: {OPENAI_MODEL})" if OPENAI_API_KEY else "⚠️  OPENAI_API_KEY not set")
+elif _provider == "anthropic":
+    print(f"✅ Anthropic LLM configured (Model: {ANTHROPIC_MODEL})" if ANTHROPIC_API_KEY else "⚠️  ANTHROPIC_API_KEY not set")
+elif _provider == "ollama":
+    print(f"✅ Ollama LLM configured (Model: {OLLAMA_MODEL})")
+elif _provider == "lmstudio":
+    print(f"✅ LM Studio configured (Model: {LMSTUDIO_MODEL} @ localhost:1234)")
 else:
-    print("ℹ️  LLM Analyzer disabled")
+    print(f"⚠️  Unknown LLM provider: {LLM_PROVIDER}")
+
+if LLM_EXTRACTOR_MODEL:
+    print(f"   └─ Extractor model override: {LLM_EXTRACTOR_MODEL}")
+if LLM_ANALYZE_MODEL:
+    print(f"   └─ Analyzer model override: {LLM_ANALYZE_MODEL}")

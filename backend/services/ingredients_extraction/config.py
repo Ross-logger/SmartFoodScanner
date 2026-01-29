@@ -176,5 +176,3 @@ class IngredientExtractionConfig:
         }
         with open(config_path, 'w') as f:
             json.dump(config_data, f, indent=2)
-
-

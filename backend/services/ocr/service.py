@@ -1,12 +1,16 @@
-import base64
+"""
+OCR Service
+Extracts text from images using EasyOCR.
+"""
+
 import io
-import os
 from PIL import Image
 import numpy as np
 import easyocr
-from typing import Optional, List, Tuple
+from typing import List, Tuple
 from backend import settings
 from pillow_heif import register_heif_opener
+
 register_heif_opener()
 
 # Global EasyOCR reader instance (singleton pattern for efficiency)
@@ -136,7 +140,6 @@ def extract_ingredients(text: str) -> list:
     Returns:
         List of extracted ingredients
     """
-    from backend.services.ingredient_extraction import extract
+    from backend.services.ingredients_extraction import extract
     
     return extract(text)
-

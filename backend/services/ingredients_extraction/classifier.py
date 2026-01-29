@@ -1,5 +1,4 @@
 """
-
 ML-Based Ingredient Section Classifier
 Classifies text lines as ingredient vs non-ingredient using machine learning.
 """
@@ -10,11 +9,18 @@ import os
 from typing import List, Dict, Tuple, Optional
 import numpy as np
 from pathlib import Path
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.preprocessing import StandardScaler
 
-from backend.services.ingredient_extraction.config import IngredientExtractionConfig
+from backend.services.ingredients_extraction.config import IngredientExtractionConfig
+
+# Try to import sklearn, but gracefully handle if not available
+SKLEARN_AVAILABLE = False
+try:
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.preprocessing import StandardScaler
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    pass
 
 
 class IngredientSectionClassifier:
@@ -379,4 +385,3 @@ class IngredientSectionClassifier:
         
         # Save model
         self._save_model()
-
