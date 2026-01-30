@@ -1,0 +1,54 @@
+{
+  "test_label_001": {
+    "image_path": "images/label_001.jpg",
+    "ocr_ground_truth": "Ingredients: Wheat Flour, Sugar, Palm Oil, Salt, Baking Powder, Natural Vanilla Flavor",
+    "ingredients": ["Wheat Flour", "Sugar", "Palm Oil", "Salt", "Baking Powder", "Natural Vanilla Flavor"],
+    "dietary_flags": {
+      "halal": true,
+      "gluten_free": false,
+      "vegetarian": true,
+      "vegan": true,
+      "nut_free": true,
+      "dairy_free": true
+    },
+    "quality": "clear",
+    "packaging_type": "box"
+  },
+  "test_label_002": {
+    "image_path": "images/label_002.jpg",
+    "ocr_ground_truth": "INGREDIENTS: Sugar, Cocoa Butter, Whole Milk Powder, Cocoa Mass, Soy Lecithin (E322), Vanilla Extract",
+    "ingredients": ["Sugar", "Cocoa Butter", "Whole Milk Powder", "Cocoa Mass", "Soy Lecithin", "Vanilla Extract"],
+    "dietary_flags": {
+      "halal": true,
+      "gluten_free": true,
+      "vegetarian": true,
+      "vegan": false,
+      "nut_free": true,
+      "dairy_free": false
+    },
+    "quality": "clear",
+    "packaging_type": "wrapper"
+  },
+  "test_label_003": {
+    "image_path": "images/label_003.jpg",
+    "ocr_ground_truth": "Ingredients: Water, Gelatin, Sugar, Citric Acid, Natural Flavors, Red 40",
+    "ingredients": ["Water", "Gelatin", "Sugar", "Citric Acid", "Natural Flavors", "Red 40"],
+    "dietary_flags": {
+      "halal": false,
+      "gluten_free": true,
+      "vegetarian": false,
+      "vegan": false,
+      "nut_free": true,
+      "dairy_free": true
+    },
+    "quality": "clear",
+    "packaging_type": "bag"
+  },
+  "_metadata": {
+    "version": "1.0",
+    "description": "Ground truth data for SmartFoodScanner OCR testing",
+    "note": "Add real test images to the images/ directory and update this file with corresponding ground truth data",
+    "required_images": 100,
+    "current_images": 0
+  }
+}

@@ -1,0 +1,3 @@
+"""
+SmartFoodScanner Test Suite
+"""
