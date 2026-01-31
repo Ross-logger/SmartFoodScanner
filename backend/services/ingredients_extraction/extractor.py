@@ -1,15 +1,15 @@
 """
 Ingredient Extractor
-Uses Hugging Face model for ingredient extraction.
+Uses SymSpell for ingredient extraction and spell correction.
 """
 
 from typing import List
-from backend.services.ingredients_extraction.hugging_face_extractor import extract_ingredients
+from backend.services.ingredients_extraction.symspell_extraction import extract_ingredients
 
 
 def extract(text: str) -> List[str]:
     """
-    Extract ingredients from OCR text using Hugging Face model.
+    Extract ingredients from OCR text using SymSpell spell correction.
     
     Args:
         text: Raw OCR text

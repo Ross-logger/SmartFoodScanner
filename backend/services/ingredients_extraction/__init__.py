@@ -1,6 +1,6 @@
 """
 Ingredients Extraction Module
-Provides ingredient extraction using LLM, Hugging Face, and other methods.
+Provides ingredient extraction using LLM, SymSpell, and other methods.
 """
 
 from backend.services.ingredients_extraction.llm_extraction import (
@@ -8,11 +8,17 @@ from backend.services.ingredients_extraction.llm_extraction import (
     extract_ingredients_with_llm,
 )
 from backend.services.ingredients_extraction.extractor import extract
-from backend.services.ingredients_extraction.hugging_face_extractor import extract_ingredients
+from backend.services.ingredients_extraction.symspell_extraction import (
+    extract_ingredients,
+    spellcheck_ingredients,
+    get_e_number_name,
+)
 
 __all__ = [
     'LLMIngredientExtractor',
     'extract_ingredients_with_llm',
     'extract',
     'extract_ingredients',
+    'spellcheck_ingredients',
+    'get_e_number_name',
 ]
