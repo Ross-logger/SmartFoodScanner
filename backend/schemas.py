@@ -174,3 +174,62 @@ class ScanOCRResponse(BaseModel):
     analysis_result: str
     scan_id: int
 
+
+# Barcode Scan schemas
+class BarcodeScanRequest(BaseModel):
+    barcode: str
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "barcode": "3017620422003"
+            }
+        }
+
+
+class BarcodeScanResponse(BaseModel):
+    scan_id: int
+    barcode: str
+    product_name: str
+    brand: Optional[str] = None
+    ingredients_text: str
+    ingredients: List[str]
+    allergens: List[str]
+    traces: List[str]
+    image_url: Optional[str] = None
+    is_safe: bool
+    warnings: List[str]
+    analysis_result: str
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "scan_id": 1,
+                "barcode": "3017620422003",
+                "product_name": "Nutella",
+                "brand": "Ferrero",
+                "ingredients_text": "Sugar, Palm oil, Hazelnuts...",
+                "ingredients": ["Sugar", "Palm oil", "Hazelnuts"],
+                "allergens": ["Milk", "Hazelnuts"],
+                "traces": ["Soy"],
+                "image_url": "https://example.com/image.jpg",
+                "is_safe": False,
+                "warnings": ["Contains hazelnuts"],
+                "analysis_result": "This product contains allergens."
+            }
+        }
+
+
+class BarcodeProductResponse(BaseModel):
+    """Response for barcode lookup without analysis (just product info)"""
+    success: bool
+    barcode: str
+    product_name: Optional[str] = None
+    brand: Optional[str] = None
+    ingredients_text: Optional[str] = None
+    ingredients: List[str] = []
+    allergens: List[str] = []
+    traces: List[str] = []
+    image_url: Optional[str] = None
+    error_message: Optional[str] = None
+

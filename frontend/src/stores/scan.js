@@ -9,6 +9,7 @@ export const useScanStore = defineStore('scan', () => {
   const loading = ref(false)
   const error = ref(null)
   const uploadProgress = ref(0)
+  const barcodeProduct = ref(null)
 
   // Actions
   async function scanImage(imageFile) {
@@ -40,6 +41,38 @@ export const useScanStore = defineStore('scan', () => {
     } finally {
       loading.value = false
       uploadProgress.value = 0
+    }
+  }
+
+  async function scanBarcode(barcode) {
+    loading.value = true
+    error.value = null
+    barcodeProduct.value = null
+    
+    try {
+      const response = await api.post('/scan/barcode', { barcode }, {
+        timeout: 60000 // 1 minute for barcode lookup + analysis
+      })
+      
+      currentScan.value = response
+      return response
+    } catch (err) {
+      error.value = err.message || 'Barcode scan failed'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function lookupBarcode(barcode) {
+    // Preview product info without full analysis
+    try {
+      const response = await api.get(`/scan/barcode/${barcode}`)
+      barcodeProduct.value = response
+      return response
+    } catch (err) {
+      barcodeProduct.value = null
+      throw err
     }
   }
 
@@ -111,8 +144,11 @@ export const useScanStore = defineStore('scan', () => {
     loading,
     error,
     uploadProgress,
+    barcodeProduct,
     // Actions
     scanImage,
+    scanBarcode,
+    lookupBarcode,
     fetchScanHistory,
     getScanById,
     deleteScan,

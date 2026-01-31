@@ -2,9 +2,9 @@
   <div class="scan-view">
     <!-- Header -->
     <div class="header">
-      <h1 class="page-title">Scan Ingredient Label</h1>
+      <h1 class="page-title">Scan Food Product</h1>
       <p class="page-subtitle">
-        Take a photo or upload an image of food ingredient labels
+        Scan ingredient labels, upload images, or scan barcodes
       </p>
     </div>
 
@@ -31,6 +31,18 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           Upload
+        </button>
+
+        <button
+          @click="scanMode = 'barcode'"
+          class="scan-mode-tab"
+          :class="{ active: scanMode === 'barcode' }"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+              d="M3 4h3v16H3V4zm5 0h1v16H8V4zm3 0h2v16h-2V4zm4 0h1v16h-1V4zm3 0h3v16h-3V4z" />
+          </svg>
+          Barcode
         </button>
       </div>
 
@@ -75,8 +87,13 @@
       </div>
 
       <!-- Upload Mode -->
-      <div v-else class="mode-content">
+      <div v-else-if="scanMode === 'upload'" class="mode-content">
         <ImageUpload @upload="handleImageUpload" />
+      </div>
+
+      <!-- Barcode Mode -->
+      <div v-else-if="scanMode === 'barcode'" class="mode-content">
+        <BarcodeScanner @scan="handleBarcodeScan" />
       </div>
     </div>
 
@@ -108,6 +125,7 @@ import { useRouter } from 'vue-router'
 import { useScanStore } from '@/stores/scan'
 import ImageUpload from '@/components/ImageUpload.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import BarcodeScanner from '@/components/BarcodeScanner.vue'
 
 const router = useRouter()
 const scanStore = useScanStore()
@@ -123,6 +141,9 @@ const uploadProgress = computed(() => scanStore.uploadProgress)
 const processingMessage = computed(() => {
   if (uploadProgress.value > 0 && uploadProgress.value < 100) {
     return `Uploading... ${uploadProgress.value}%`
+  }
+  if (scanMode.value === 'barcode') {
+    return 'Looking up product and analyzing ingredients...'
   }
   return 'Analyzing ingredients...'
 })
@@ -155,6 +176,21 @@ async function processScan(file) {
     }
   } catch (err) {
     error.value = err.message || 'Failed to process image. Please try again.'
+  }
+}
+
+async function handleBarcodeScan(barcode) {
+  error.value = null
+  
+  try {
+    const result = await scanStore.scanBarcode(barcode)
+    
+    // Navigate to result page
+    if (result.scan_id) {
+      router.push({ name: 'Result', params: { id: result.scan_id } })
+    }
+  } catch (err) {
+    error.value = err.message || 'Failed to look up barcode. Please try again.'
   }
 }
 </script>
