@@ -8,6 +8,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s:%(name)s:%(message)s"
+)
+
 # =============================================================================
 # Database
 # =============================================================================

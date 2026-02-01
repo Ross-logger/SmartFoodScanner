@@ -132,7 +132,6 @@ def extract_text_from_image(image_data: bytes) -> str:
 def extract_ingredients(text: str) -> list:
     """
     Extract ingredients from OCR text.
-    Uses Hugging Face model for ingredient extraction.
     
     Args:
         text: OCR text to extract ingredients from

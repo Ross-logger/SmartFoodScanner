@@ -73,14 +73,12 @@ def scan_ocr(
             ingredients = llm_result["ingredients"]
             print(f"LLM Extracted Ingredients: {ingredients}")
         else:
-            # Fall back to Hugging Face if LLM fails
             ingredients = extract_ingredients(ocr_text)
-            print(f"Fallback to HF - Extracted Ingredients: {ingredients}")
+            print(f"Fallback to SymSpell - Extracted Ingredients: {ingredients}")
     else:
-        # Use Hugging Face model (default)
-        # The model handles OCR errors and tokenization automatically
+
         ingredients = extract_ingredients(ocr_text)
-        print(f"HF Extracted Ingredients: {ingredients}")
+        print(f"SymSpell Extracted Ingredients: {ingredients}")
     
     # Analyze ingredients
     analysis = analyze_ingredients(ingredients, dietary_profile)
