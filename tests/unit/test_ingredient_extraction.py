@@ -248,110 +248,76 @@ class TestExtractionWithLLMFunction:
             assert len(result["ingredients"]) == 3
 
 
-class TestIngredientValidator:
-    """Tests for ingredient validation."""
+class TestNonIngredientFilter:
+    """Tests for non-ingredient filtering."""
     
-    def test_validate_valid_ingredients(self):
-        """Test validation of valid ingredients."""
-        from backend.services.ingredients_extraction.validator import IngredientValidator
+    def test_filter_valid_ingredients(self):
+        """Test that valid ingredients pass through filter."""
+        from backend.services.ingredients_extraction.non_ingredient_filter import filter_ingredients
         
-        validator = IngredientValidator()
-        ingredients = ["Water", "Sugar", "Wheat Flour", "Palm Oil"]
+        ingredients = ["water", "sugar", "wheat flour", "palm oil"]
+        filtered = filter_ingredients(ingredients)
         
-        validated = validator.validate(ingredients)
-        
-        assert len(validated) == 4
-        assert "Water" in validated
+        assert len(filtered) == 4
+        assert "water" in filtered
+        assert "sugar" in filtered
     
-    def test_validate_filters_garbage(self):
-        """Test that validation filters garbage entries."""
-        from backend.services.ingredients_extraction.validator import IngredientValidator
+    def test_filter_removes_garbage(self):
+        """Test that garbage text is filtered out."""
+        from backend.services.ingredients_extraction.non_ingredient_filter import filter_ingredients
         
-        validator = IngredientValidator()
-        ingredients = ["Water", "123", "", "a", "Sugar", "   "]
+        ingredients = ["water", "123", "", "a", "sugar", "   "]
+        filtered = filter_ingredients(ingredients)
         
-        validated = validator.validate(ingredients)
-        
-        assert "Water" in validated
-        assert "Sugar" in validated
-        assert "" not in validated
-        assert "123" not in validated
+        assert "water" in filtered
+        assert "sugar" in filtered
+        assert "" not in filtered
+        assert "123" not in filtered
+        assert "a" not in filtered
     
-    def test_validate_empty_list(self):
-        """Test validation of empty list."""
-        from backend.services.ingredients_extraction.validator import IngredientValidator
+    def test_filter_removes_non_ingredient_text(self):
+        """Test that non-ingredient text is filtered out."""
+        from backend.services.ingredients_extraction.non_ingredient_filter import filter_ingredients
         
-        validator = IngredientValidator()
-        validated = validator.validate([])
+        ingredients = ["water", "manufactured in usa", "sugar", "distributed by company"]
+        filtered = filter_ingredients(ingredients)
         
-        assert validated == []
+        assert "water" in filtered
+        assert "sugar" in filtered
+        assert "manufactured in usa" not in filtered
+        assert "distributed by company" not in filtered
     
-    def test_validate_with_special_patterns(self):
-        """Test validation with special ingredient patterns."""
-        from backend.services.ingredients_extraction.validator import IngredientValidator
+    def test_filter_empty_list(self):
+        """Test filtering of empty list."""
+        from backend.services.ingredients_extraction.non_ingredient_filter import filter_ingredients
         
-        validator = IngredientValidator()
-        ingredients = ["Soy Lecithin", "Modified Corn Starch", "Natural Flavors"]
-        
-        validated = validator.validate(ingredients)
-        
-        assert len(validated) == 3
-
-
-class TestIngredientClassifier:
-    """Tests for ingredient classification."""
+        filtered = filter_ingredients([])
+        assert filtered == []
     
-    def test_classify_ingredient_line(self):
-        """Test classification of ingredient text."""
-        from backend.services.ingredients_extraction.classifier import IngredientSectionClassifier
+    def test_extract_ingredients_section(self):
+        """Test extraction of ingredients section from full text."""
+        from backend.services.ingredients_extraction.non_ingredient_filter import extract_ingredients_section
         
-        classifier = IngredientSectionClassifier()
+        text = """Product Name
+        Ingredients: Water, Sugar, Salt
+        Store in a cool place
+        Made in USA"""
         
-        # Test ingredient line
-        is_ingredient, confidence = classifier.classify_line("Water, Sugar, Salt, Flour")
+        section = extract_ingredients_section(text)
         
-        # Rule-based fallback should identify this as ingredient
-        assert confidence > 0.3
+        assert "water" in section.lower() or "sugar" in section.lower()
+        # Stop patterns should be excluded
+        assert "made in" not in section.lower()
     
-    def test_classify_non_ingredient_line(self):
-        """Test classification of non-ingredient text."""
-        from backend.services.ingredients_extraction.classifier import IngredientSectionClassifier
+    def test_is_stop_pattern(self):
+        """Test detection of stop patterns."""
+        from backend.services.ingredients_extraction.non_ingredient_filter import is_stop_pattern
         
-        classifier = IngredientSectionClassifier()
-        
-        # Test non-ingredient line
-        is_ingredient, confidence = classifier.classify_line("Store in a cool, dry place")
-        
-        assert is_ingredient == False or confidence < 0.5
-    
-    def test_classify_address_line(self):
-        """Test classification of address text."""
-        from backend.services.ingredients_extraction.classifier import IngredientSectionClassifier
-        
-        classifier = IngredientSectionClassifier()
-        
-        is_ingredient, confidence = classifier.classify_line("Address: 123 Main Street, City")
-        
-        assert is_ingredient == False
-    
-    def test_classify_multiple_lines(self):
-        """Test classification of multiple lines."""
-        from backend.services.ingredients_extraction.classifier import IngredientSectionClassifier
-        
-        classifier = IngredientSectionClassifier()
-        
-        lines = [
-            "Ingredients:",
-            "Water, Sugar, Salt",
-            "Store in a cool place",
-            "Best before: 2025"
-        ]
-        
-        results = classifier.classify_lines(lines)
-        
-        assert len(results) == 4
-        # First two should be more likely ingredients
-        # Last two should be less likely
+        assert is_stop_pattern("manufactured in usa") == True
+        assert is_stop_pattern("www.company.com") == True
+        assert is_stop_pattern("distributed by company") == True
+        assert is_stop_pattern("sugar") == False
+        assert is_stop_pattern("wheat flour") == False
 
 
 class TestExtractionAccuracyMetrics:

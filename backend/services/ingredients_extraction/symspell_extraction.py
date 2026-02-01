@@ -17,6 +17,11 @@ from backend.services.ingredients_extraction.data import (
     E_NUMBERS,
     VERY_COMMON_INGREDIENTS,
 )
+from backend.services.ingredients_extraction.non_ingredient_filter import (
+    extract_ingredients_section,
+    filter_ingredients,
+    is_valid_ingredient,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -174,29 +179,45 @@ def extract_ingredients(ocr_text: str) -> List[str]:
     """
     Extract and correct ingredients from OCR text.
     
+    Filters out non-ingredient text (addresses, instructions, etc.) and
+    extracts only the ingredients section when possible.
+    
     Args:
         ocr_text: Raw OCR text from food label
         
     Returns:
-        List of corrected ingredient names
+        List of corrected ingredient names (non-ingredients filtered out)
     """
     if not ocr_text or not ocr_text.strip():
         return []
     
+    # Step 1: Extract only the ingredients section (filter headers, footers, etc.)
+    ingredients_text = extract_ingredients_section(ocr_text)
+    
     sym_spell = _get_spell_checker()
     
-    # Split by common delimiters
-    ingredients = re.split(r'[,;]', ocr_text)
+    # Step 2: Split by common delimiters
+    ingredients = re.split(r'[,;]', ingredients_text)
     
-    cleaned = []
+    # Step 3: Pre-filter and spell-correct each segment
+    # Check validity BEFORE spell correction to avoid false positives
+    # (e.g., "Made in USA" -> "mace in usa" would bypass filter)
+    corrected_list = []
     for ing in ingredients:
         ing = ing.strip()
         if ing and len(ing) > 1:
+            # Check if original text is valid BEFORE spell correction
+            if not is_valid_ingredient(ing):
+                continue
+            
             corrected = _correct_text(ing, sym_spell)
             if corrected:
-                cleaned.append(corrected)
+                corrected_list.append(corrected)
     
-    return cleaned
+    # Step 4: Final filter on corrected ingredients
+    filtered = filter_ingredients(corrected_list)
+    
+    return filtered
 
 
 def get_e_number_name(e_number: str) -> Optional[str]:

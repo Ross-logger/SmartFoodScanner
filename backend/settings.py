@@ -109,7 +109,6 @@ ocr_corrector = None
 try:
     from backend.ML.inference_hybrid import OcrCorrector
     ocr_corrector = OcrCorrector(model_dir=str(ML_PATH / "models" / "hybrid"))
-    print("✅ ML OCR Corrector loaded successfully!")
 except Exception as e:
     print(f"⚠️  ML OCR Corrector not available: {e}")
     print("   Falling back to rule-based correction")
@@ -133,8 +132,3 @@ elif _provider == "lmstudio":
     print(f"✅ LM Studio configured (Model: {LMSTUDIO_MODEL} @ localhost:1234)")
 else:
     print(f"⚠️  Unknown LLM provider: {LLM_PROVIDER}")
-
-if LLM_EXTRACTOR_MODEL:
-    print(f"   └─ Extractor model override: {LLM_EXTRACTOR_MODEL}")
-if LLM_ANALYZE_MODEL:
-    print(f"   └─ Analyzer model override: {LLM_ANALYZE_MODEL}")
