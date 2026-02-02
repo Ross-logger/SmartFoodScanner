@@ -65,7 +65,7 @@ def scan_ocr(
         DietaryProfile.user_id == current_user.id
     ).first()
     
-    # Extract ingredients - use LLM if user has it enabled, otherwise use Hugging Face model
+    # Extract ingredients - use LLM if user has it enabled, otherwise use SymSpell
     if dietary_profile and dietary_profile.use_llm_ingredient_extractor:
         # Use LLM-based extraction
         llm_result = extract_ingredients_with_llm(ocr_text)

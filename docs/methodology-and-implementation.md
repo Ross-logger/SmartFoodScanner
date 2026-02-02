@@ -9,11 +9,11 @@ This chapter presents the technical implementation of the Smart Food Scanner app
 The application follows a three-tier architecture consisting of a client layer, an API layer, and a data layer. The client layer is implemented as a Progressive Web Application using Vue.js, which provides users with interfaces for camera capture, image upload, barcode scanning, result viewing, scan history, and profile management. The API layer is built using FastAPI, a modern Python web framework that handles all HTTP requests through dedicated routers for authentication, scanning (both OCR and barcode), dietary profiles, user management, and scan history. The service layer sits between the API and data layers, containing the core business logic for OCR processing, ingredient extraction, barcode lookup, and dietary analysis. The data layer utilises PostgreSQL as the primary database, hosted on Supabase for cloud deployment, with SQLAlchemy serving as the Object-Relational Mapping framework.
 
 **Diagram Prompt for High-Level Architecture:**
-> Create a system architecture diagram showing three horizontal tiers: Client Layer (Vue.js PWA with components for Camera, Image Upload, Barcode Scanner, Results, History, Profile), API Layer (FastAPI server with routers for Auth, Scan/OCR, Scan/Barcode, Dietary, Users, History), Service Layer (OCR Service using EasyOCR, Barcode Service using Open Food Facts API, Extraction Service with HuggingFace/SymSpell/LLM options, Analysis Service with LLM and Rule-Based components), and Data Layer (PostgreSQL/Supabase with tables for Users, DietaryProfiles, Scans, RefreshTokens). Show arrows indicating data flow between layers via HTTPS/REST API.
+> Create a system architecture diagram showing three horizontal tiers: Client Layer (Vue.js PWA with components for Camera, Image Upload, Barcode Scanner, Results, History, Profile), API Layer (FastAPI server with routers for Auth, Scan/OCR, Scan/Barcode, Dietary, Users, History), Service Layer (OCR Service using EasyOCR, Barcode Service using Open Food Facts API, Extraction Service with SymSpell/LLM options, Analysis Service with LLM and Rule-Based components), and Data Layer (PostgreSQL/Supabase with tables for Users, DietaryProfiles, Scans, RefreshTokens). Show arrows indicating data flow between layers via HTTPS/REST API.
 
 ### 4.1.2 Component Interaction Flow
 
-The system supports two primary input methods: image-based OCR scanning and barcode scanning. When a user uploads an image of a food label, the request first reaches the FastAPI server, which validates the file type and size. The image data is then passed to the OCR service, which extracts text using EasyOCR. The extracted text is forwarded to the ingredient extraction service, which can utilise one of three approaches depending on configuration: the HuggingFace Named Entity Recognition model, the SymSpell-based spell checker, or the LLM-based extractor.
+The system supports two primary input methods: image-based OCR scanning and barcode scanning. When a user uploads an image of a food label, the request first reaches the FastAPI server, which validates the file type and size. The image data is then passed to the OCR service, which extracts text using EasyOCR. The extracted text is forwarded to the ingredient extraction service, which uses the SymSpell-based spell checker by default or the LLM-based extractor when enabled in the user's profile.
 
 Alternatively, when a user scans a barcode, the system queries the Open Food Facts API to retrieve product information including the product name, brand, ingredients list, declared allergens, and potential traces. This approach bypasses the OCR and extraction stages entirely, as the ingredients are already structured in the database.
 
@@ -57,29 +57,25 @@ The ingredients text retrieved from the database is parsed to extract individual
 
 The barcode service also extracts allergen information from dedicated allergen fields in the database, which manufacturers explicitly declare on packaging. These declared allergens are formatted and included in the analysis result alongside any allergens detected through ingredient matching. Trace warnings, indicating ingredients that may be present due to manufacturing processes, are similarly extracted and presented to users as additional safety information.
 
-### 4.3.3 Ingredient Extraction Using Named Entity Recognition
+### 4.3.3 Ingredient Extraction Using SymSpell
 
-The primary ingredient extraction method for OCR-scanned text employs the OpenFoodFacts ingredient-detection model from HuggingFace, which is a token classification model trained specifically for identifying food ingredients in text. This model uses the BIO (Begin-Inside-Outside) tagging scheme, where tokens are labelled as B-ING for the beginning of an ingredient, I-ING for continuation tokens within an ingredient, and O for tokens that are not part of any ingredient.
+**Text Correction and Filtering:** Applies dictionary-based spell correction (SymSpell) with rule-based pattern filtering. This corrects common OCR errors and removes non-ingredient text (addresses, instructions, URLs, manufacturing info, etc.) for improved downstream analysis.
 
-The extraction process begins by tokenising the input text using the model's associated tokeniser, which employs SentencePiece subword tokenisation. The tokenised input is passed through the transformer model to obtain logits for each token, from which the most likely label is determined using argmax. The algorithm then reconstructs complete ingredient names by aggregating consecutive B-ING and I-ING tokens, with special handling for the SentencePiece word boundary marker to correctly insert spaces between words and concatenate subword tokens.
-
-### 4.3.4 Lightweight Ingredient Extraction Using SymSpell
-
-As an alternative to the computationally intensive neural network approach, the system provides a lightweight extraction method based on the SymSpell algorithm. SymSpell is a symmetric delete spelling correction algorithm that offers significantly faster lookup times compared to traditional edit-distance algorithms. The implementation maintains a custom dictionary populated with over 800 food-specific terms, including common ingredients, E-number additives, and their associated names.
+The primary ingredient extraction method for OCR-scanned text is based on the SymSpell algorithm. SymSpell is a symmetric delete spelling correction algorithm that offers significantly faster lookup times compared to traditional edit-distance algorithms. The implementation maintains a custom dictionary populated with over 800 food-specific terms, including common ingredients, E-number additives, and their associated names.
 
 The SymSpell extractor operates by first splitting the OCR text on common delimiters such as commas and semicolons. Each segment is then processed through the spell checker, which attempts to match the text against the food dictionary using edit distance calculations. For compound terms, the algorithm employs word segmentation to handle cases where spaces may have been omitted or incorrectly inserted during OCR. The system applies a 15% error rate threshold to prevent over-correction of heavily corrupted text. E-number patterns are detected using regular expressions and normalised to a standard format. This approach provides near-instantaneous processing times while maintaining reasonable accuracy for well-formed ingredient lists.
 
-### 4.3.5 LLM-Based Ingredient Extraction
+### 4.3.4 LLM-Based Ingredient Extraction
 
 For users who require higher extraction accuracy, particularly with complex or poorly formatted labels, the system offers LLM-based extraction. This approach constructs a prompt that instructs the language model to extract individual ingredients from the OCR text, handling variations in formatting, abbreviations, and OCR errors. The LLM response is parsed as JSON to obtain a structured list of ingredients. While this method produces superior results for challenging inputs, it introduces latency due to API calls and consumes API quota, making it optional based on user preference.
 
-### 4.3.6 Rule-Based Dietary Analysis
+### 4.3.5 Rule-Based Dietary Analysis
 
 The rule-based analysis system maintains a database of known allergens and restricted ingredients organised by dietary category. For halal compliance, the database includes pork, gelatin, lard, and bacon. For gluten-free verification, it contains wheat, barley, rye, oats, and gluten. Vegetarian and vegan restrictions include various animal-derived ingredients, while nut and dairy allergen lists cover common variants of these food groups.
 
 The analysis algorithm iterates through the user's enabled dietary restrictions and checks each extracted ingredient against the corresponding allergen list using case-insensitive substring matching. When a match is found, the product is marked as unsafe and a warning message is generated identifying the problematic ingredient. The algorithm also supports custom allergens specified by the user, which are checked in addition to the predefined categories. For barcode scans, the algorithm additionally incorporates declared allergens and trace warnings from the product database, providing more comprehensive safety information than OCR-based scans alone. The final result includes a boolean safety determination, a list of specific warnings, and a human-readable summary of the analysis.
 
-### 4.3.7 LLM-Based Dietary Analysis
+### 4.3.6 LLM-Based Dietary Analysis
 
 For more comprehensive analysis that considers hidden ingredients, derivatives, and contextual factors, the system supports LLM-based analysis. The algorithm constructs a detailed prompt that provides the language model with the user's dietary restrictions and the list of extracted ingredients. The prompt instructs the model to consider factors such as hidden ingredients and derivatives, cross-contamination risks, and ambiguous ingredient names that may have multiple interpretations.
 
@@ -98,11 +94,15 @@ The LLM service class manages provider selection and fallback logic, attempting 
 
 ## 4.4 Testing Methodology
 
+The testing strategy for SmartFoodScanner uses a multi-faceted approach to ensure reliability, accuracy, and robust performance. It combines unit testing, integration testing, system-level validation, and dedicated OCR accuracy testing, with emphasis on ingredient extraction and dietary compliance. Core logic components are covered by unit tests; integration and system tests validate end-to-end flows and API behaviour.
+
 ### 4.4.1 Test Architecture
 
-The testing strategy employs a three-tiered approach comprising unit tests, integration tests, and performance tests. Unit tests verify the correctness of individual components in isolation, including the rule-based analysis engine, LLM analysis integration, ingredient extraction services, OCR processing, barcode lookup service, input validation, and ingredient classification. Integration tests validate the interaction between components, focusing on end-to-end pipeline flows for both OCR and barcode scanning, API endpoint functionality, and database operations. Performance tests measure response times, throughput, and resource utilisation under various load conditions.
+The test architecture employs a three-tiered approach comprising unit tests, integration tests, and performance tests. Unit tests cover core logic components in isolation: the rule-based analysis engine, LLM analysis integration, ingredient extraction services (tokenization, spell correction, filtering), OCR processing, barcode lookup service, input validation, and ingredient classification. Integration tests validate the interaction between components, focusing on end-to-end pipeline flows for both OCR and barcode scanning, API endpoint functionality, and database operations. Performance tests measure response times, throughput, and resource utilisation under various load conditions.
 
 ### 4.4.2 Unit Test Design
+
+Core logic components are covered by unit tests. The ingredient extraction pipeline (e.g. tokenization, stemming, spell correction, non-ingredient filtering) and the food classification and dietary analysis logic are tested in isolation under various inputs and edge cases.
 
 Unit tests for the rule-based dietary analysis cover all supported dietary restrictions with both positive and negative test cases. For each restriction type, tests verify that safe ingredients correctly produce a positive safety determination, while restricted ingredients correctly trigger warnings and negative safety determinations. Test cases include verification of common variants such as different nut types for nut allergies, various gluten-containing grains for gluten-free requirements, and multiple animal-derived ingredients for vegan compliance. The tests also verify correct handling of custom allergens specified by users and proper generation of warning messages that identify the specific problematic ingredient.
 
@@ -110,17 +110,21 @@ Unit tests for the barcode service verify correct parsing of Open Food Facts API
 
 ### 4.4.3 Integration Test Design
 
-Integration tests validate the complete processing pipeline from image upload or barcode scan through to final analysis results. The pipeline flow tests simulate realistic usage scenarios by providing OCR output text or barcode values, extracting ingredients, creating dietary profiles with specific restrictions, and verifying that the analysis correctly identifies compliance violations. These tests use mocking to isolate the integration under test from external dependencies such as the HuggingFace model, LLM services, and the Open Food Facts API, allowing for deterministic test execution.
+Integration tests validate the complete processing pipeline from image upload or barcode scan through to final analysis results. The pipeline flow tests simulate realistic usage scenarios by providing OCR output text or barcode values, extracting ingredients, creating dietary profiles with specific restrictions, and verifying that the analysis correctly identifies compliance violations. These tests use mocking to isolate the integration under test from external dependencies such as LLM services and the Open Food Facts API, allowing for deterministic test execution.
 
 API endpoint tests verify the correct behaviour of all REST endpoints, including authentication flows, dietary profile management, OCR scan submission, barcode scan submission, and history retrieval. These tests use the FastAPI TestClient to simulate HTTP requests and validate response status codes, content types, and payload structures. Database integration tests verify that scan records are correctly persisted for both scan types and that relationships between users, profiles, and scans are properly maintained.
 
-### 4.4.4 Accuracy Target and Evaluation
+### 4.4.4 OCR Accuracy Testing
+
+Given the critical role of OCR in label-based scanning, OCR accuracy is assessed separately. The system is tested with a diverse set of food labels and ingredient lists varying in font, lighting, background, and text orientation. Extracted text is compared against ground truth to calculate character error rate (CER) and word error rate (WER). This ensures the OCR component reliably captures ingredient information before extraction and classification.
+
+### 4.4.5 Accuracy Target and Evaluation
 
 The system targets a dietary compliance detection accuracy of 95% or higher. This target is evaluated using a synthetic test dataset containing over 100 test cases that cover all supported dietary restrictions. Each test case specifies an ingredient list, a dietary profile configuration, and the expected safety determination. The evaluation calculates accuracy as the proportion of test cases where the predicted safety matches the expected safety.
 
 Additional accuracy metrics are calculated for each dietary restriction category separately, allowing identification of specific areas that may require improvement. The evaluation also considers warning generation quality, verifying that when products are marked unsafe, the warnings correctly identify the ingredients responsible for the violation.
 
-### 4.4.5 Test Fixtures and Environment
+### 4.4.6 Test Fixtures and Environment
 
 The testing framework uses pytest with custom fixtures for database sessions, test users, dietary profiles, and mock services. Database tests use an in-memory SQLite database to ensure test isolation and avoid side effects on production data. User fixtures create test accounts with hashed passwords, while dietary profile fixtures provide pre-configured profiles for common restriction combinations such as halal-only, vegan, and multiple-restriction scenarios.
 
@@ -128,6 +132,36 @@ Mock fixtures replace external services during testing, including a mock OCR rea
 
 **Diagram Prompt for Test Architecture:**
 > Create a layered diagram showing the test architecture with three horizontal layers. Top layer: Performance Tests (response time benchmarks, throughput testing, memory profiling). Middle layer: Integration Tests (full pipeline testing for OCR and Barcode flows, API endpoint testing, database integration, 95% accuracy target). Bottom layer: Unit Tests (rule-based analysis, LLM analysis, ingredient extraction, OCR service, barcode service, validator, classifier). Show arrows indicating that higher layers depend on lower layers.
+
+### 4.4.7 Full Pipeline Performance Evaluation (Integration Testing)
+
+As part of integration testing, full pipeline performance tests are run to evaluate end-to-end speed and to compare the two ingredient extraction modes: rule-based SymSpell extraction and LLM-based extraction. These tests use real services (no mocking): OCR (EasyOCR), extraction (SymSpell or LLM), and dietary analysis.
+
+The comparison test runs the complete pipeline (image → OCR → extraction → analysis) multiple times for each mode. For each iteration, wall-clock time is recorded. Results are summarised as mean, minimum, maximum, and standard deviation per iteration. A box plot visualisation is generated to show the distribution of per-iteration times, including median, quartiles, whiskers (min–max), and the mean for both SymSpell and LLM methods.
+
+To run the full pipeline performance comparison from the project root:
+
+```bash
+pytest tests/performance/test_performance.py::TestExtractionComparison::test_full_pipeline_symspell_vs_llm -v -s
+```
+
+The test prints mean and max times for each mode and the raw per-iteration times. To generate a box plot from the results, run:
+
+```bash
+python tmp/generate_performance_boxplot.py
+```
+
+This produces `tmp/performance_boxplot.png`, suitable for inclusion in reports or documentation.
+
+#### 4.4.7.1 Performance Test Execution and Results
+
+The full pipeline performance tests were executed to evaluate the speed of the SmartFoodScanner system under real service conditions. Ten iterations were run per extraction mode using the same test image and dietary profile (halal, gluten-free).
+
+**SymSpell (rule-based) extraction:** Mean time 5.01 s, minimum 3.81 s, maximum 8.62 s. The rule-based pipeline shows lower average latency and higher variance, with occasional spikes due to OCR or system load.
+
+**LLM-based extraction:** Mean time 11.26 s, minimum 10.69 s, maximum 12.94 s. The LLM pipeline exhibits consistently higher latency due to API round-trip time but with tighter variance, as the external service response time dominates over local processing.
+
+The results confirm that SymSpell extraction is roughly twice as fast on average and is suitable for users prioritising speed, while LLM extraction offers higher accuracy for complex labels at the cost of additional latency. A box plot showing mean, min, max, standard deviation, and whiskers for both methods can be generated using `tmp/generate_performance_boxplot.py` for visual comparison.
 
 ---
 
@@ -145,41 +179,35 @@ Different LLM providers return responses in varying formats, creating challenges
 
 The solution implemented a multi-strategy JSON parsing approach. The parser first attempts direct JSON parsing on the raw response. If this fails, it extracts content from markdown code blocks. For responses with embedded JSON, the parser uses bracket matching to locate the first complete JSON object, correctly handling nested structures and escaped characters. An aggressive cleanup strategy removes common LLM conversational prefixes and suffixes. This layered approach successfully handles responses from all supported providers.
 
-### 4.5.3 Token Classification Alignment
-
-The HuggingFace ingredient-detection model uses SentencePiece tokenisation, which splits words into subword tokens. This created alignment issues when reconstructing ingredient names from BIO-tagged tokens. Words were incorrectly concatenated without spaces, and subword tokens were treated as separate words, producing malformed ingredient names.
-
-The solution involved implementing custom token reconstruction logic that recognises the SentencePiece word boundary marker. When a token begins with this marker, it indicates the start of a new word and requires a preceding space during reconstruction. Tokens without the marker are continuations that should be directly concatenated. This approach correctly reconstructs multi-word ingredients while properly handling subword tokenisation.
-
-### 4.5.4 LLM Extraction Latency
+### 4.5.3 LLM Extraction Latency
 
 During development, it became apparent that LLM-based ingredient extraction, while producing high-quality results, introduced significant latency due to API round-trip times. Response times ranged from 500 milliseconds to several seconds depending on the provider and network conditions. This latency was unacceptable for users who expected near-instantaneous feedback when scanning products in retail environments.
 
-The solution implemented a tiered extraction approach. The SymSpell-based extractor was developed as a lightweight alternative that provides near-instantaneous processing using a pre-loaded food ingredient dictionary. This method handles straightforward ingredient lists effectively while avoiding API calls entirely. Users can enable LLM-based extraction through their profile settings when they require higher accuracy for complex labels, accepting the latency trade-off for improved results. The HuggingFace NER model serves as the default option, providing a balance between accuracy and speed by running inference locally without external API dependencies.
+The solution implemented a tiered extraction approach. SymSpell serves as the default extractor, providing near-instantaneous processing using a pre-loaded food ingredient dictionary and avoiding API calls. Users can enable LLM-based extraction through their profile settings when they require higher accuracy for complex labels, accepting the latency trade-off for improved results.
 
-### 4.5.5 Open Food Facts API Coverage and Data Quality
+### 4.5.4 Open Food Facts API Coverage and Data Quality
 
 When implementing barcode scanning, it was discovered that the Open Food Facts database, while extensive, does not contain all products and sometimes has incomplete or missing ingredient information. Products from certain regions or smaller manufacturers may not be present in the database, and even when products are found, the ingredients text may be in a language other than English or formatted inconsistently.
 
 The solution involved implementing robust error handling that provides clear feedback to users when products are not found or lack ingredient information. The system preferentially retrieves English-language fields when available, falling back to the default language fields when English versions are not present. For products with incomplete data, users are informed that the barcode lookup was unsuccessful and are directed to use the OCR scanning method as an alternative.
 
-### 4.5.6 Authentication Cookie Limitations
+### 4.5.5 Authentication Cookie Limitations
 
 Cross-origin requests from the Vue.js frontend encountered difficulties when attempting to use HttpOnly cookies for authentication. Browser security policies including CORS restrictions and SameSite cookie requirements prevented cookies from being sent with requests, particularly on mobile browsers with stricter security defaults.
 
 The solution implemented a dual authentication strategy. The primary method uses Bearer token authentication via the Authorization header, which works reliably across all platforms and browsers. As a fallback for browser-based sessions, the system also checks for authentication tokens stored in HttpOnly cookies. This approach provides flexibility while maintaining security through proper token handling and expiration management.
 
-### 4.5.7 Database Connection Management
+### 4.5.6 Database Connection Management
 
 Connections to the Supabase-hosted PostgreSQL database experienced timeout issues during periods of low activity. Stale connections in the connection pool caused failures when requests attempted to use them, and SSL certificate verification added complexity to the connection configuration.
 
 The solution configured the SQLAlchemy connection pool with pre-ping validation, which tests connection health before use and automatically replaces stale connections. A connection recycling interval of one hour ensures connections do not remain idle long enough to be terminated by the database server. SSL mode configuration was added to satisfy Supabase security requirements while maintaining connection stability.
 
-### 4.5.8 Machine Learning Model Memory Usage
+### 4.5.7 OCR Model Memory Usage
 
-Loading the EasyOCR and HuggingFace models on each request caused excessive memory consumption and slow response times. On memory-constrained deployment environments, this led to out-of-memory errors and application crashes under moderate load.
+Loading the EasyOCR model on each request caused excessive memory consumption and slow response times. On memory-constrained deployment environments, this led to out-of-memory errors and application crashes under moderate load.
 
-The solution implemented the singleton pattern for model loading, where models are initialised once during application startup and reused across all requests. The OCR reader and NER model are stored as global instances, eliminating the overhead of repeated model loading. This approach reduced memory usage and improved response times significantly, with the trade-off of increased initial startup time.
+The solution implemented the singleton pattern for the OCR reader, which is initialised once during application startup and reused across all requests. This approach reduced memory usage and improved response times significantly, with the trade-off of increased initial startup time.
 
 ---
 
@@ -187,12 +215,26 @@ The solution implemented the singleton pattern for model loading, where models a
 
 The client layer is built using Vue.js 3 as the Progressive Web Application framework, with Tailwind CSS for responsive styling, Pinia for state management, and Vue Router for navigation. The backend employs FastAPI as the REST API framework, SQLAlchemy as the Object-Relational Mapper, Pydantic for data validation, and python-jose for JWT token handling.
 
-The artificial intelligence and machine learning components include EasyOCR for text extraction, HuggingFace Transformers for ingredient Named Entity Recognition using the OpenFoodFacts model, and SymSpell for lightweight spell correction. LLM integration supports multiple providers including Groq, Google Gemini, OpenAI, Anthropic, Ollama, and LM Studio. The barcode scanning functionality integrates with the Open Food Facts API for product information retrieval.
+The artificial intelligence and machine learning components include EasyOCR for text extraction, SymSpell for ingredient extraction and spell correction, and LLM integration for optional higher-accuracy extraction. LLM integration supports multiple providers including Groq, Google Gemini, OpenAI, Anthropic, Ollama, and LM Studio. The barcode scanning functionality integrates with the Open Food Facts API for product information retrieval.
 
 The data layer uses PostgreSQL as the primary database, hosted on Supabase for cloud deployment, with SQLite used for testing purposes. The testing stack comprises pytest as the test framework, unittest.mock for mocking dependencies, and the FastAPI TestClient for API testing.
 
 ---
 
-## 4.7 Summary
+## 4.7 What Additions Have Been Made Overall
 
-This chapter has presented the technical implementation of the Smart Food Scanner, covering the system architecture, database design, algorithm implementations, and testing methodology. The multi-layered architecture separates concerns between presentation, business logic, and data persistence, while the dual input method approach supports both OCR-based image scanning and barcode-based product lookup. The hybrid AI approach combines deterministic rule-based analysis with probabilistic LLM-based analysis, and the tiered extraction strategy offers choices between SymSpell, HuggingFace NER, and LLM-based extraction methods. The testing methodology targets 95% dietary compliance accuracy through comprehensive unit, integration, and performance tests. The problems encountered during development and their solutions demonstrate practical engineering decisions necessary for deploying AI-powered applications in real-world environments.
+Several enhancements have been introduced to improve ingredient extraction quality and maintainability:
+
+**Text Correction and Filtering:** A rule-based non-ingredient filter (`non_ingredient_filter.py`) was implemented to work alongside SymSpell spell correction. This applies dictionary-based spell correction with pattern-based filtering to correct common OCR errors (e.g., "watar" → "water", "suger" → "sugar") while removing non-ingredient text. The filter uses START_PATTERNS to detect ingredient section headers, STOP_PATTERNS to identify section boundaries (manufacturing info, addresses, URLs, storage instructions), GARBAGE_PATTERNS to filter invalid text (numbers only, single characters), and NON_INGREDIENT_WORDS to exclude known non-ingredient terms. Validity is checked both before and after spell correction to prevent false positives such as "Made in USA" being incorrectly spell-corrected to food-like terms.
+
+**SymSpell Extraction Pipeline:** The `extract_ingredients` function in `symspell_extraction.py` now follows a four-step pipeline: (1) extract the ingredients section using boundary patterns, (2) split text by delimiters, (3) pre-filter and spell-correct each segment, and (4) post-filter the corrected list. This ensures that addresses, contact information, manufacturing locations, expiry dates, and similar content are excluded from the extracted ingredient list.
+
+**Unit Test Coverage:** A comprehensive unit test suite was added for `symspell_extraction.py` (65 tests) covering spell correction, ingredient extraction with filtering, E-number handling, and realistic OCR scenarios. Tests verify that non-ingredient text is correctly filtered across various input formats and edge cases.
+
+**Code Cleanup:** Unused components (classifier, validator, and config modules) were removed and their functionality consolidated into the non-ingredient filter. Test coverage was updated accordingly.
+
+---
+
+## 4.8 Summary
+
+This chapter has presented the technical implementation of the Smart Food Scanner, covering the system architecture, database design, algorithm implementations, and testing methodology. The multi-layered architecture separates concerns between presentation, business logic, and data persistence, while the dual input method approach supports both OCR-based image scanning and barcode-based product lookup. The hybrid AI approach combines deterministic rule-based analysis with probabilistic LLM-based analysis, and the tiered extraction strategy offers SymSpell as the default with optional LLM-based extraction. The testing methodology targets 95% dietary compliance accuracy through comprehensive unit, integration, and performance tests. The problems encountered during development and their solutions demonstrate practical engineering decisions necessary for deploying AI-powered applications in real-world environments.
