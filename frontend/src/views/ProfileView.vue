@@ -77,6 +77,22 @@
         </form>
       </div>
 
+      <!-- View Scan History -->
+      <router-link to="/scan" class="history-button-card">
+        <div class="history-button-icon">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="history-button-text">
+          <span class="history-button-label">View Scan History</span>
+          <span class="history-button-desc">See all your previous scans and results</span>
+        </div>
+        <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </router-link>
+
       <!-- Dietary Preferences -->
       <div class="card mb-6">
         <h3 class="section-title mb-4">Dietary Preferences</h3>
@@ -261,12 +277,8 @@
       <!-- LLM Ingredient Extractor -->
       <div class="card mb-6">
         <h3 class="section-title mb-4">LLM Ingredient Extractor</h3>
-        <p class="text-gray-600 text-sm mb-4">
-          Use AI-powered extraction to identify and translate ingredients to English. This provides more accurate results, especially for non-English labels.
-        </p>
 
-        <!-- Toggle -->
-        <div class="llm-toggle-container mb-6">
+        <div class="llm-toggle-container">
           <label class="llm-toggle-item">
             <input 
               type="checkbox" 
@@ -286,60 +298,6 @@
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             <span class="text-sm text-gray-500">Saving...</span>
-          </div>
-        </div>
-
-        <!-- Test Area -->
-        <div class="test-area">
-          <h4 class="text-sm font-medium text-gray-700 mb-2">Test Extraction</h4>
-          <p class="text-gray-500 text-xs mb-3">
-            Paste ingredient text below to test the LLM extraction (supports multiple languages)
-          </p>
-          
-          <textarea
-            v-model="testIngredientText"
-            class="test-textarea"
-            placeholder="Paste ingredient text here... e.g., 'Zutaten: Wasser, Zucker, Weizenmehl' or 'مكونات: ماء، سكر'"
-            rows="3"
-          ></textarea>
-
-          <button
-            @click="testLLMExtraction"
-            :disabled="isTestingLLM || !testIngredientText.trim()"
-            class="btn-secondary mt-3"
-          >
-            <svg v-if="isTestingLLM" class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            {{ isTestingLLM ? 'Extracting...' : 'Test Extraction' }}
-          </button>
-
-          <!-- Test Results -->
-          <div v-if="llmTestResult" class="test-results mt-4">
-            <div v-if="llmTestResult.success" class="success-result">
-              <div class="result-header">
-                <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-                <span class="text-sm font-medium text-green-700">{{ llmTestResult.message }}</span>
-              </div>
-              <div class="ingredients-list">
-                <span 
-                  v-for="(ingredient, index) in llmTestResult.ingredients" 
-                  :key="index"
-                  class="ingredient-tag"
-                >
-                  {{ ingredient }}
-                </span>
-              </div>
-            </div>
-            <div v-else class="error-result">
-              <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-              </svg>
-              <span class="text-sm text-red-700">{{ llmTestResult.message || 'Extraction failed' }}</span>
-            </div>
           </div>
         </div>
       </div>
@@ -394,11 +352,6 @@ const dietaryProfile = ref({
 
 const newAllergen = ref('')
 const newCustomRestriction = ref('')
-
-// LLM Extraction test state
-const testIngredientText = ref('')
-const isTestingLLM = ref(false)
-const llmTestResult = ref(null)
 
 // LLM toggle auto-save state
 const isSavingLLMSetting = ref(false)
@@ -574,28 +527,6 @@ async function handleLLMToggleChange() {
   }
 }
 
-async function testLLMExtraction() {
-  if (!testIngredientText.value.trim()) return
-  
-  isTestingLLM.value = true
-  llmTestResult.value = null
-  
-  try {
-    const result = await api.post('/dietary-profiles/extract-ingredients', {
-      text: testIngredientText.value
-    })
-    llmTestResult.value = result
-  } catch (err) {
-    llmTestResult.value = {
-      success: false,
-      message: err.message || 'Failed to extract ingredients',
-      ingredients: []
-    }
-  } finally {
-    isTestingLLM.value = false
-  }
-}
-
 function handleLogout() {
   authStore.logout()
   router.push('/login')
@@ -719,6 +650,28 @@ function handleLogout() {
   @apply py-8 flex items-center justify-center;
 }
 
+.history-button-card {
+  @apply flex items-center gap-4 w-full mb-6 px-5 py-4 bg-gradient-to-r from-primary-50 to-blue-50 
+         rounded-xl shadow-sm border-2 border-primary-200 hover:border-primary-400 hover:shadow-md 
+         transition-all duration-200 no-underline;
+}
+
+.history-button-icon {
+  @apply flex-shrink-0 w-11 h-11 rounded-full bg-primary-600 text-white flex items-center justify-center shadow;
+}
+
+.history-button-text {
+  @apply flex-1 flex flex-col;
+}
+
+.history-button-label {
+  @apply text-base font-semibold text-gray-900;
+}
+
+.history-button-desc {
+  @apply text-xs text-gray-500 mt-0.5;
+}
+
 .logout-button {
   @apply w-full flex items-center justify-center gap-2 px-6 py-3 bg-red-50 text-red-600 font-medium rounded-lg hover:bg-red-100 transition-colors;
 }
@@ -748,40 +701,5 @@ function handleLogout() {
   @apply text-sm text-gray-500 mt-0.5;
 }
 
-.test-area {
-  @apply bg-gray-50 rounded-lg p-4 border border-gray-200;
-}
-
-.test-textarea {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none;
-}
-
-.btn-secondary {
-  @apply inline-flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
-}
-
-.test-results {
-  @apply rounded-lg border;
-}
-
-.success-result {
-  @apply p-4 bg-green-50 border-green-200 rounded-lg;
-}
-
-.error-result {
-  @apply flex items-center gap-2 p-4 bg-red-50 border-red-200 rounded-lg;
-}
-
-.result-header {
-  @apply flex items-center gap-2 mb-3;
-}
-
-.ingredients-list {
-  @apply flex flex-wrap gap-2;
-}
-
-.ingredient-tag {
-  @apply inline-block px-3 py-1.5 bg-white text-gray-800 border border-green-200 rounded-full text-sm font-medium shadow-sm;
-}
 </style>
 

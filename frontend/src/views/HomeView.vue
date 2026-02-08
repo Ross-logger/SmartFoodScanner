@@ -27,7 +27,7 @@
         </div>
 
         <div v-else class="hero-actions">
-          <router-link to="/scan" class="btn-primary text-lg px-8 py-4">
+          <router-link to="/scan" class="btn-primary text-lg px-8 py-4 inline-flex items-center">
             <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -80,53 +80,15 @@
         </div>
       </div>
     </div>
-
-    <!-- Stats Section (if authenticated) -->
-    <div v-if="isAuthenticated" class="stats-section">
-      <h2 class="section-title">Your Activity</h2>
-      
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-value">{{ recentScans }}</div>
-          <div class="stat-label">Recent Scans</div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-value">{{ totalScans }}</div>
-          <div class="stat-label">Total Scans</div>
-        </div>
-      </div>
-
-      <router-link to="/history" class="view-history-link">
-        View Full History →
-      </router-link>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useScanStore } from '@/stores/scan'
 
 const authStore = useAuthStore()
-const scanStore = useScanStore()
-
 const isAuthenticated = computed(() => authStore.isAuthenticated)
-const recentScans = ref(0)
-const totalScans = ref(0)
-
-onMounted(async () => {
-  if (isAuthenticated.value) {
-    try {
-      await scanStore.fetchScanHistory(5, 0)
-      recentScans.value = scanStore.scanHistory.length
-      totalScans.value = scanStore.scanHistory.length // In production, get from API
-    } catch (error) {
-      console.error('Failed to load scan stats:', error)
-    }
-  }
-})
 </script>
 
 <style scoped>
@@ -185,29 +147,4 @@ onMounted(async () => {
 .feature-description {
   @apply text-gray-600;
 }
-
-.stats-section {
-  @apply px-4 py-12 max-w-4xl mx-auto text-center;
-}
-
-.stats-grid {
-  @apply grid grid-cols-2 gap-6 mb-6;
-}
-
-.stat-card {
-  @apply bg-white rounded-xl p-6 shadow-sm border border-gray-200;
-}
-
-.stat-value {
-  @apply text-4xl font-bold text-primary-600 mb-2;
-}
-
-.stat-label {
-  @apply text-gray-600 text-sm;
-}
-
-.view-history-link {
-  @apply inline-block text-primary-600 font-medium hover:text-primary-700 transition-colors;
-}
 </style>
-

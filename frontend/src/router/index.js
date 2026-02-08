@@ -22,9 +22,7 @@ const routes = [
   },
   {
     path: '/history',
-    name: 'History',
-    component: () => import('@/views/HistoryView.vue'),
-    meta: { title: 'Scan History', requiresAuth: true }
+    redirect: '/scan'
   },
   {
     path: '/login',

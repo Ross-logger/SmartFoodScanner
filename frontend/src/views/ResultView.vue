@@ -60,28 +60,91 @@
 
       <!-- Detected Ingredients - Single Consolidated Section -->
       <div class="card mb-4">
-        <h2 class="section-title mb-4">Detected Ingredients</h2>
-        
-        <div v-if="ingredients.length === 0" class="empty-state">
-          <p class="text-gray-600">No ingredients detected</p>
+        <div class="section-header">
+          <h2 class="section-title">Detected Ingredients</h2>
+          <button
+            v-if="!isEditing"
+            @click="startEditing"
+            class="edit-button"
+            title="Edit ingredients"
+          >
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+            Edit
+          </button>
         </div>
 
-        <div v-else class="ingredients-list">
-          <div
-            v-for="(ingredient, index) in ingredients"
-            :key="index"
-            class="ingredient-item"
-            :class="{ 'ingredient-warning': isProhibited(ingredient) || isAllergen(ingredient) }"
-          >
-            <div class="ingredient-content">
-              <span class="ingredient-name">{{ ingredient }}</span>
-              <div class="ingredient-badges">
-                <span v-if="isAllergen(ingredient)" class="ingredient-badge allergen-badge">
-                  Allergen
-                </span>
-                <span v-if="isProhibited(ingredient)" class="ingredient-badge warning-badge">
-                  Not suitable for you
-                </span>
+        <!-- Edit Mode -->
+        <div v-if="isEditing" class="edit-mode">
+          <p class="edit-hint">Fix misspellings, add or remove ingredients. Analysis will re-run on save.</p>
+          <div class="edit-ingredients-list">
+            <div
+              v-for="(ingredient, index) in editableIngredients"
+              :key="index"
+              class="edit-ingredient-row"
+            >
+              <input
+                type="text"
+                v-model="editableIngredients[index]"
+                class="edit-ingredient-input"
+                placeholder="Ingredient name"
+                @keydown.enter.prevent="addIngredient(index + 1)"
+              />
+              <button
+                @click="removeIngredient(index)"
+                class="remove-ingredient-button"
+                title="Remove ingredient"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <button @click="addIngredient()" class="add-ingredient-button">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Ingredient
+          </button>
+          <div class="edit-actions">
+            <button @click="cancelEditing" class="btn-cancel" :disabled="isSaving">
+              Cancel
+            </button>
+            <button @click="saveIngredients" class="btn-save" :disabled="isSaving">
+              <svg v-if="isSaving" class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              {{ isSaving ? 'Analyzing...' : 'Save & Re-analyze' }}
+            </button>
+          </div>
+        </div>
+        
+        <!-- View Mode -->
+        <div v-else>
+          <div v-if="ingredients.length === 0" class="empty-state">
+            <p class="text-gray-600">No ingredients detected</p>
+          </div>
+
+          <div v-else class="ingredients-list">
+            <div
+              v-for="(ingredient, index) in ingredients"
+              :key="index"
+              class="ingredient-item"
+              :class="{ 'ingredient-warning': isProhibited(ingredient) || isAllergen(ingredient) }"
+            >
+              <div class="ingredient-content">
+                <span class="ingredient-name">{{ ingredient }}</span>
+                <div class="ingredient-badges">
+                  <span v-if="isAllergen(ingredient)" class="ingredient-badge allergen-badge">
+                    Allergen
+                  </span>
+                  <span v-if="isProhibited(ingredient)" class="ingredient-badge warning-badge">
+                    Not suitable for you
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -170,6 +233,9 @@ const scanStore = useScanStore()
 
 const loading = ref(true)
 const error = ref(null)
+const isEditing = ref(false)
+const isSaving = ref(false)
+const editableIngredients = ref([])
 
 const scanResult = computed(() => scanStore.currentScan)
 const ingredients = computed(() => {
@@ -269,6 +335,52 @@ function formatDate(dateString) {
   })
 }
 
+function startEditing() {
+  editableIngredients.value = [...ingredients.value]
+  isEditing.value = true
+}
+
+function cancelEditing() {
+  isEditing.value = false
+  editableIngredients.value = []
+}
+
+function addIngredient(atIndex) {
+  if (atIndex !== undefined) {
+    editableIngredients.value.splice(atIndex, 0, '')
+  } else {
+    editableIngredients.value.push('')
+  }
+}
+
+function removeIngredient(index) {
+  editableIngredients.value.splice(index, 1)
+}
+
+async function saveIngredients() {
+  // Filter out empty entries
+  const cleaned = editableIngredients.value
+    .map(ing => ing.trim())
+    .filter(ing => ing.length > 0)
+
+  if (cleaned.length === 0) {
+    alert('Please add at least one ingredient.')
+    return
+  }
+
+  isSaving.value = true
+  try {
+    const scanId = route.params.id
+    await scanStore.updateIngredients(scanId, cleaned)
+    isEditing.value = false
+    editableIngredients.value = []
+  } catch (err) {
+    alert('Failed to update ingredients: ' + (err.message || 'Unknown error'))
+  } finally {
+    isSaving.value = false
+  }
+}
+
 async function shareScan() {
   if (navigator.share) {
     try {
@@ -326,8 +438,63 @@ async function shareScan() {
   @apply bg-white rounded-xl shadow-sm border border-gray-200 mx-4 p-6;
 }
 
+.section-header {
+  @apply flex items-center justify-between mb-4;
+}
+
 .section-title {
   @apply text-lg font-semibold text-gray-900;
+}
+
+.edit-button {
+  @apply flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 
+         bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors;
+}
+
+.edit-mode {
+  @apply mt-2;
+}
+
+.edit-hint {
+  @apply text-sm text-gray-500 mb-3;
+}
+
+.edit-ingredients-list {
+  @apply space-y-2 mb-3;
+}
+
+.edit-ingredient-row {
+  @apply flex items-center gap-2;
+}
+
+.edit-ingredient-input {
+  @apply flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm
+         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+         bg-white;
+}
+
+.remove-ingredient-button {
+  @apply text-gray-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0;
+}
+
+.add-ingredient-button {
+  @apply flex items-center text-sm font-medium text-gray-600 hover:text-green-700
+         bg-gray-50 hover:bg-green-50 border border-dashed border-gray-300 hover:border-green-400
+         px-3 py-2 rounded-lg transition-colors w-full justify-center;
+}
+
+.edit-actions {
+  @apply flex gap-3 mt-4 pt-4 border-t border-gray-200;
+}
+
+.btn-cancel {
+  @apply flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 
+         hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50;
+}
+
+.btn-save {
+  @apply flex-1 flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white 
+         bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-70;
 }
 
 .empty-state {

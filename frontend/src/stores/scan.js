@@ -132,6 +132,32 @@ export const useScanStore = defineStore('scan', () => {
     }
   }
 
+  async function updateIngredients(scanId, ingredients) {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await api.put(`/scans/${scanId}/ingredients`, { ingredients }, {
+        timeout: 120000 // 2 minutes for LLM re-analysis
+      })
+
+      // Update the current scan with the new analysis results
+      if (currentScan.value && currentScan.value.id === parseInt(scanId)) {
+        currentScan.value.ingredients = response.ingredients
+        currentScan.value.is_safe = response.is_safe
+        currentScan.value.warnings = response.warnings
+        currentScan.value.analysis_result = response.analysis_result
+      }
+
+      return response
+    } catch (err) {
+      error.value = err.message || 'Failed to update ingredients'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   function clearCurrentScan() {
     currentScan.value = null
     error.value = null
@@ -152,6 +178,7 @@ export const useScanStore = defineStore('scan', () => {
     fetchScanHistory,
     getScanById,
     deleteScan,
+    updateIngredients,
     clearCurrentScan
   }
 })

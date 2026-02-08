@@ -220,6 +220,30 @@ class BarcodeScanResponse(BaseModel):
         }
 
 
+class UpdateIngredientsRequest(BaseModel):
+    """Schema for updating ingredients of an existing scan"""
+    ingredients: List[str]
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "ingredients": ["Sugar", "Palm oil", "Hazelnuts", "Cocoa"]
+            }
+        }
+
+
+class UpdateIngredientsResponse(BaseModel):
+    """Response after updating ingredients and re-analyzing"""
+    id: int
+    ingredients: List[str]
+    is_safe: bool
+    warnings: List[str]
+    analysis_result: str
+
+    class Config:
+        from_attributes = True
+
+
 class BarcodeProductResponse(BaseModel):
     """Response for barcode lookup without analysis (just product info)"""
     success: bool

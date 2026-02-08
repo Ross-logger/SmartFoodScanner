@@ -3,9 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from backend.database import get_db
-from backend.models import User, Scan
-from backend.schemas import ScanResponse
+from backend.models import User, Scan, DietaryProfile
+from backend.schemas import ScanResponse, UpdateIngredientsRequest, UpdateIngredientsResponse
 from backend.security import get_current_user
+from backend.services.ingredients_analysis import analyze_ingredients
 
 router = APIRouter(prefix="/scans", tags=["history"])
 
@@ -93,4 +94,63 @@ def get_scan(
     
     # Normalize scan data to ensure proper types
     return normalize_scan_data(scan)
+
+
+@router.put("/{scan_id}/ingredients", response_model=UpdateIngredientsResponse)
+def update_scan_ingredients(
+    scan_id: int,
+    request: UpdateIngredientsRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update the ingredients list for a scan and re-run the dietary analysis.
+    
+    This allows users to fix OCR misspellings or add/remove ingredients,
+    then get an updated safety assessment.
+    """
+    scan = db.query(Scan).filter(
+        Scan.id == scan_id,
+        Scan.user_id == current_user.id
+    ).first()
+
+    if not scan:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Scan not found"
+        )
+
+    # Clean up ingredients - strip whitespace and remove empty entries
+    ingredients = [ing.strip() for ing in request.ingredients if ing.strip()]
+
+    if not ingredients:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ingredients list cannot be empty"
+        )
+
+    # Get user's dietary profile for re-analysis
+    dietary_profile = db.query(DietaryProfile).filter(
+        DietaryProfile.user_id == current_user.id
+    ).first()
+
+    # Re-run ingredient analysis with the updated list
+    analysis = analyze_ingredients(ingredients, dietary_profile)
+
+    # Update the scan record
+    scan.ingredients = ingredients
+    scan.is_safe = analysis["is_safe"]
+    scan.warnings = analysis["warnings"]
+    scan.analysis_result = analysis["analysis_result"]
+
+    db.commit()
+    db.refresh(scan)
+
+    return UpdateIngredientsResponse(
+        id=scan.id,
+        ingredients=ingredients,
+        is_safe=analysis["is_safe"],
+        warnings=analysis["warnings"],
+        analysis_result=analysis["analysis_result"]
+    )
 

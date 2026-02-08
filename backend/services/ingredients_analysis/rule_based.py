@@ -52,42 +52,36 @@ def analyze_with_rules(
             if any(item in ing for ing in ingredients_lower):
                 warnings.append(f"Contains gluten: {item}")
                 is_safe = False
-                break
     
     if dietary_profile.dairy_free:
         for item in ALLERGENS['dairy']:
             if any(item in ing for ing in ingredients_lower):
                 warnings.append(f"Contains dairy: {item}")
                 is_safe = False
-                break
     
     if dietary_profile.nut_free:
         for item in ALLERGENS['nuts']:
             if any(item in ing for ing in ingredients_lower):
                 warnings.append(f"Contains nuts: {item}")
                 is_safe = False
-                break
     
     if dietary_profile.halal:
         for item in ALLERGENS['halal_restricted']:
             if any(item in ing for ing in ingredients_lower):
                 warnings.append(f"Not halal: Contains {item}")
                 is_safe = False
-                break
     
     if dietary_profile.vegetarian:
         for item in ALLERGENS['vegetarian_restricted']:
             if any(item in ing for ing in ingredients_lower):
                 warnings.append(f"Not vegetarian: Contains {item}")
                 is_safe = False
-                break
     
     if dietary_profile.vegan:
         for item in ALLERGENS['vegan_restricted']:
             if any(item in ing for ing in ingredients_lower):
                 warnings.append(f"Not vegan: Contains {item}")
                 is_safe = False
-                break
     
     # Check custom allergens
     if dietary_profile.allergens:
