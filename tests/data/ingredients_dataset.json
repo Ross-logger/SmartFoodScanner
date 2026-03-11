@@ -1,0 +1,2290 @@
+[
+  {
+    "image": "in0.jpg",
+    "ocr_text": "INCREDIENTS:\nWHEAT FLOUR, SUGAR, HYDROGENATED PALM OLEIN, EGc POWDER, COCOA POWDER, WHOLE MILK POWDER,\nBAKING POWDER (E-4501) , WALNUT , CARDAMOM POWDER AND SALT ,\nALLERGEN WARNING:\nCONTAINS:\nWHEAT; OLUTEN, ECO, MILK & TREE NUT (WALNUT) .\nTHE PRODUCT IS BEING PRODUCED ON THE SAME\nPREMISES WHERE NUTS, SESAME ETC ARE ALSO BEING\nPROCESSED .\nINSTRUCTIONS:\nKEEP AWAY FROM HEAT AND SUNLIGHT , ONCE PACK\nIS OPENED THE PRODUCT MUST BE IN AN AIR TIGHT CONTAINER.\nINOREDIENTS:\nFARINE DE BLE, SUCRE, OLEINE DE PALME HYDROGENEE, OEUF EN POUDRE, CACAO EN POUDRE,\nLAIT EntIER EN POUDRE, LEVURE CHIMIQUE (E-4501) , NoIX, Poudre DE CARDAMOME ET SEL\nAVERTISSEMENT CONCERNANT LES ALLEROENES:\nCONTIENT:\nBLe , GLUTEN , €EUF, LAIT ET NOIX (Nolx) .\nLE PRODUIT EST FABRIQUE SUR LE MEME\nDES LOCAUX oU DES NOIX, DU SESAME, ETc. SONT EGALEMENT\nTRAITE.\nINSTRUCTIONS:",
+    "extracted_ingredients": [
+      "wheat",
+      "gluten",
+      "egg",
+      "milk",
+      "tree nut walnut"
+    ],
+    "true_ingredients": [
+      "wheat",
+      "gluten",
+      "egg",
+      "milk",
+      "tree nut walnut"
+    ]
+  },
+  {
+    "image": "in1.jpg",
+    "ocr_text": "Ingredients:\nRoasted peanuts, sugar,\nfully hydrogenated\noil;\nBest Beltr\nsalt Contain peanuts\nStore in a cool,\nplace and\navoid direct sunlight:\nSole Distributor:\nInternational Limited\n>\nIV/F,C-Bons\nInternational Center,\n108 Wai\nStreet;\nKowloon;\n2755 7777\nfor reference only:\npalm\nProductc=\ndry\nCiao\nAddress:\nNo:\nYip\nKwun\nTong;\nHong\nKong\nTel:\n'80523\n(+852)\nPicture",
+    "extracted_ingredients": [
+      "roasted peanuts",
+      "sugar",
+      "fully hydrogenated oil",
+      "beet beer salt contain peanuts"
+    ],
+    "true_ingredients": [
+      "roasted peanuts",
+      "sugar",
+      "fully hydrogenated oil",
+      "beet beer salt contain peanuts"
+    ]
+  },
+  {
+    "image": "in10.jpg",
+    "ocr_text": "INGREDIENTS: Tomato puree (3896) Salt; Tamarind concentiae\nEdlble\nvegetable oll, Red chlll powder (9%). Mustard Acetc\nacld\nBlackgram dal, Garllc Fenugreek powder Curry leaves\nCorlanderpowder Cumln powder; Bengalgram dal Asafceida\nTurrerlc powder\nCONTAINS PERMITTED CLASS II PRESERVATIVE INS 211",
+    "extracted_ingredients": [
+      "tomato pureed (3896) salt",
+      "tamari concentrate edlble vegetable oil",
+      "red chlll powder (9%). mustard acetc acld blackgram dal",
+      "garlic fenugreek powder curry leaves corlanderpowder cumin powder",
+      "bengalgram dal asafceida turmeric powder contains permitted clam ii preservative ins e211"
+    ],
+    "true_ingredients": [
+      "tomato pureed (3896) salt",
+      "tamari concentrate edlble vegetable oil",
+      "red chlll powder (9%). mustard acetc acld blackgram dal",
+      "garlic fenugreek powder curry leaves corlanderpowder cumin powder",
+      "bengalgram dal asafceida turmeric powder contains permitted clam ii preservative ins e211"
+    ]
+  },
+  {
+    "image": "in100.jpg",
+    "ocr_text": "Ingredients: Cake Concentrate [Milk Solids, Starch,\nBaking Powder; Refined Wheat Flour; Emulsifiers and\nStabilizers (E471,E415), Salt, Colour (E171),\nFlavouring\nVanilla], Refined Wheat Flour; Sugar; Edible\nVegetable Oil, Butter; Raisins, Papaya Preserve,\nCashews Bits, Almonds, Salt, Caramelised Sugar;\npreservative (INS2O2, INS2OO), Humectant (INS422),\nLeaving Agents (INSSOO (ii)):",
+    "extracted_ingredients": [
+      "cake concentrate milk solids",
+      "starch",
+      "baking powder",
+      "refined wheat flour",
+      "emulsifier",
+      "stabilizer (e471,e415)",
+      "salt",
+      "flour e171",
+      "flavoring vanilla",
+      "refined wheat flour",
+      "sugar",
+      "edible vegetable oil",
+      "butter",
+      "raisins",
+      "papaya preserved",
+      "cashews bits",
+      "almonds",
+      "salt",
+      "caramelised sugar",
+      "preservative (ins2o2, ins2oo)",
+      "humectant (ins422)",
+      "leaving agents (inssoo (ii)):"
+    ],
+    "true_ingredients": [
+      "cake concentrate milk solids",
+      "starch",
+      "baking powder",
+      "refined wheat flour",
+      "emulsifier",
+      "stabilizer (e471,e415)",
+      "salt",
+      "flour e171",
+      "flavoring vanilla",
+      "refined wheat flour",
+      "sugar",
+      "edible vegetable oil",
+      "butter",
+      "raisins",
+      "papaya preserved",
+      "cashews bits",
+      "almonds",
+      "salt",
+      "caramelised sugar",
+      "preservative (ins2o2, ins2oo)",
+      "humectant (ins422)",
+      "leaving agents (inssoo (ii)):"
+    ]
+  },
+  {
+    "image": "in102.jpg",
+    "ocr_text": "INGREDIENTS:\nMaida,\nEggs, Ghee;'\nShortening; Honey; Raisins, Dates, Cashewnuts,\nAlmonds, Bengal Currant; Fig; Orange Peel, Ginger Peel, Grapes, Orange;\nMilkmaid & Added Flavours. Contains Permitted Additive (E 422)\nALLERGY ADVICE:\nContains Dryfruits & Nuts. Processed and packaged in a\nfacility with dairy; tree nuts, peanuts, gluten and soy:\nSugar;\nVeg =",
+    "extracted_ingredients": [
+      "maida",
+      "eggs",
+      "ghee",
+      "shortening",
+      "honey",
+      "raisins",
+      "dates",
+      "cashew nuts",
+      "almonds",
+      "bengal currant",
+      "fig",
+      "orange peel",
+      "ginger peel",
+      "grapes",
+      "orange",
+      "milkmaid",
+      "added flavors contains permitted additive (e 422) allergy advice:"
+    ],
+    "true_ingredients": [
+      "maida",
+      "eggs",
+      "ghee",
+      "shortening",
+      "honey",
+      "raisins",
+      "dates",
+      "cashew nuts",
+      "almonds",
+      "bengal currant",
+      "fig",
+      "orange peel",
+      "ginger peel",
+      "grapes",
+      "orange",
+      "milkmaid",
+      "added flavors contains permitted additive (e 422) allergy advice:"
+    ]
+  },
+  {
+    "image": "in103.jpg",
+    "ocr_text": "INGREDIENTS\nRoasted Almond Kernels, Sugar;\nCocoa Solids, Cocoa Butter;\nMango Flavour; Emulsifiers (322,476) ,\nGlazing Agents (Shellac)\nContains Added Natural Flavouring Substances",
+    "extracted_ingredients": [
+      "roasted almond kernels",
+      "sugar",
+      "cocoa solids",
+      "cocoa butter",
+      "mango flavor",
+      "emulsifier (322,476)",
+      "glazing agents shellac contains added natural flavoring substances"
+    ],
+    "true_ingredients": [
+      "roasted almond kernels",
+      "sugar",
+      "cocoa solids",
+      "cocoa butter",
+      "mango flavor",
+      "emulsifier (322,476)",
+      "glazing agents shellac contains added natural flavoring substances"
+    ]
+  },
+  {
+    "image": "in105.jpg",
+    "ocr_text": "INGREDIENTS:\nMilk Solids,\nINS 476) Sait\nAgents (INS 322,\nARTIFICIAL\nFAT\nVEGETABLE\nMilk &\nSugar;\nAnd\nStabilizing\nTRANS\nContains\nSoya",
+    "extracted_ingredients": [
+      "milk solids",
+      "ins 476) salt agents (ins 322, artificial oat vegetable milk & sugar and stabilizing beans contains soya"
+    ],
+    "true_ingredients": [
+      "milk solids",
+      "ins 476) salt agents (ins 322, artificial oat vegetable milk & sugar and stabilizing beans contains soya"
+    ]
+  },
+  {
+    "image": "in106.jpg",
+    "ocr_text": "Ingredients\nEdible\nVegetable Fat; Cocoa Solids &\nEmulsifiers (492, 322)\nCONTAINS ADDED NATURAL\n(VANILLA) FLAVOURING\nSUBSTANCES\nHydrogenated Vegetable Fat Used\nContains Trans Fats .\nAllergen information\nContains soy:\ncontain traces of milk\nsolids.\nSugar,",
+    "extracted_ingredients": [
+      "edible vegetable oat",
+      "cocoa solids",
+      "emulsifier e492 322) contains added natural vanilla flavoring substances hydrogenated vegetable oat used contains beans oats",
+      "allergen information contains soy contain grapes of milk solids. sugar"
+    ],
+    "true_ingredients": [
+      "edible vegetable oat",
+      "cocoa solids",
+      "emulsifier e492 322) contains added natural vanilla flavoring substances hydrogenated vegetable oat used contains beans oats",
+      "allergen information contains soy contain grapes of milk solids. sugar"
+    ]
+  },
+  {
+    "image": "in108.jpg",
+    "ocr_text": "Ingredients: Sugar; Milk Solids (249 2\nCocoa Butter, Cocoa Solids , Almond Bits\n(11%\nand Emulsifiers (476,322 ()):",
+    "extracted_ingredients": [
+      "sugar",
+      "milk solids e249 2 cocoa butter cocoa solids , almond bits (11% and emulsifier (476,322 ()):"
+    ],
+    "true_ingredients": [
+      "sugar",
+      "milk solids e249 2 cocoa butter cocoa solids , almond bits (11% and emulsifier (476,322 ()):"
+    ]
+  },
+  {
+    "image": "in109.jpg",
+    "ocr_text": "Ingredients: Sugar, Mik\nCocoa Butter, Cocoa Solids and\nEmulsifiers (476,322 (L",
+    "extracted_ingredients": [
+      "sugar",
+      "milk cocoa butter",
+      "cocoa solids",
+      "emulsifier (476,322 (l"
+    ],
+    "true_ingredients": [
+      "sugar",
+      "milk cocoa butter",
+      "cocoa solids",
+      "emulsifier (476,322 (l"
+    ]
+  },
+  {
+    "image": "in11.jpg",
+    "ocr_text": "Ingredients: Greek yogurt (pasteurized double\ntoned milk; milk solids, permitted starter cultures),\nprocessed blueberry pulp (sugar blueberry puree,water;\npectin ( INS 440), lemon juice concentrate)\nTotal Fruit Content: 3%",
+    "extracted_ingredients": [
+      "green yogurt pasteurized double honey milk milk solids, permitted starter cultures)",
+      "processed blueberry pulp sugar blueberry puree,water; pectin ( ins 440), lemon rice concentrate total fruit content: 3%"
+    ],
+    "true_ingredients": [
+      "green yogurt pasteurized double honey milk milk solids, permitted starter cultures)",
+      "processed blueberry pulp sugar blueberry puree,water; pectin ( ins 440), lemon rice concentrate total fruit content: 3%"
+    ]
+  },
+  {
+    "image": "in110.jpg",
+    "ocr_text": "ingredientS:",
+    "extracted_ingredients": [
+      "ingredients:"
+    ],
+    "true_ingredients": [
+      "ingredients:"
+    ]
+  },
+  {
+    "image": "in112.jpg",
+    "ocr_text": "Ingredients: Maltitol (INS 965()), Cocoa Butter\n(33%), Cocoa Powder (18%), Almonds (10%),\nFructo-oligosaccharides; Emulsifiers (INS 322,\nINS 476), Flavouring (Hazelnut)",
+    "extracted_ingredients": [
+      "maltitol (ins 965())",
+      "cocoa butter (33%)",
+      "cocoa powder (18%)",
+      "almonds (10%)",
+      "fructo-oligosaccharides",
+      "emulsifier (ins 322, ins 476)",
+      "flavoring hazelnut"
+    ],
+    "true_ingredients": [
+      "maltitol (ins 965())",
+      "cocoa butter (33%)",
+      "cocoa powder (18%)",
+      "almonds (10%)",
+      "fructo-oligosaccharides",
+      "emulsifier (ins 322, ins 476)",
+      "flavoring hazelnut"
+    ]
+  },
+  {
+    "image": "in117.jpg",
+    "ocr_text": "Ingredients: Cocoa Solids,\nCocoa Butter; Emusifier\n(INS 322).\nALLERGEN INFORM TION\nCONTAINS SOY: MAY CONTAINS\nMILK , NUT;\nSugar",
+    "extracted_ingredients": [
+      "cocoa solids",
+      "cocoa butter",
+      "emulsifier (ins 322). allergen inform tion contains soy may contains milk",
+      "nut",
+      "sugar"
+    ],
+    "true_ingredients": [
+      "cocoa solids",
+      "cocoa butter",
+      "emulsifier (ins 322). allergen inform tion contains soy may contains milk",
+      "nut",
+      "sugar"
+    ]
+  },
+  {
+    "image": "in118.jpg",
+    "ocr_text": "INGREDIENTS: SUGAR, SKIMMED MILK POWDER (1 1.596) , HAZELNUTS (10.9%0),\nPALMOLEIN, REFINED WHEAT FLOUR (MAIDA), REFINED SALSEED FAT, LOW FAT COCOA\nWHEY PROTEIN CONCENTRATE, EMULSIFIER (LECITHIN\nINS 322),POWDERED BARLEY\nMALT EXTRACT, RAISING AGENTS (INS 503ii, INS 5ooii), IODIZEd SALT.\nCONTAINS ADDED FLAVOURS (NATURE-IDENTICAL FLAVOURING SUBSTANCES)\nALLERGEN INFORMATION: Contains MILK, HAZELNUTS, GLUTEN, SOY.",
+    "extracted_ingredients": [
+      "sugar",
+      "skimmed milk powder (1 1.596)",
+      "hazelnuts (10.9%0)",
+      "palm olein",
+      "refined wheat flour (maida)",
+      "refined salseed oat",
+      "low oat cocoa whey protein concentrate",
+      "emulsifier lecithin ins 322)",
+      "powdered barley malt extract",
+      "raisin agents (ins 503ii, ins 5ooii)",
+      "hazelnuts",
+      "gluten",
+      "soy"
+    ],
+    "true_ingredients": [
+      "sugar",
+      "skimmed milk powder (1 1.596)",
+      "hazelnuts (10.9%0)",
+      "palm olein",
+      "refined wheat flour (maida)",
+      "refined salseed oat",
+      "low oat cocoa whey protein concentrate",
+      "emulsifier lecithin ins 322)",
+      "powdered barley malt extract",
+      "raisin agents (ins 503ii, ins 5ooii)",
+      "hazelnuts",
+      "gluten",
+      "soy"
+    ]
+  },
+  {
+    "image": "in119.jpg",
+    "ocr_text": "Ingredients:\nEdible Vegetable Fat;, Refined Wheat Flour, Milk Solids,\nStarch; Cocoa Solids (5%* ) , Palmolein Oil, Emulsifiers (442, 322, 476),\nEdible Salt, Yeast; Raising Agent (500(i)) , Improver (Enzyme).\nCONTAINS ADDED FLAVOUR (NATURAL, NATURE IDENTICAL AND ARTIFICIAL\n(CARAMEL AND ETHYL VANILLIN) FLAVOURING SUBSTANCES)\nSugar,",
+    "extracted_ingredients": [
+      "edible vegetable oat",
+      "refined wheat flour",
+      "milk solids",
+      "starch",
+      "cocoa solids (5%* )",
+      "palm olein oil",
+      "emulsifier e442 322, 476)",
+      "edible salt",
+      "yeast",
+      "raisin agent (500(i))",
+      "improver (enzyme). contains added flavor natural natural identical and artificial caramel and ethyl vanillin flavoring substances) sugar"
+    ],
+    "true_ingredients": [
+      "edible vegetable oat",
+      "refined wheat flour",
+      "milk solids",
+      "starch",
+      "cocoa solids (5%* )",
+      "palm olein oil",
+      "emulsifier e442 322, 476)",
+      "edible salt",
+      "yeast",
+      "raisin agent (500(i))",
+      "improver (enzyme). contains added flavor natural natural identical and artificial caramel and ethyl vanillin flavoring substances) sugar"
+    ]
+  },
+  {
+    "image": "in12.jpg",
+    "ocr_text": "Edibim\nVcgotoble Fat\nlodised Salt, Emulsliler (3221.\nTwI\nFLAVOURING SuBSTANCES]",
+    "extracted_ingredients": [
+      "edibim vcgotoble oat lodised salt",
+      "emulsliler (3221. twi flavoring substances]"
+    ],
+    "true_ingredients": [
+      "edibim vcgotoble oat lodised salt",
+      "emulsliler (3221. twi flavoring substances]"
+    ]
+  },
+  {
+    "image": "in120.jpg",
+    "ocr_text": "INGREDIENTS:- Cocoa Solids, Sugar; Hydrogenated Vegetables Oil, Milk Solids, Permitted\nEmulsifying & Stabilizing Agents (E-322, E-476), Salt, Artificial Flavoring, Substance Fat Used:\nContains Trans Fat: Allergen Information: Contains Milk &\nSoya.",
+    "extracted_ingredients": [
+      "cocoa solids",
+      "sugar",
+      "hydrogenated vegetable oil",
+      "milk solids",
+      "permitted emulsifying",
+      "stabilizing agents (e-322, e476",
+      "salt",
+      "artificial flavoring",
+      "substance oat used:"
+    ],
+    "true_ingredients": [
+      "cocoa solids",
+      "sugar",
+      "hydrogenated vegetable oil",
+      "milk solids",
+      "permitted emulsifying",
+      "stabilizing agents (e-322, e476",
+      "salt",
+      "artificial flavoring",
+      "substance oat used:"
+    ]
+  },
+  {
+    "image": "in121.jpg",
+    "ocr_text": "INGREDIENTS: SUGAR; LIQUid GLUCOSE, COCOA\nSOLIDS\n10.8 % ) EDIBLE VEGETABLE OIL (PALM OIL);\nMILK SOLIDS IODISED SALT AND EMULSIFIER\n(LECITHIN OF SOYA\nCONTAINS ADDED\nOriGVoURS\nARTIFICIAL\nFLAVOURING SUBSTANCES\nVANILLA )",
+    "extracted_ingredients": [
+      "sugar",
+      "squid glucose",
+      "cocoa solids 10.8 % ) edible vegetable oil (palm oil",
+      "milk solids iodine salt and emulsifier lecithin of soya contains added origvours artificial flavoring substances vanilla )"
+    ],
+    "true_ingredients": [
+      "sugar",
+      "squid glucose",
+      "cocoa solids 10.8 % ) edible vegetable oil (palm oil",
+      "milk solids iodine salt and emulsifier lecithin of soya contains added origvours artificial flavoring substances vanilla )"
+    ]
+  },
+  {
+    "image": "in124.jpg",
+    "ocr_text": "(MREDEENTS: Cashews, Expeller-Pressed Sunflower Oil and/or Expeller-Pressed Peanut Oil, and Sea Salt\nCASHEW INGREDIENTS:\n'Ilrmation: This product is made on equipment that makes products containing peanuts and other tree nuts.\nMNTANS",
+    "extracted_ingredients": [
+      "other tree nuts mntans"
+    ],
+    "true_ingredients": [
+      "other tree nuts mntans"
+    ]
+  },
+  {
+    "image": "in127.jpg",
+    "ocr_text": "INGREDIENTS;\nEnriched\nunbleached\nascorbic acid [dough conditioner];' niacin,\nreduced\niron;\nthiamin\nmononitrate,\nriboflavin,  folic , acid},  sugar, , degermed\ncornmeal, salc leavening (baking\nsoda,\nsodium\nacid\npyrophosghate},\nsoybean oil,\npowder; natural flavor\nCONTAINS; Wheat\n'contain milk\neggs, soy and tree nuts.\nyellow\nhoney \"",
+    "extracted_ingredients": [
+      "enriched unbleached ascorbic acid [dough conditioner]",
+      "niacin",
+      "reduced iron",
+      "thiamine mononitrate",
+      "riboflavin",
+      "folic",
+      "acid}",
+      "sugar",
+      "degermed cornmeal",
+      "salt leavening (baking soya sodium acid pyrophosghate}, soybean oil powder natural flavor contains; wheat 'contain milk eggs soy and tree nuts yellow honey \""
+    ],
+    "true_ingredients": [
+      "enriched unbleached ascorbic acid [dough conditioner]",
+      "niacin",
+      "reduced iron",
+      "thiamine mononitrate",
+      "riboflavin",
+      "folic",
+      "acid}",
+      "sugar",
+      "degermed cornmeal",
+      "salt leavening (baking soya sodium acid pyrophosghate}, soybean oil powder natural flavor contains; wheat 'contain milk eggs soy and tree nuts yellow honey \""
+    ]
+  },
+  {
+    "image": "in134.jpg",
+    "ocr_text": "Ingredients\nRed Rice Flour & Salt",
+    "extracted_ingredients": [
+      "red rice flour",
+      "salt"
+    ],
+    "true_ingredients": [
+      "red rice flour",
+      "salt"
+    ]
+  },
+  {
+    "image": "in140.jpg",
+    "ocr_text": "INGREDIENTS: Corn (78%) , Edible Vegetable Oil\n(Palmolein Oil) , Sugar,\n'Spices & Condiments\n(Garlic Powder , Onion Powder, Chilli, Spice\nExtract) , Rice Flour, lodised Salt, Potassium\nChloride (508) , Citric Acid (330).",
+    "extracted_ingredients": [
+      "corn (78%)",
+      "edible vegetable oil palm olein oil",
+      "sugar",
+      "spices",
+      "condiments garlic powder , onion powder chilli, spice extract",
+      "rice flour",
+      "iodized salt",
+      "potassium chlorine e508",
+      "citric acid (330)."
+    ],
+    "true_ingredients": [
+      "corn (78%)",
+      "edible vegetable oil palm olein oil",
+      "sugar",
+      "spices",
+      "condiments garlic powder , onion powder chilli, spice extract",
+      "rice flour",
+      "iodized salt",
+      "potassium chlorine e508",
+      "citric acid (330)."
+    ]
+  },
+  {
+    "image": "in142.jpg",
+    "ocr_text": "Ingredients: Milk fat from cOW'$ milk",
+    "extracted_ingredients": [
+      "milk oat from cow'$ milk"
+    ],
+    "true_ingredients": [
+      "milk oat from cow'$ milk"
+    ]
+  },
+  {
+    "image": "in145.jpg",
+    "ocr_text": "Ingredients: Water; Tomato Paste (37%) , Acidity\nRegulator (INS 330) and Antioxidant (INS 300).",
+    "extracted_ingredients": [
+      "water",
+      "tomato date (37%)",
+      "acidity regulator (ins 330)",
+      "antioxidant (ins 300)."
+    ],
+    "true_ingredients": [
+      "water",
+      "tomato date (37%)",
+      "acidity regulator (ins 330)",
+      "antioxidant (ins 300)."
+    ]
+  },
+  {
+    "image": "in147.jpg",
+    "ocr_text": "Ingredients: Tomato Puree; Water; Sugar; lodized Salt; Corn\nOnion, Garlic, Emulsifying and stabilizing Agents\nAcidity Regulator (260), Spices & Condiments,\nPreservative (211)\nStarch;\n(1422,",
+    "extracted_ingredients": [
+      "tomato puree",
+      "water",
+      "sugar",
+      "iodized salt",
+      "corn onion",
+      "garlic",
+      "emulsifying",
+      "stabilizing agents acidity regulator e260",
+      "spices",
+      "condiments",
+      "preservative e211 starch",
+      "e1422"
+    ],
+    "true_ingredients": [
+      "tomato puree",
+      "water",
+      "sugar",
+      "iodized salt",
+      "corn onion",
+      "garlic",
+      "emulsifying",
+      "stabilizing agents acidity regulator e260",
+      "spices",
+      "condiments",
+      "preservative e211 starch",
+      "e1422"
+    ]
+  },
+  {
+    "image": "in148.jpg",
+    "ocr_text": "Mix Fruit Pulp (Papaya E\nQuava Pulp; Banana Pulp; Mango Pulp, Pineapple\nPulp; Anple Pulp, Orange Juice, Strawberry Pulp)\n(4506}, Water; Acidity Regulator (INS-330),\nThickened (INS-440)\nPulp;",
+    "extracted_ingredients": [
+      "mix fruit pulp papaya e guava pulp; banana pulp; mango pulp, pineapple pulp; apple pulp, orange juice, strawberry pulp) (4506}, water acidity regulator (ins-330), thickener (ins-440) pulp;"
+    ],
+    "true_ingredients": [
+      "mix fruit pulp papaya e guava pulp; banana pulp; mango pulp, pineapple pulp; apple pulp, orange juice, strawberry pulp) (4506}, water acidity regulator (ins-330), thickener (ins-440) pulp;"
+    ]
+  },
+  {
+    "image": "in172.jpg",
+    "ocr_text": "INGREDIENTS;\nEnriched\nunbleached\nascorbic acid [dough conditioner];' niacin,\nreduced\niron;\nthiamin\nmononitrate,\nriboflavin,  folic , acid},  sugar, , degermed\ncornmeal, salc leavening (baking\nsoda,\nsodium\nacid\npyrophosghate},\nsoybean oil,\npowder; natural flavor\nCONTAINS; Wheat\n'contain milk\neggs, soy and tree nuts.\nyellow\nhoney \"",
+    "extracted_ingredients": [
+      "enriched unbleached ascorbic acid [dough conditioner]",
+      "niacin",
+      "reduced iron",
+      "thiamine mononitrate",
+      "riboflavin",
+      "folic",
+      "acid}",
+      "sugar",
+      "degermed cornmeal",
+      "salt leavening (baking soya sodium acid pyrophosghate}, soybean oil powder natural flavor contains; wheat 'contain milk eggs soy and tree nuts yellow honey \""
+    ],
+    "true_ingredients": [
+      "enriched unbleached ascorbic acid [dough conditioner]",
+      "niacin",
+      "reduced iron",
+      "thiamine mononitrate",
+      "riboflavin",
+      "folic",
+      "acid}",
+      "sugar",
+      "degermed cornmeal",
+      "salt leavening (baking soya sodium acid pyrophosghate}, soybean oil powder natural flavor contains; wheat 'contain milk eggs soy and tree nuts yellow honey \""
+    ]
+  },
+  {
+    "image": "in175.jpg",
+    "ocr_text": "INGREDIENTS\nWheat Flour (Atta) (55%), RO-purified\nWater (38%), Edible Vegetable Oil\n(Sunflower), Edible Hydrogenated\nVegetable Fat, lodized Salt\nAllergen information: Contains\nWheat Gluten:",
+    "extracted_ingredients": [
+      "wheat flour (atta) (55%)",
+      "ro-purified water (38%)",
+      "edible vegetable oil (sunflower)",
+      "edible hydrogenated vegetable oat",
+      "lodized salt allergen information: contains wheat gluten"
+    ],
+    "true_ingredients": [
+      "wheat flour (atta) (55%)",
+      "ro-purified water (38%)",
+      "edible vegetable oil (sunflower)",
+      "edible hydrogenated vegetable oat",
+      "lodized salt allergen information: contains wheat gluten"
+    ]
+  },
+  {
+    "image": "in176.jpg",
+    "ocr_text": "Ingredients\nMRR\nSemolina (84%), Edible vegetable fat-interesterified\n(Made from Palm Oil and Palm Kernel Oil), Bengal Gram\nDal, Cashew Nut, Salt, Curry Leaves, Raising Agent\nSodium Bicarbonate (INS 500 ii), Anti Caking Agent Silica\n(INS 551), Mustard, Green Chilli, Ginger:",
+    "extracted_ingredients": [
+      "mrr semolina (84%)",
+      "edible vegetable fat-interesterified mace from palm oil and palm fennel oil",
+      "bengal gram dal",
+      "cashew nut",
+      "salt",
+      "curry leaves",
+      "raisin agent sodium bicarbonate (ins e500 ii)",
+      "anti caking agent silica (ins 551)",
+      "mustard",
+      "green chilli",
+      "ginger"
+    ],
+    "true_ingredients": [
+      "mrr semolina (84%)",
+      "edible vegetable fat-interesterified mace from palm oil and palm fennel oil",
+      "bengal gram dal",
+      "cashew nut",
+      "salt",
+      "curry leaves",
+      "raisin agent sodium bicarbonate (ins e500 ii)",
+      "anti caking agent silica (ins 551)",
+      "mustard",
+      "green chilli",
+      "ginger"
+    ]
+  },
+  {
+    "image": "in177.jpg",
+    "ocr_text": "LOW FAT VANILLA FLAVOURED YOGHURT\nINGREDIENTS: Skim Milk, Concentrated\nSkim Milk, Water; Sugar; Cream (From\nMilk) , Thickeners (1422 (From Maize) ,\n1442 (From Maize)) , Milk Solids\nGelatine; Flavours, Acidity Regulators\n(331, 332,270,330) , Enzyme\n(Lactase) , Live Cultures.\nContains Milk and Milk Products",
+    "extracted_ingredients": [
+      "skim milk",
+      "concentrate skim milk",
+      "water",
+      "sugar",
+      "cream (from milk",
+      "thickener e1422 (from maize) , e1442 (from maize))",
+      "milk solids gelatine",
+      "flavors",
+      "acidity regulators e331 332,270,330)",
+      "enzyme (lactase)",
+      "lime cultures. contains milk",
+      "milk products"
+    ],
+    "true_ingredients": [
+      "skim milk",
+      "concentrate skim milk",
+      "water",
+      "sugar",
+      "cream (from milk",
+      "thickener e1422 (from maize) , e1442 (from maize))",
+      "milk solids gelatine",
+      "flavors",
+      "acidity regulators e331 332,270,330)",
+      "enzyme (lactase)",
+      "lime cultures. contains milk",
+      "milk products"
+    ]
+  },
+  {
+    "image": "in179.jpg",
+    "ocr_text": "INGREDIENTS: Milk and Lemon\nAllergen info: Contains Milk",
+    "extracted_ingredients": [
+      "milk",
+      "lemon allergen info: contains milk"
+    ],
+    "true_ingredients": [
+      "milk",
+      "lemon allergen info: contains milk"
+    ]
+  },
+  {
+    "image": "in18.jpg",
+    "ocr_text": "Ingredients: omato Pasto (41\n35%) , Liquid Glucoso\nOnions, Sunflowor Oil, Wator; Sugar\nlodized\nChilli Flakes. Acidity Regulators (INS260 & INS33O). Mixed Herbs. Garlic,\nMilk Solids, Mixod Spices & Condiments and Thickoners (INS1422 & INS415).\nCONTAINS PERMITTED CLASS\nPRESERVATIVE (INS211):\nSall:\nRed",
+    "extracted_ingredients": [
+      "tomato pasto (41 35%)",
+      "squid glucose onion",
+      "sunflower oil",
+      "water",
+      "sugar lodized chilli flakes. acidity regulators (ins260 & ins33o). minced herbs. garlic",
+      "milk solids",
+      "mixed spices",
+      "condiments",
+      "thickener (ins1422 & ins415). contains permitted clam preservative (ins211): salt red"
+    ],
+    "true_ingredients": [
+      "tomato pasto (41 35%)",
+      "squid glucose onion",
+      "sunflower oil",
+      "water",
+      "sugar lodized chilli flakes. acidity regulators (ins260 & ins33o). minced herbs. garlic",
+      "milk solids",
+      "mixed spices",
+      "condiments",
+      "thickener (ins1422 & ins415). contains permitted clam preservative (ins211): salt red"
+    ]
+  },
+  {
+    "image": "in180.jpg",
+    "ocr_text": "Ingredients: Durum Wheat Semolina",
+    "extracted_ingredients": [
+      "durum wheat semolina"
+    ],
+    "true_ingredients": [
+      "durum wheat semolina"
+    ]
+  },
+  {
+    "image": "in181.jpg",
+    "ocr_text": "VANILLA ICE CREAM\nTIMELESS AND HEAVENLY VANILLA ICE CREAM:\nVANILLA ICE CREAM INGREDIENTS: WATER; MILK SOLIDS, SUGAR;\nSTABILIZERS (461,412,407), EMULSIFIER (471).",
+    "extracted_ingredients": [
+      "vanilla rice cream  water",
+      "milk solids",
+      "sugar",
+      "stabilizer (461,412,407)",
+      "emulsifier (471)."
+    ],
+    "true_ingredients": [
+      "vanilla rice cream  water",
+      "milk solids",
+      "sugar",
+      "stabilizer (461,412,407)",
+      "emulsifier (471)."
+    ]
+  },
+  {
+    "image": "in182.jpg",
+    "ocr_text": "Ingredients\nCoriander powder, Chilli powder, Cumin\npowder, Iodised salt (Anticaking Agent (INS\n536,\nINS 551)) _\nCinnamon powder; Fennel powder,\nDried\nleaf; Ajowan, Stone flower, Clove\npowder, Turmeric powder, Compounded\nAsafoetida (Stabilizer (INS 412)), Nutmeg powder;\nKalonji, Green cardamom powder; Black pepper\npowder; Mace powder, Allspice, Dried ginger\npowder\nBay",
+    "extracted_ingredients": [
+      "coriander powder",
+      "chili powder",
+      "cumin powder",
+      "iodine salt (anticaking agent (ins 536, ins 551)) _ cinnamon powder",
+      "fennel powder",
+      "dried leaf",
+      "ajowan",
+      "stock flour",
+      "clove powder",
+      "turmeric powder",
+      "compounded asafoetida stabilizer (ins 412))",
+      "nutmeg powder",
+      "kalonji",
+      "green cardamom powder",
+      "black pepper powder",
+      "mace powder",
+      "allspice",
+      "dried ginger powder soy"
+    ],
+    "true_ingredients": [
+      "coriander powder",
+      "chili powder",
+      "cumin powder",
+      "iodine salt (anticaking agent (ins 536, ins 551)) _ cinnamon powder",
+      "fennel powder",
+      "dried leaf",
+      "ajowan",
+      "stock flour",
+      "clove powder",
+      "turmeric powder",
+      "compounded asafoetida stabilizer (ins 412))",
+      "nutmeg powder",
+      "kalonji",
+      "green cardamom powder",
+      "black pepper powder",
+      "mace powder",
+      "allspice",
+      "dried ginger powder soy"
+    ]
+  },
+  {
+    "image": "in2.jpg",
+    "ocr_text": "Ingrodlonts: Mllk Solids, Common Sat\nStablllzor (E 460(11:\n(For Idontfcatlon of Manufacturng Unil",
+    "extracted_ingredients": [
+      "ingrodlonts: milk solids",
+      "common salt stablllzor (e 460(11: (for idontfcatlon of manufacturng unil"
+    ],
+    "true_ingredients": [
+      "ingrodlonts: milk solids",
+      "common salt stablllzor (e 460(11: (for idontfcatlon of manufacturng unil"
+    ]
+  },
+  {
+    "image": "in22.jpg",
+    "ocr_text": "Ingredients: Tomato Paste\nWater, Onions, Refined\nSoyabean Oil, lodised Salt; Mixed\nSpices, Garlic, Herbs, Acidity\n260,#8330),\nEmulsifiers and Stabilizers\n(s322,\nINS\nAntioxidant\n(8319\nSugar,",
+    "extracted_ingredients": [
+      "tomato date water",
+      "onion",
+      "refined soybean oil",
+      "iodized salt",
+      "mixed spices",
+      "garlic",
+      "herbs",
+      "acidity e260",
+      "#8330)",
+      "emulsifier",
+      "stabilizer (s322, ins antioxidant e319 sugar"
+    ],
+    "true_ingredients": [
+      "tomato date water",
+      "onion",
+      "refined soybean oil",
+      "iodized salt",
+      "mixed spices",
+      "garlic",
+      "herbs",
+      "acidity e260",
+      "#8330)",
+      "emulsifier",
+      "stabilizer (s322, ins antioxidant e319 sugar"
+    ]
+  },
+  {
+    "image": "in23.jpg",
+    "ocr_text": "Potatoes; Green\n259),\nFresh Coriander; Acidity Regulator\n(INS\nCornflour; Stabilizer\n415),\n(INS\nSpices & Condiments:\nngredients:\nWater;\nchilli\nSugar; :\nSalt;\n260);\nGarlic;\n(INS\nPreservative\n211),",
+    "extracted_ingredients": [
+      "potatoes",
+      "green 259)",
+      "fresh coriander",
+      "acidity regulator (ins corn flour stabilizer 415)",
+      "(ins spices & condiments: ngredients: water chilli sugar : salt 260)",
+      "garlic",
+      "(ins preservative 211)"
+    ],
+    "true_ingredients": [
+      "potatoes",
+      "green 259)",
+      "fresh coriander",
+      "acidity regulator (ins corn flour stabilizer 415)",
+      "(ins spices & condiments: ngredients: water chilli sugar : salt 260)",
+      "garlic",
+      "(ins preservative 211)"
+    ]
+  },
+  {
+    "image": "in24.jpg",
+    "ocr_text": "Ingredicnt\nColifornion Almonds; 1OO% Natural",
+    "extracted_ingredients": [
+      "colifornion almonds",
+      "1oo% natural"
+    ],
+    "true_ingredients": [
+      "colifornion almonds",
+      "1oo% natural"
+    ]
+  },
+  {
+    "image": "in25.jpg",
+    "ocr_text": "Walnuls",
+    "extracted_ingredients": [
+      "walnuts"
+    ],
+    "true_ingredients": [
+      "walnuts"
+    ]
+  },
+  {
+    "image": "in26.jpg",
+    "ocr_text": "she, Salt;",
+    "extracted_ingredients": [
+      "soy",
+      "salt"
+    ],
+    "true_ingredients": [
+      "soy",
+      "salt"
+    ]
+  },
+  {
+    "image": "in27.jpg",
+    "ocr_text": "Ingredients : Notural Wolnut Kernels. (No shell)",
+    "extracted_ingredients": [
+      "natural walnut kernels. (no shellac"
+    ],
+    "true_ingredients": [
+      "natural walnut kernels. (no shellac"
+    ]
+  },
+  {
+    "image": "in28.jpg",
+    "ocr_text": "INGREDIENTS:\nSugar; Cocoa Powder (3096*],\nCONTAINS ADDED FLAVOUR (ARTIFICHALNAHLLA\nFLAVOURING SUBSTANCES}\nAllergenInformation: Contains Sulphides",
+    "extracted_ingredients": [
+      "sugar"
+    ],
+    "true_ingredients": [
+      "sugar"
+    ]
+  },
+  {
+    "image": "in29.jpg",
+    "ocr_text": "Ingnedienes\nWater; Sugar; Mango Pulp (6.8%), Banana Puree (4,.5%),\nGuava Pulp (4.4%), Pineapple Pulp (3.3\nWatermelon\nPulp (0.6%), Polydextrose (Dietary Fiber) (0.54%),\nAcidity Regulator (INS 330}, Bael Pulp (0.17%) , Jamun\nPulp (0.17%), Litchi Pulp (0.17%), Stabilizer (INS 440},\nAntioxidant (INS 300) and Pomegranate Juice (0.05%}.\nCONTAINS PERMITTED NATURAL COLOUR(S)\n(INS 160aliii)) AND ADDED FLAVOUR(S)\n(NATURAL FLAVOURS AND NATURAL\nFLAVOURING SUBSTANCES AND NATURE\nIDENTICAL FLAVOURING SUBSTANCES)\nSOURCE OF DIETARY FIBRE\n2%), !",
+    "extracted_ingredients": [
+      "ingnedienes water",
+      "sugar",
+      "mango pulp (6.8%)",
+      "banana pureed (4,.5%)",
+      "guava pulp (4.4%)",
+      "pineapple pulp (3.3 watermelon pulp (0.6%), polydextrose (dietary fiber) (0.54%), acidity regulator (ins 330}, bael pulp (0.17%) , kamut pulp (0.17%), litchi pulp (0.17%), stabilizer (ins 440}, antioxidant (ins 300) and pomegranate rice (0.05%}. contains permitted natural colour(s) (ins 160aliii)) and added flavour(s) natural flavors and natural flavoring substances and natural identical flavoring substances) sour of dietary fibre 2%), !"
+    ],
+    "true_ingredients": [
+      "ingnedienes water",
+      "sugar",
+      "mango pulp (6.8%)",
+      "banana pureed (4,.5%)",
+      "guava pulp (4.4%)",
+      "pineapple pulp (3.3 watermelon pulp (0.6%), polydextrose (dietary fiber) (0.54%), acidity regulator (ins 330}, bael pulp (0.17%) , kamut pulp (0.17%), litchi pulp (0.17%), stabilizer (ins 440}, antioxidant (ins 300) and pomegranate rice (0.05%}. contains permitted natural colour(s) (ins 160aliii)) and added flavour(s) natural flavors and natural flavoring substances and natural identical flavoring substances) sour of dietary fibre 2%), !"
+    ]
+  },
+  {
+    "image": "in30.jpg",
+    "ocr_text": "powder\nmalt Extract; soy protein isolate,\nzinc sulphate, potassium iodidel\nIguar gumi; vitamins (choline\nacetate, riboflavin  thiamine\n(E 955]\nartificial\nNGREDIENTS:\nSkimmed\nmilk\ncocoa\nferric\nmaltod\nlextrin;\nstabilizer\nbitartrate\nascorbic\ntocopheryl\nacetate,\nhydrochloride\nretinyl =\nPyridoxine\nhydcochtoride,\nsweetener",
+    "extracted_ingredients": [
+      "powder malt extract",
+      "soy protein isolate",
+      "zinc sulfate",
+      "potassium iodine sugar gumi",
+      "vitamin c (choline acetate, riboflavin thiamine (e 955] artificial ngredients: skimmed milk cocoa ferric maltol dextrin stabilizer bitartrate ascorbic tocopherol acetate, hydrochloride retinol = pyridoxine hydcochtoride, sweetener"
+    ],
+    "true_ingredients": [
+      "powder malt extract",
+      "soy protein isolate",
+      "zinc sulfate",
+      "potassium iodine sugar gumi",
+      "vitamin c (choline acetate, riboflavin thiamine (e 955] artificial ngredients: skimmed milk cocoa ferric maltol dextrin stabilizer bitartrate ascorbic tocopherol acetate, hydrochloride retinol = pyridoxine hydcochtoride, sweetener"
+    ]
+  },
+  {
+    "image": "in31.jpg",
+    "ocr_text": "INGREDIENTS\nChicken Meat (52%) , Water; Breadcrumbs {Wheat Flour; Yeast; Salt, Permitted\nBread Improvers, Preservative (INS 282) And Acidity Regulator (INS26O)} , Edible\nVegetable Oil (RBD Palmolein). Batter {Wheat Flour; Corn Flour; Corn Starch, Salt\nAnd Emulsifier (INS 466)}, Soy; Isolated\nProtein, lodized Salt, Spices &\nCondiments And Texturizer (INS 451()).\nSoy\"",
+    "extracted_ingredients": [
+      "chicken meat (52%)",
+      "water",
+      "breadcrumbs wheat flour",
+      "yeast",
+      "salt",
+      "permitted cream improvers",
+      "preservative (ins 282) and acidity regulator (ins26o)}",
+      "edible vegetable oil (rbd palmolein). butter wheat flour",
+      "corn flour",
+      "corn starch",
+      "salt and emulsifier (ins 466)}",
+      "soy",
+      "isolated protein",
+      "iodized salt",
+      "spices",
+      "condiments and texturizer (ins 451()). soy"
+    ],
+    "true_ingredients": [
+      "chicken meat (52%)",
+      "water",
+      "breadcrumbs wheat flour",
+      "yeast",
+      "salt",
+      "permitted cream improvers",
+      "preservative (ins 282) and acidity regulator (ins26o)}",
+      "edible vegetable oil (rbd palmolein). butter wheat flour",
+      "corn flour",
+      "corn starch",
+      "salt and emulsifier (ins 466)}",
+      "soy",
+      "isolated protein",
+      "iodized salt",
+      "spices",
+      "condiments and texturizer (ins 451()). soy"
+    ]
+  },
+  {
+    "image": "in32.jpg",
+    "ocr_text": "INGREDIENTS\nChicken Meat (53%), Breadcrumbs [Wheat\nFlour; Yeast, Salt, Permitted Bread Improvers,\nPreservative (INS 282) And Acidity Regulator\n(INS 260)], Water; Edible Vegetable Oil (Refined\nPalmolein Oil) , Batter [Wheat Flour; Corn Flour;\nCorn Starch, Salt and Emulsifier (INS 466)],\nProtein, Spices & Condiments, lodized Salt And\nTexturizer (INS 451()).\nCONTAINS PREMITTED CLASS II PRESERVATIVE:\nAllergy Advice: Contains\nand Wheat Products.\nSoy\nSoy",
+    "extracted_ingredients": [
+      "chicken meat (53%)",
+      "breadcrumbs wheat flour",
+      "yeast",
+      "salt",
+      "permitted cream improvers",
+      "preservative (ins 282) and acidity regulator (ins 260)]",
+      "water",
+      "edible vegetable oil refined palm olein oil",
+      "butter wheat flour",
+      "corn flour",
+      "corn starch",
+      "salt",
+      "emulsifier (ins 466)]",
+      "protein",
+      "spices",
+      "condiments",
+      "lodized salt and texturizer (ins 451()). contains premitted clam ii preservatives allergy advice: contains",
+      "wheat products. soy soy"
+    ],
+    "true_ingredients": [
+      "chicken meat (53%)",
+      "breadcrumbs wheat flour",
+      "yeast",
+      "salt",
+      "permitted cream improvers",
+      "preservative (ins 282) and acidity regulator (ins 260)]",
+      "water",
+      "edible vegetable oil refined palm olein oil",
+      "butter wheat flour",
+      "corn flour",
+      "corn starch",
+      "salt",
+      "emulsifier (ins 466)]",
+      "protein",
+      "spices",
+      "condiments",
+      "lodized salt and texturizer (ins 451()). contains premitted clam ii preservatives allergy advice: contains",
+      "wheat products. soy soy"
+    ]
+  },
+  {
+    "image": "in33.jpg",
+    "ocr_text": "INGREDIENTS\nCarbonated Water, sugor , acidity\nregulator (338) , coffeine  Contoins\npermitted noturol colour (I50d) and\nadded\n(natural , nature-identicol\nond ortificiol flovouring\nsubstonces (cola flavour)\nflovours",
+    "extracted_ingredients": [
+      "carbonated water",
+      "sugar",
+      "acidity regulator e338",
+      "coffee contoins permitted natural flour (i50d)",
+      "added natural , nature-identicol ond artificial flavoring substonces (cola flavor flavors"
+    ],
+    "true_ingredients": [
+      "carbonated water",
+      "sugar",
+      "acidity regulator e338",
+      "coffee contoins permitted natural flour (i50d)",
+      "added natural , nature-identicol ond artificial flavoring substonces (cola flavor flavors"
+    ]
+  },
+  {
+    "image": "in35.jpg",
+    "ocr_text": "INGREDIENTS: COCONUT WATER(1OO%),\nBIO-PRESERVATIVE (INS 234)\nCONTAINS NATURALLY OCCURING SUGARS",
+    "extracted_ingredients": [
+      "coconut water(1oo%)",
+      "bio-preservative (ins 234) contains natural occuring sugar"
+    ],
+    "true_ingredients": [
+      "coconut water(1oo%)",
+      "bio-preservative (ins 234) contains natural occuring sugar"
+    ]
+  },
+  {
+    "image": "in36.jpg",
+    "ocr_text": "",
+    "extracted_ingredients": [],
+    "true_ingredients": []
+  },
+  {
+    "image": "in37.jpg",
+    "ocr_text": "Ingredients: Water Kixed Fruit Concentrate (12.0305)\n[Apple Juice Conc: (4.72%0), Orange Juice Conc: (2.700)\nGuava Puree (0.740), Apricot Puree Conc: (0.6509)\nlime Juice Conc: (0.2890), Passion Fuit Juice Conc.\n(0.2300 Guava Puree Conc; (0.1800) Pineapple Juice\nconc: (0.0500)] Sugar Acidity Regulator (INS 330),\nAntioxidant (INS 300) and Stabilizer (INS 440) .",
+    "extracted_ingredients": [
+      "water diced fruit concentrate (12.0305) apple rice conc: (4.72%0)",
+      "orange rice conc: (2.700) guava pureed (0.740)",
+      "apricot pureed conc: (0.6509) lime rice conc: (0.2890)",
+      "passion fruit rice conc. (0.2300 guava pureed conc; (0.1800) pineapple rice conc: (0.0500)] sugar acidity regulator (ins 330), antioxidant (ins 300) and stabilizer (ins 440) ."
+    ],
+    "true_ingredients": [
+      "water diced fruit concentrate (12.0305) apple rice conc: (4.72%0)",
+      "orange rice conc: (2.700) guava pureed (0.740)",
+      "apricot pureed conc: (0.6509) lime rice conc: (0.2890)",
+      "passion fruit rice conc. (0.2300 guava pureed conc; (0.1800) pineapple rice conc: (0.0500)] sugar acidity regulator (ins 330), antioxidant (ins 300) and stabilizer (ins 440) ."
+    ]
+  },
+  {
+    "image": "in38.jpg",
+    "ocr_text": "INGREDIENTS\nOats (73.97) . Maltodextrin, Salt; Spices and Condiments\n(3.47) (Onion, Tumeric, Pepper Cumin, Garlic, Fenugreel\nClove., Nutmeg: Red Chilli) . Dried Vegetables (Carrots(1.154) .\nOnion Flakes (1.157) , Green Peas(0.69*) , Sugar; Starch,\nHydrolysed Vegetables Protien, Wheat Powder; Edible\nVegetable Oil,\nEnhancer (627 , 631) , Antioxident(320)\nFlavour",
+    "extracted_ingredients": [
+      "oats (73.97)",
+      "maltodextrin",
+      "salt",
+      "spices",
+      "condiments (3.47) onion turmeric pepper cumin garlic fenugreek cloves nutmeg red chilli)",
+      "dried vegetables (carrots(1.154) . onion flakes (1.157) , green peas(0.69*) , sugar starch hydrolysed vegetables protien, wheat powder edible vegetable oil enhancer e627 , 631) , antioxident(320) flavor"
+    ],
+    "true_ingredients": [
+      "oats (73.97)",
+      "maltodextrin",
+      "salt",
+      "spices",
+      "condiments (3.47) onion turmeric pepper cumin garlic fenugreek cloves nutmeg red chilli)",
+      "dried vegetables (carrots(1.154) . onion flakes (1.157) , green peas(0.69*) , sugar starch hydrolysed vegetables protien, wheat powder edible vegetable oil enhancer e627 , 631) , antioxident(320) flavor"
+    ]
+  },
+  {
+    "image": "in39.jpg",
+    "ocr_text": "INGREDIENTS\nWheat Solids (54.2%) {Wheat Flour (Atta) (29.69b) , Refined Wheat\nFlour (Maida) (24.6%)}, Sugar, Corn Flour; Cocoa Solids (5.6%) ,\nMinerals, Cereal Extract, Edible Vegetable Oil (Palmolein) , lodized\nSalt, Colour (INS 150d) , Vitamins, Antioxidant (INS 320) .\nCONTAINS PERMITTED NATURAL COLOUR & ADOED FLAVOURS\n(NATURE IDENTICAL & ARTIFICIAL CREAM FLAVOURING",
+    "extracted_ingredients": [
+      "wheat solids (54.2%) wheat flour (atta) (29.69b)",
+      "refined wheat flour (maida) (24.6%)}",
+      "sugar",
+      "corn flour",
+      "cocoa solids (5.6%)",
+      "minerals",
+      "cereal extract",
+      "edible vegetable oil (palmolein)",
+      "iodized salt",
+      "flour (ins e150d",
+      "vitamin c",
+      "antioxidant (ins 320)",
+      "permitted natural flour",
+      "adoed flavors (nature identical & artificial cream flavoring"
+    ],
+    "true_ingredients": [
+      "wheat solids (54.2%) wheat flour (atta) (29.69b)",
+      "refined wheat flour (maida) (24.6%)}",
+      "sugar",
+      "corn flour",
+      "cocoa solids (5.6%)",
+      "minerals",
+      "cereal extract",
+      "edible vegetable oil (palmolein)",
+      "iodized salt",
+      "flour (ins e150d",
+      "vitamin c",
+      "antioxidant (ins 320)",
+      "permitted natural flour",
+      "adoed flavors (nature identical & artificial cream flavoring"
+    ]
+  },
+  {
+    "image": "in40.jpg",
+    "ocr_text": "Ingredients\nCorn Grits (61.7%/, Sugar; Sliced Almonds (9.0%|,\nCereal Extract; Dextrose, Honey (1.6%|, lodized Salt; Vitamins, Minerals,\nColour (INS 150d) & Antioxidant (INS 320).\nCONTAINS PERMITTED NATURAL COLOUR & ADDED FLAVOUR\n(NATURE-IDENTICAL FLAVOURING SUBSTANCES)\nCONTAINS GLUTEN & ALMOND.\nMAY CONTAIN TRACES OF OTHER TREENUTS.",
+    "extracted_ingredients": [],
+    "true_ingredients": []
+  },
+  {
+    "image": "in47.jpg",
+    "ocr_text": "Ingredients : Whole Wheat; No preservatives or additives used,",
+    "extracted_ingredients": [
+      "whole wheat",
+      "soy preservatives",
+      "additives used"
+    ],
+    "true_ingredients": [
+      "whole wheat",
+      "soy preservatives",
+      "additives used"
+    ]
+  },
+  {
+    "image": "in48.jpg",
+    "ocr_text": "Ingredients: Milk solids water sugar; stabilizer (4401,\nnature identical and artifcal flavouring substances (rose),\njative culture.\nAllergen Information: Contains milk",
+    "extracted_ingredients": [
+      "milk solids water sugar",
+      "stabilizer (4401, natural identical and artificial flavoring substances (rose), jative culture. allergen information: contains milk"
+    ],
+    "true_ingredients": [
+      "milk solids water sugar",
+      "stabilizer (4401, natural identical and artificial flavoring substances (rose), jative culture. allergen information: contains milk"
+    ]
+  },
+  {
+    "image": "in49.jpg",
+    "ocr_text": "Ingredlents: Dark Chocolate (3190), Reflned Wheat\nFlour (Malda)  Sugar, Butter. Apple Clder VInegar,\nCONTAINS; WHEAT AND MILK:\nCONTAINS ADDED ARTIFICIAL FLAVOURING\nSUBSTANCES NVANILLA):",
+    "extracted_ingredients": [
+      "dark chocolate (3190)",
+      "refined wheat flour (malda) sugar",
+      "butter apple clder vinegar",
+      "wheat and milk contains added artificial flavoring substances nvanilla):"
+    ],
+    "true_ingredients": [
+      "dark chocolate (3190)",
+      "refined wheat flour (malda) sugar",
+      "butter apple clder vinegar",
+      "wheat and milk contains added artificial flavoring substances nvanilla):"
+    ]
+  },
+  {
+    "image": "in5.jpg",
+    "ocr_text": "INGREDIENTS:\nPotato, Refined Palmolein Oil, Bengal Gram\nFlour (Besan) , Potato Flakes, Potato Starch;\nTapioca Starch; Tapary Beans\nDal)\nFlour; lodised Salt; Red Chilli Powder;\nBlack Salt;, Acidity Regulator (INS 330) ,\nBlack Pepper; Clove; Cardamom; Dried\nGinger Powder; Dried Garlic Powder; Refined\nSugar; Cumin Powder;\nLeaves,\nNutmeg; Cinnamon and Mint Leaves\n(Moth\nBay",
+    "extracted_ingredients": [
+      "potato",
+      "refined palm olein oil",
+      "bengal gram flour (besan)",
+      "potato flakes",
+      "potato starch",
+      "tapioca starch",
+      "tamari beans dal) flour",
+      "iodized salt",
+      "red chilli powder",
+      "black salt",
+      "acidity regulator (ins 330)",
+      "black pepper",
+      "clove",
+      "cardamom",
+      "dried ginger powder",
+      "dried garlic powder",
+      "refined sugar",
+      "cumin powder",
+      "leaves",
+      "nutmeg",
+      "cinnamon",
+      "mint leaves broth bay"
+    ],
+    "true_ingredients": [
+      "potato",
+      "refined palm olein oil",
+      "bengal gram flour (besan)",
+      "potato flakes",
+      "potato starch",
+      "tapioca starch",
+      "tamari beans dal) flour",
+      "iodized salt",
+      "red chilli powder",
+      "black salt",
+      "acidity regulator (ins 330)",
+      "black pepper",
+      "clove",
+      "cardamom",
+      "dried ginger powder",
+      "dried garlic powder",
+      "refined sugar",
+      "cumin powder",
+      "leaves",
+      "nutmeg",
+      "cinnamon",
+      "mint leaves broth bay"
+    ]
+  },
+  {
+    "image": "in51.jpg",
+    "ocr_text": "INGREDIENTS:\nWheat flour;\ncoconut oil, glucose syrup, whey\npowder  (milk), sugar; fat-reduced\ncocoa,\nchocolate (sugar; cocoa mass) 5% in the\ncream filling;  skimmed milk powder; raising\nagents (sodium hydrogen carbonate, disodium\ndiphosphate); hazelnuts; emulsifier soy lecithins;\nsalt, barley malt extract, concentrated apple\njuice, spices; Bourbon vanilla pods:\ncontain\npeanuts and almonds:\nsoy\nflour;\nMay",
+    "extracted_ingredients": [
+      "wheat flour",
+      "coconut oil",
+      "glucose syrup",
+      "whey powder  milk",
+      "sugar",
+      "fat-reduced cocoa",
+      "chocolate sugar cocoa mass) 5% in the cream filling",
+      "skimmed milk powder",
+      "raisin agents sodium hydrogen carbonate, sodium diphosphates",
+      "hazelnuts",
+      "emulsifier soy lecithin",
+      "salt",
+      "barley malt extract",
+      "concentrate apple rice",
+      "spices",
+      "bourbon vanilla pods: contain peanuts",
+      "almonds soy flour",
+      "soy"
+    ],
+    "true_ingredients": [
+      "wheat flour",
+      "coconut oil",
+      "glucose syrup",
+      "whey powder  milk",
+      "sugar",
+      "fat-reduced cocoa",
+      "chocolate sugar cocoa mass) 5% in the cream filling",
+      "skimmed milk powder",
+      "raisin agents sodium hydrogen carbonate, sodium diphosphates",
+      "hazelnuts",
+      "emulsifier soy lecithin",
+      "salt",
+      "barley malt extract",
+      "concentrate apple rice",
+      "spices",
+      "bourbon vanilla pods: contain peanuts",
+      "almonds soy flour",
+      "soy"
+    ]
+  },
+  {
+    "image": "in52.jpg",
+    "ocr_text": "Ingredients: Choco Cream (36%) [Sugar Vegelable Fat Cocoa Solds Emulsifers (E322 from Soya)l Relined Wheat",
+    "extracted_ingredients": [
+      "cocoa cream (36%) sugar vegelable oat cocoa gold emulsifier e322 from soya refined wheat"
+    ],
+    "true_ingredients": [
+      "cocoa cream (36%) sugar vegelable oat cocoa gold emulsifier e322 from soya refined wheat"
+    ]
+  },
+  {
+    "image": "in54.jpg",
+    "ocr_text": "Ingrcdients\nRefined Wheal flour; Hydrogenated Vegetahle Fai, Cashew;\nMik Solids, Salt , Raising agent (ESOO)\nFlavour vanilla and butterscolch\nSugar,",
+    "extracted_ingredients": [
+      "ingrcdients refined wheat flour",
+      "hydrogenated vegetahle fai",
+      "cashew",
+      "milk solids",
+      "salt",
+      "raisin agent (esoo) flavor vanilla",
+      "butterscolch sugar"
+    ],
+    "true_ingredients": [
+      "ingrcdients refined wheat flour",
+      "hydrogenated vegetahle fai",
+      "cashew",
+      "milk solids",
+      "salt",
+      "raisin agent (esoo) flavor vanilla",
+      "butterscolch sugar"
+    ]
+  },
+  {
+    "image": "in55.jpg",
+    "ocr_text": "INGREDIENTS\nAlmond, Skimmed Milk Powder; Besan\n(Gram Flour), Fructo\noligosaccharide;\nSorbitol, Sucralose, Hydrogenated\nVegetable ou;, Baking Soda Baking Powder\nPermitted Flavours",
+    "extracted_ingredients": [
+      "almond",
+      "skimmed milk powder",
+      "beans (gram flour",
+      "fructose oligosaccharide",
+      "sorbitol",
+      "sucralose",
+      "hydrogenated vegetable oil",
+      "baking soya baking powder permitted flavors"
+    ],
+    "true_ingredients": [
+      "almond",
+      "skimmed milk powder",
+      "beans (gram flour",
+      "fructose oligosaccharide",
+      "sorbitol",
+      "sucralose",
+      "hydrogenated vegetable oil",
+      "baking soya baking powder permitted flavors"
+    ]
+  },
+  {
+    "image": "in56.jpg",
+    "ocr_text": "INGREDIENTS: REFINED WHEAT FLOUR (MAIDA); Edible\nVEGETABLE OIL (PALM) SUGAR, LIQUid GLUCOSE,\n(1%) IODISED SALT, ACIDITY REGULATOR (341(i)L\nDOUGH CONDITIONER (223)AND IMPROVER [11010)]\nCONTaIns ADDED FLAVOUR [ARTIFICIAL\nFLAVOURING SUBSTANCE (BUTTER)]",
+    "extracted_ingredients": [
+      "refined wheat flour (maida)",
+      "edible vegetable oil (palm) sugar",
+      "squid glucose",
+      "(1%) iodine salt",
+      "acidity regulator (341(i)l dough conditioner (223)and improver [11010)] contains added flavor artificial flavoring substance (butter)]"
+    ],
+    "true_ingredients": [
+      "refined wheat flour (maida)",
+      "edible vegetable oil (palm) sugar",
+      "squid glucose",
+      "(1%) iodine salt",
+      "acidity regulator (341(i)l dough conditioner (223)and improver [11010)] contains added flavor artificial flavoring substance (butter)]"
+    ]
+  },
+  {
+    "image": "in57.jpg",
+    "ocr_text": "Ingredients:\nOrganic Wheat Bran, Organic Ragi Flour,\nOrganic Oats Flour; Organic Wheat\nOrganic Flax Seeds, Raw Kokum Butter;\nRaw Jaggery, Natural Vanilla Extract,\nHimalayan Rock Salt\nFlour",
+    "extracted_ingredients": [
+      "organic wheat bran",
+      "organic sage flour",
+      "organic oats flour",
+      "organic wheat organic flaxseed",
+      "raw kokum butter",
+      "raw jaggery",
+      "natural vanilla extract",
+      "himalayan rock salt flour"
+    ],
+    "true_ingredients": [
+      "organic wheat bran",
+      "organic sage flour",
+      "organic oats flour",
+      "organic wheat organic flaxseed",
+      "raw kokum butter",
+      "raw jaggery",
+      "natural vanilla extract",
+      "himalayan rock salt flour"
+    ]
+  },
+  {
+    "image": "in58.jpg",
+    "ocr_text": "Butter\nOats, Butter; Shatavari;\nFlax\nRock Sugar; Olive Oil, Honev;\nPowder; Water; Ghee; Vanilla Essence\nYashtimadhu;L\nBrown\nRice,\nChocochip\nSeeds;\nCinnamon",
+    "extracted_ingredients": [
+      "butter oats",
+      "butter",
+      "shatavari",
+      "flax rice sugar",
+      "olive oil",
+      "honey",
+      "powder",
+      "water",
+      "ghee",
+      "vanilla essence yashtimadhu",
+      "l brown rice",
+      "chocochip seeds",
+      "cinnamon"
+    ],
+    "true_ingredients": [
+      "butter oats",
+      "butter",
+      "shatavari",
+      "flax rice sugar",
+      "olive oil",
+      "honey",
+      "powder",
+      "water",
+      "ghee",
+      "vanilla essence yashtimadhu",
+      "l brown rice",
+      "chocochip seeds",
+      "cinnamon"
+    ]
+  },
+  {
+    "image": "in62.jpg",
+    "ocr_text": "Ingredients: Choco Filling (38%*) (Sugar; Edible Vegetable Oil (Palm); Cocoa Solids, Milk Solids, Cocoa Butter;\nEmulsifier (322),Artificial Flavours (Vanilla and Chocolate)) , Refined Wheat Flour (Maida), Sugar; Edible\nVegetable Fat; Cocoa Solids, Invert Sugar; Raising Agents (5o0(i) , 503(), 4500)), Edible Salt; Emulsifier (322)\nCONTAINS ADDED FLAVOURS (NATURAL AND ARTIFICIAL (VANILLA AND CHOCOLATE) FLAVOURING SUBSTANCES)\nAllergen Information: Contains Milk; Wheat; May Contain: Treenuts",
+    "extracted_ingredients": [
+      "cocoa filling (38%*) sugar edible vegetable oil (palm); cocoa solids, milk solids, cocoa butter emulsifier (322),artificial flavors vanilla and chocolate",
+      "refined wheat flour (maida)",
+      "sugar",
+      "edible vegetable oat",
+      "cocoa solids",
+      "invert sugar",
+      "raisin agents (5o0(i) , 503(), 4500))",
+      "edible salt",
+      "wheat",
+      "may tree nuts"
+    ],
+    "true_ingredients": [
+      "cocoa filling (38%*) sugar edible vegetable oil (palm); cocoa solids, milk solids, cocoa butter emulsifier (322),artificial flavors vanilla and chocolate",
+      "refined wheat flour (maida)",
+      "sugar",
+      "edible vegetable oat",
+      "cocoa solids",
+      "invert sugar",
+      "raisin agents (5o0(i) , 503(), 4500))",
+      "edible salt",
+      "wheat",
+      "may tree nuts"
+    ]
+  },
+  {
+    "image": "in63.jpg",
+    "ocr_text": "INGREDIENTS:\nFinger Millet flour, Jaggery.\nWhole Wheat flour; Vegetable Oil & Salt",
+    "extracted_ingredients": [
+      "ginger millet flour",
+      "jaggery whole wheat flour",
+      "vegetable oil",
+      "salt"
+    ],
+    "true_ingredients": [
+      "ginger millet flour",
+      "jaggery whole wheat flour",
+      "vegetable oil",
+      "salt"
+    ]
+  },
+  {
+    "image": "in64.jpg",
+    "ocr_text": "INGREDIENTS\nIsolated Soya Protein; Peanut;, Skimmed Milk\nPovder; Isolated Wheat Protein; Almond, Coconut\nwhey Protein, Fructo-oligosaccharide\nSorbitol;\nSucralose Hydro-genated Vegetable oil,; Baking\nSoda, Jeera, Salt; Baking Powder, Permitted\nFlawours.",
+    "extracted_ingredients": [
+      "isolated soya protein",
+      "peanut",
+      "skimmed milk powder",
+      "isolated wheat protein",
+      "almond",
+      "coconut whey protein",
+      "fructo-oligosaccharide sorbitol",
+      "sucralose hydro-genated vegetable oil",
+      "baking soda",
+      "beer",
+      "salt",
+      "baking powder",
+      "permitted flawours."
+    ],
+    "true_ingredients": [
+      "isolated soya protein",
+      "peanut",
+      "skimmed milk powder",
+      "isolated wheat protein",
+      "almond",
+      "coconut whey protein",
+      "fructo-oligosaccharide sorbitol",
+      "sucralose hydro-genated vegetable oil",
+      "baking soda",
+      "beer",
+      "salt",
+      "baking powder",
+      "permitted flawours."
+    ]
+  },
+  {
+    "image": "in65.jpg",
+    "ocr_text": "INGREDIENTS : REFINED WHEAT Flour (MAIDA) (739) , SUGAR; REFINED PALM\nVITAMNS* , FERROUS SALT AND POTASSLUM LODATE;",
+    "extracted_ingredients": [
+      "refined wheat flour (maida) (739)",
+      "sugar",
+      "refined palm vitamns*",
+      "ferrous salt and potassium date"
+    ],
+    "true_ingredients": [
+      "refined wheat flour (maida) (739)",
+      "sugar",
+      "refined palm vitamns*",
+      "ferrous salt and potassium date"
+    ]
+  },
+  {
+    "image": "in66.jpg",
+    "ocr_text": "BISCUIT INGREDIENTS:\nRefined Wheat Flour (57%*),\n;Sugar;\nPalmolein Oil; Cereal Based\nBeverage Mix 5%' (Cereal Extract\n51%\n(Barley; Wheat),\nCocoa Solids; Colour\n(I50c), Liquid Glucose; Protein Isolate;\nMaltodextrin; Milk Solids; Vitamins; Emulsifiers\n(322,471), Raising Agent (solii)), Minerals; Edible\nSalt; Artificial (Ethyl Vanillin) Flavour) Invert Sugar;\nCocoa Solids (1.4%\nMilk Solids (1%*), Edible Salt;\n(322),\nVitamins And Minerals:\nCONTAINS PERMITTED NATURAL CoLour AND ADDED\nFLAVOURS (NATURAL, NATURE IDENTICAL AND ARTIFICIAL\n(EthYL VANILLIN) FLAVOURING SUBSTANCES)\nAllergen information: Contains Wheat; Milk;\nBarley\nSugar;",
+    "extracted_ingredients": [
+      "biscuit refined wheat flour (57%*)",
+      "sugar",
+      "palm olein oil",
+      "cereal baked beverage mix 5%' cereal extract 51% barley wheat cocoa solids; flour (i50c), squid glucose protein isolate; maltodextrin milk solids; vitamin c emulsifier (322,471), raisin agent (solii))",
+      "minerals",
+      "edible salt",
+      "artificial (ethyl vanillin flavor invert sugar"
+    ],
+    "true_ingredients": [
+      "biscuit refined wheat flour (57%*)",
+      "sugar",
+      "palm olein oil",
+      "cereal baked beverage mix 5%' cereal extract 51% barley wheat cocoa solids; flour (i50c), squid glucose protein isolate; maltodextrin milk solids; vitamin c emulsifier (322,471), raisin agent (solii))",
+      "minerals",
+      "edible salt",
+      "artificial (ethyl vanillin flavor invert sugar"
+    ]
+  },
+  {
+    "image": "in67.jpg",
+    "ocr_text": "INGREDIENTS:\nOATS\nFLOUR\nWHOLE\nWHEAT FLOUR,\nRICE FLOUR, CORNFLOUR_\nROLLED\nOATS,\nRICE\nBRAN\nOIL,\nWHEAT\nBRAN,\nSOYA\nPROTEIN\nISOLATE\nDRIED\nCRANBERRY,\nJAGGERY POWDER,\nBAKING\nSODA,\nVANILLA,\nCINNAMON POWDER_",
+    "extracted_ingredients": [
+      "oats flour whole wheat flour",
+      "rice flour",
+      "corn flour rolled oats",
+      "rice bran oil",
+      "wheat bran",
+      "soya protein folate dried cranberry",
+      "jaggery powder",
+      "baking soda",
+      "vanilla",
+      "cinnamon powder"
+    ],
+    "true_ingredients": [
+      "oats flour whole wheat flour",
+      "rice flour",
+      "corn flour rolled oats",
+      "rice bran oil",
+      "wheat bran",
+      "soya protein folate dried cranberry",
+      "jaggery powder",
+      "baking soda",
+      "vanilla",
+      "cinnamon powder"
+    ]
+  },
+  {
+    "image": "in69.jpg",
+    "ocr_text": "Ingredients: Protein Blend (25%) (High\nProtein Peanut Flour;\nProtein\nConcentrate , Wheat Protein, Soy Protein\nConcentrate) Compound Chips (167), (Sugar;\nEdible Vegetable Fat (Hydrogenated) ,\nCocoa Solids, Dextrose ' & Emulsifier\n(INS322()-Lecithin of\nEdible Vegetable Oil (Bakery\nInvert Sugar; Millets & Pulses Blend\n(heat Flour; Oats Flour Quinoa Flour; Bengal\nGram Flour; Ragj Flour; Com Flour Amaranth\nPuff); Dietary Fiber (Fructooligosacharide),\nCondensed Milk\nPowder; Humectant\n(Glycerine) Tribasic Calcium Phosphate Cocoa\nPowder; Leavening\n(Baking\nBinding agent (Gum Acacia Xanthan\nEmulsifier (INS47I INS472e) , Sall,\nWhey\nSoya\nSugar\nagent",
+    "extracted_ingredients": [
+      "protein blend (25%) (high protein peanut flour protein concentrate , wheat protein, soy protein concentrate compound chives (167)",
+      "sugar edible vegetable oat (hydrogenated) , cocoa solids, dextrose ' & emulsifier (ins322()-lecithin of edible vegetable oil (bakery invert sugar millet & pulses blend wheat flour oats flour quinoa flour bengal gram flour ragj flour cod flour amaranth puff); dietary fiber (fructooligosacharide), condensed milk powder humectant glycerine tribasic calcium phosphate cocoa powder leavening (baking binding agent (gum acacia xanthan emulsifier (ins47i ins472e) , salt whey soya sugar agent"
+    ],
+    "true_ingredients": [
+      "protein blend (25%) (high protein peanut flour protein concentrate , wheat protein, soy protein concentrate compound chives (167)",
+      "sugar edible vegetable oat (hydrogenated) , cocoa solids, dextrose ' & emulsifier (ins322()-lecithin of edible vegetable oil (bakery invert sugar millet & pulses blend wheat flour oats flour quinoa flour bengal gram flour ragj flour cod flour amaranth puff); dietary fiber (fructooligosacharide), condensed milk powder humectant glycerine tribasic calcium phosphate cocoa powder leavening (baking binding agent (gum acacia xanthan emulsifier (ins47i ins472e) , salt whey soya sugar agent"
+    ]
+  },
+  {
+    "image": "in7.jpg",
+    "ocr_text": "REGULATORS [270,",
+    "extracted_ingredients": [
+      "regulators e270"
+    ],
+    "true_ingredients": [
+      "regulators e270"
+    ]
+  },
+  {
+    "image": "in70.jpg",
+    "ocr_text": "INGREDIENTS:\nRAGI\nFLOUR,\nCHICKPEA\nFLOUR\nOATS\nFLOUR;\nRICE\nBRAN\nOIL;\nJAGGERY\nPOWDER,\nCOCOA\nPOWDER,\nOATS FLAKES\nWHEAT BRAN, SOYA PROTEIN\nISOLATE,\nChoco\nCHIPS,\nSALT,\nBAKING\nPOWDER, VANILLA",
+    "extracted_ingredients": [
+      "ragi flour",
+      "chickpea flour oats flour",
+      "rice bran oil",
+      "jaggery powder",
+      "cocoa powder",
+      "oats flakes wheat bran",
+      "soy protein isolate",
+      "cocoa chives",
+      "salt",
+      "baking powder",
+      "vanilla"
+    ],
+    "true_ingredients": [
+      "ragi flour",
+      "chickpea flour oats flour",
+      "rice bran oil",
+      "jaggery powder",
+      "cocoa powder",
+      "oats flakes wheat bran",
+      "soy protein isolate",
+      "cocoa chives",
+      "salt",
+      "baking powder",
+      "vanilla"
+    ]
+  },
+  {
+    "image": "in72.jpg",
+    "ocr_text": "INGREDIENTS\nCoconut; Skimmed Milk Powder; Besan;\nFructo oligosaccharide; Sorbitol, Sucralose;\nHydrogenated Vegetable oil, Baking Soda;\nBaking Powder Permitted Flavours;",
+    "extracted_ingredients": [
+      "coconut",
+      "skimmed milk powder",
+      "beans",
+      "fructose oligosaccharide",
+      "sorbitol",
+      "sucralose",
+      "hydrogenated vegetable oil",
+      "baking soda",
+      "baking powder permitted flavors"
+    ],
+    "true_ingredients": [
+      "coconut",
+      "skimmed milk powder",
+      "beans",
+      "fructose oligosaccharide",
+      "sorbitol",
+      "sucralose",
+      "hydrogenated vegetable oil",
+      "baking soda",
+      "baking powder permitted flavors"
+    ]
+  },
+  {
+    "image": "in73.jpg",
+    "ocr_text": "INCREDIENTS: Almonds (2696) ,\nDark Compound (25%)\n[Sugar; Edible Vegetable Fat\n(Hydrogenated), Cocoa Solids,\nEmulsifiers (INS 491,322)1,\nPeanuts (229), Rice Crispy (5%)\n(Rice Flour; Wheat Flour, Sugar\nMalt Salt; Milk Porvder) , Honey;\nOligofructose, Sugar Sunflower\nOil, Liquid Clucose, Cocoa Powrder;\nAntioxidant (INS 322) , Edible\nCommon Salt; Cocoa Butter\nCONTAINS PERMITTED NATURAL\nCOLOUR (INS I50C) AND ADDED\nFLAVOUR (NATURAL FLAVOURINC\nSUBSTANCES)",
+    "extracted_ingredients": [
+      "incredients: almonds (2696)",
+      "dark compound (25%) sugar",
+      "edible vegetable oat (hydrogenated)",
+      "cocoa solids",
+      "emulsifier (ins 491,322)1",
+      "peanuts (229)",
+      "rice crispy (5%) rice flour wheat flour sugar malt salt milk porvder)",
+      "honey",
+      "oligofructose",
+      "sugar sunflower oil",
+      "squid glucose",
+      "cocoa powder",
+      "antioxidant (ins 322)",
+      "edible common salt",
+      "cocoa butter contains permitted natural flour (ins i50c) and added flavor natural flavoring substances)"
+    ],
+    "true_ingredients": [
+      "incredients: almonds (2696)",
+      "dark compound (25%) sugar",
+      "edible vegetable oat (hydrogenated)",
+      "cocoa solids",
+      "emulsifier (ins 491,322)1",
+      "peanuts (229)",
+      "rice crispy (5%) rice flour wheat flour sugar malt salt milk porvder)",
+      "honey",
+      "oligofructose",
+      "sugar sunflower oil",
+      "squid glucose",
+      "cocoa powder",
+      "antioxidant (ins 322)",
+      "edible common salt",
+      "cocoa butter contains permitted natural flour (ins i50c) and added flavor natural flavoring substances)"
+    ]
+  },
+  {
+    "image": "in74.jpg",
+    "ocr_text": "Ingredients: Wheat Flour;\nChocolate Chips 25%(sugar;\ncocoa solids, cocoa butter;\npermitted emulsifiers\n[322,476]), Sugar; Demerara\nSugar; Edible Hydrogenated\nVegetable Shortening, Eggs,\nCocoa Powder 2%, Raising\nAgent [500(ii)] , Salt:",
+    "extracted_ingredients": [
+      "wheat flour",
+      "chocolate chives 25%(sugar; cocoa solids, cocoa butter permitted emulsifier [322,476])",
+      "sugar",
+      "demerara sugar",
+      "edible hydrogenated vegetable shortening",
+      "eggs",
+      "cocoa powder 2%",
+      "raisin agent [500(ii)]",
+      "salt"
+    ],
+    "true_ingredients": [
+      "wheat flour",
+      "chocolate chives 25%(sugar; cocoa solids, cocoa butter permitted emulsifier [322,476])",
+      "sugar",
+      "demerara sugar",
+      "edible hydrogenated vegetable shortening",
+      "eggs",
+      "cocoa powder 2%",
+      "raisin agent [500(ii)]",
+      "salt"
+    ]
+  },
+  {
+    "image": "in75.jpg",
+    "ocr_text": "INGREDIENTS: REFINED WHEAT FLOUR(MAIDA) , SUGAR,\nINTERESTERIFIED VEGETABLE FAT (PALM) , BUTTER(4%) , LIQUID\nGLUCOSE, SPRINKLED SUGAR(I.4%) , MILK SOLIDS, RAISING\nAGENTS [503() , 500(W) ] , IODIZED SALT AND EMULSIFIER(3220)):\nCONTAINS ADDED FLAVOURS (ARTIFICIAL FLAVOURING\nSUBSTANCES-BUTTER, VANILLA):\n(Numbers in brackets as per International Numbering System )\nALLERGEN: Contains Wheat, Milk & Soybeans:",
+    "extracted_ingredients": [
+      "refined wheat flour(maida)",
+      "sugar",
+      "interesterified vegetable oat (palm)",
+      "butter(4%)",
+      "squid glucose",
+      "sprinkled sugar(i.4%)",
+      "milk solids",
+      "raisin agents [503()",
+      "500(w) ]",
+      "milk",
+      "soybeans"
+    ],
+    "true_ingredients": [
+      "refined wheat flour(maida)",
+      "sugar",
+      "interesterified vegetable oat (palm)",
+      "butter(4%)",
+      "squid glucose",
+      "sprinkled sugar(i.4%)",
+      "milk solids",
+      "raisin agents [503()",
+      "500(w) ]",
+      "milk",
+      "soybeans"
+    ]
+  },
+  {
+    "image": "in76.jpg",
+    "ocr_text": "INGREDIENTS\norganic amaranth(25%), organic dry\nfruits[cashew; raisin(I5%)] organic sunflower\nseeds(I5%), organic honey(I5%), almond( I0%),\nolive oil, dates,figs; organic brown sugar;\nvanilla & raising agent{INS so0(ii)}",
+    "extracted_ingredients": [
+      "organic amaranth(25%)",
+      "organic dry fruits[cashew",
+      "raisin(i5%)] organic sunflower seeds(i5%)",
+      "organic honey(i5%)",
+      "almond i0%)",
+      "olive oil",
+      "dates",
+      "figs",
+      "organic brown sugar",
+      "vanilla",
+      "raisin agent{ins so0(ii)}"
+    ],
+    "true_ingredients": [
+      "organic amaranth(25%)",
+      "organic dry fruits[cashew",
+      "raisin(i5%)] organic sunflower seeds(i5%)",
+      "organic honey(i5%)",
+      "almond i0%)",
+      "olive oil",
+      "dates",
+      "figs",
+      "organic brown sugar",
+      "vanilla",
+      "raisin agent{ins so0(ii)}"
+    ]
+  },
+  {
+    "image": "in77.jpg",
+    "ocr_text": "Ingredients:\nChoco\nCreme (34%) (Sugar;\nRefined   Palmolein;\nRefined   Palm   Oil,\nCocoa   Solids,;\nEmulsifier   (Lecithin   (From\nSoyabean)]; Nature Identical Flavouring Substances And Artificial\nFlavouring Substances-Vanilla) , Refined Wheat  Flour (Maida),\nHydrogenated Vegetable Oil, Dark Chocolate Chips (10.1%)\n(Sugar; Cocoa Solids, Cocoa Butter; Dextrose; Emulsifier Lecithin\n(From Soyabean)] And Artificial Flavouring Substances Vanilla).\nEggs (2.\nInvert Syrup, Liquid Glucose, Raising Agents [Ins\n500), Ins 4500,\nIns\n503], lodized Salt, Milk Solids, Nature Identical\nFlavouring Substances, Emulsifier (Lecithin (From Soyabean))\nArtificial   Flavouring\nSubstances\n(Milk\nVanilla,  Coffee\nAnd\nColours\n(Ins\n1500\nIns\nIS0D)\nContains Wheat, Milk, Soy; Eggs May Contains Nuts, Sulphites\nSugar;\n.59).",
+    "extracted_ingredients": [
+      "cocoa cream (34%) sugar refined palm olein refined palm oil cocoa solids,; emulsifier lecithin (from soyabean)]; natural identical flavoring substances and artificial flavoring substances-vanilla) , refined wheat flour (maida), hydrogenated vegetable oil dark chocolate chives (10.1%) sugar cocoa solids, cocoa butter dextrose emulsifier lecithin (from soyabean)] and artificial flavoring substances vanilla eggs (2. invert syrup, squid glucose raisin agents [ins 500), ins e500 ins 503], lodized salt milk solids, natural identical flavoring substances, emulsifier lecithin (from soyabean)) artificial flavoring substances milk vanilla coffee and colours (ins e500 ins is0d) contains wheat milk soy eggs may contains nuts sulphites sugar .59)."
+    ],
+    "true_ingredients": [
+      "cocoa cream (34%) sugar refined palm olein refined palm oil cocoa solids,; emulsifier lecithin (from soyabean)]; natural identical flavoring substances and artificial flavoring substances-vanilla) , refined wheat flour (maida), hydrogenated vegetable oil dark chocolate chives (10.1%) sugar cocoa solids, cocoa butter dextrose emulsifier lecithin (from soyabean)] and artificial flavoring substances vanilla eggs (2. invert syrup, squid glucose raisin agents [ins 500), ins e500 ins 503], lodized salt milk solids, natural identical flavoring substances, emulsifier lecithin (from soyabean)) artificial flavoring substances milk vanilla coffee and colours (ins e500 ins is0d) contains wheat milk soy eggs may contains nuts sulphites sugar .59)."
+    ]
+  },
+  {
+    "image": "in78.jpg",
+    "ocr_text": "Ingredients: Rolled Oats, Brown\nSugar; Coconut Oil, Sunflower\nSeeds; Pumpkin Seeds, Wheat\nFlour (Atta); Flax Seeds; Turmeric\nPowder;\nPowder; Baking\nPowder; Baking Soda, Cinnamon;\nSalt;\nAllergen Advice\nContains Oats,\nNuts and Wheat:\nGinger",
+    "extracted_ingredients": [
+      "rolled oats",
+      "brown sugar",
+      "coconut oil",
+      "sunflower seeds",
+      "pumpkin seeds",
+      "wheat flour (atta)",
+      "flax seed",
+      "turmeric powder",
+      "powder",
+      "baking powder",
+      "baking soda",
+      "cinnamon",
+      "salt",
+      "allergen advice contains oats",
+      "nuts",
+      "wheat ginger"
+    ],
+    "true_ingredients": [
+      "rolled oats",
+      "brown sugar",
+      "coconut oil",
+      "sunflower seeds",
+      "pumpkin seeds",
+      "wheat flour (atta)",
+      "flax seed",
+      "turmeric powder",
+      "powder",
+      "baking powder",
+      "baking soda",
+      "cinnamon",
+      "salt",
+      "allergen advice contains oats",
+      "nuts",
+      "wheat ginger"
+    ]
+  },
+  {
+    "image": "in80.jpg",
+    "ocr_text": "INGREDIENTS\nbuckwheat(20%), organic sunflower\nseeds(I7.5%). organic raisin(I2%), coconut\npowder(I0%), organic honey(I0%),\nalmond(8%), dehydrated apple(5%), rice\nbran oil(5%), organic brown sugar(4%),\nraising agent{INS Soo(ii)} cinnamon; vanilla:",
+    "extracted_ingredients": [
+      "buckwheat(20%)",
+      "organic sunflower seeds(i7.5%). organic raisin(i2%)",
+      "coconut powder(i0%)",
+      "organic honey(i0%)",
+      "almond(8%)",
+      "dehydrated apple(5%)",
+      "rice bran oil(5%)",
+      "organic brown sugar(4%)",
+      "raisin agent{ins soo(ii)} cinnamon",
+      "vanilla"
+    ],
+    "true_ingredients": [
+      "buckwheat(20%)",
+      "organic sunflower seeds(i7.5%). organic raisin(i2%)",
+      "coconut powder(i0%)",
+      "organic honey(i0%)",
+      "almond(8%)",
+      "dehydrated apple(5%)",
+      "rice bran oil(5%)",
+      "organic brown sugar(4%)",
+      "raisin agent{ins soo(ii)} cinnamon",
+      "vanilla"
+    ]
+  },
+  {
+    "image": "in81.jpg",
+    "ocr_text": "Ingredients: Rolled Oats, Brown\nSugar; Coconut Oil, Sunflower\nSeeds, Pumpkin Seeds; Wheat\nFlour (Atta), Flax Seeds; Coffee,\nBaking Powder; Baking Soda,\nCinnamon; Salt:\nAllergen Advice\nContains Oats;\nNuts and Wheat:",
+    "extracted_ingredients": [
+      "rolled oats",
+      "brown sugar",
+      "coconut oil",
+      "sunflower seeds",
+      "pumpkin seeds",
+      "wheat flour (atta)",
+      "flax seed",
+      "coffee",
+      "baking powder",
+      "baking soda",
+      "cinnamon",
+      "salt allergen advice contains oats",
+      "nuts",
+      "wheat"
+    ],
+    "true_ingredients": [
+      "rolled oats",
+      "brown sugar",
+      "coconut oil",
+      "sunflower seeds",
+      "pumpkin seeds",
+      "wheat flour (atta)",
+      "flax seed",
+      "coffee",
+      "baking powder",
+      "baking soda",
+      "cinnamon",
+      "salt allergen advice contains oats",
+      "nuts",
+      "wheat"
+    ]
+  },
+  {
+    "image": "in82.jpg",
+    "ocr_text": "INGREDIENTS: REFINED WHEAT FLOUR,\nCHOCO CHIPS\nSUGAR COCOA SOLIDS\nCOCOA BUTTER MALTO DEXTRIN; DEXTROSE\nANTIOXIDANT (3221], SUGAR\nINTERESTERIFIED VEGETABLE FAT, MILK SOLIDS\nBUTTER\nOATS, LIQUID GLUCOSE; SUGAR SOLUTION,\nRAISING AGENT [503 (i)], EDIBLE COMMON SALT; EMULSIFIER (322) AND RAISING AGENT [500 (i)]:\nCONTAINS ADDED FLAVOURS (ARTIFICIAL FLAVOURING SUBSTANCE VANILLA CHOCOLATE",
+    "extracted_ingredients": [
+      "refined wheat flour",
+      "cocoa chives sugar cocoa solids cocoa butter maltol dextrin",
+      "dextrose antioxidant (3221], sugar interesterified vegetable fat, milk solids butter oats squid glucose sugar solution, raisin agent e503 (i)], edible common salt emulsifier e322 and raisin agent e500 (i)]: contains added flavors artificial flavoring substance vanilla chocolate"
+    ],
+    "true_ingredients": [
+      "refined wheat flour",
+      "cocoa chives sugar cocoa solids cocoa butter maltol dextrin",
+      "dextrose antioxidant (3221], sugar interesterified vegetable fat, milk solids butter oats squid glucose sugar solution, raisin agent e503 (i)], edible common salt emulsifier e322 and raisin agent e500 (i)]: contains added flavors artificial flavoring substance vanilla chocolate"
+    ]
+  },
+  {
+    "image": "in83.jpg",
+    "ocr_text": "Ingredients\n(Rlce; Sorghum, Mlllet; Corn, Channa\nDal; Amaranth); Cocoa Powder;\nDark Chocolate Chips; Salt Suqar\nHydrogenated Veg Fat; Milk Powder",
+    "extracted_ingredients": [
+      "(rlce; sorghum millet corn channa dal; amaranth",
+      "cocoa powder",
+      "dark chocolate chives",
+      "salt sugar hydrogenated veg oat",
+      "milk powder"
+    ],
+    "true_ingredients": [
+      "(rlce; sorghum millet corn channa dal; amaranth",
+      "cocoa powder",
+      "dark chocolate chives",
+      "salt sugar hydrogenated veg oat",
+      "milk powder"
+    ]
+  },
+  {
+    "image": "in84.jpg",
+    "ocr_text": "INGREDIENTS: REFINED WHEAT FLOUR (MAIDA); SUGAR, DARK CHOCOLATE CHIPS\n(17%) (SUGAR, COCOA SOLIDS, COCOA BUTTER DEXTROSE, EMULSIFIER [INS 3220)j\nAND ARTIFICIAL FLAVOURING SUBSTANCES\nVANILLA}, REFINED PALM OIL\nMILK\nCHOCO CHIPS (8%) {SUGAR, HYDROGENATED VEGETABLE FAT, MILK SOLIDS, COCOA\nSOLIDS;\nEMULSIFIER\n[INS\nINVERY\nAND\nNATURAL\nFLAVOURS\nNATURAL\nFLAVOURING\nSYRUP\nMILK SOLIDS\nEDIBLE DESICCATED\nCOCONUT,\nRAISING\nIODIZED SALT AND EMULSIFIER [INS 3220)j.",
+    "extracted_ingredients": [
+      "refined wheat flour (maida)",
+      "sugar",
+      "dark chocolate chives (17%) sugar cocoa solids, cocoa butter dextrose emulsifier [ins 3220)j and artificial flavoring substances vanilla",
+      "refined palm oil milk cocoa chives (8%) sugar",
+      "hydrogenated vegetable oat",
+      "milk solids",
+      "cocoa solids",
+      "emulsifier [ins invery and natural flavors natural flavoring syrup milk solids edible desiccated coconut",
+      "raisin iodine salt and emulsifier [ins 3220)j."
+    ],
+    "true_ingredients": [
+      "refined wheat flour (maida)",
+      "sugar",
+      "dark chocolate chives (17%) sugar cocoa solids, cocoa butter dextrose emulsifier [ins 3220)j and artificial flavoring substances vanilla",
+      "refined palm oil milk cocoa chives (8%) sugar",
+      "hydrogenated vegetable oat",
+      "milk solids",
+      "cocoa solids",
+      "emulsifier [ins invery and natural flavors natural flavoring syrup milk solids edible desiccated coconut",
+      "raisin iodine salt and emulsifier [ins 3220)j."
+    ]
+  },
+  {
+    "image": "in85.jpg",
+    "ocr_text": "INGREDIENTS: REFINED WHEAT FLOUR (MAIDA), SUGAR (32.3%), REFINED PALM OIL, STARCH, COCOA SOLIDS (2.3%), MILK\nSOLIDS, RAISING AGENTS [INS 503(i) , INS 500(ii) , INS 450()], PLAIN CHOCOLATE (0.3%) {SUGAR, COCOA SOLIDS, COCOA\nBUTTER, EMULSIFIERS [LECITHIN (FROM SOYABEAN); POLYGLYCEROL ESTERS OF INTERESTERIFIED RICINOLEIC ACID (FROM\nCASTOR BEAN)] AND ARTIFICIAL FLAVOURING SUBSTANCES\nVANILLA}; EMULSIFIERS [MONO- AND Dl-GLYCERIDES OF\nFATTY ACIDS (FROM PALM OIL); LECITHIN (FROM SOYABEAN)] AND IODIZED SALT;",
+    "extracted_ingredients": [
+      "refined wheat flour (maida)",
+      "sugar (32.3%)",
+      "refined palm oil",
+      "starch",
+      "cocoa solids (2.3%)",
+      "milk solids",
+      "raisin agents [ins 503(i)",
+      "ins 500(ii)",
+      "ins 450()]",
+      "olein chocolate (0.3%) sugar",
+      "cocoa solids",
+      "cocoa butter",
+      "emulsifier lecithin (from soybeans",
+      "polyglycerol esters of interesterified ricinoleic acid (from castor beans and artificial flavoring substances vanilla",
+      "emulsifier [mono- and diglycerides of salty acids (from palm oil",
+      "lecithin (from soyabean)] and iodine salt"
+    ],
+    "true_ingredients": [
+      "refined wheat flour (maida)",
+      "sugar (32.3%)",
+      "refined palm oil",
+      "starch",
+      "cocoa solids (2.3%)",
+      "milk solids",
+      "raisin agents [ins 503(i)",
+      "ins 500(ii)",
+      "ins 450()]",
+      "olein chocolate (0.3%) sugar",
+      "cocoa solids",
+      "cocoa butter",
+      "emulsifier lecithin (from soybeans",
+      "polyglycerol esters of interesterified ricinoleic acid (from castor beans and artificial flavoring substances vanilla",
+      "emulsifier [mono- and diglycerides of salty acids (from palm oil",
+      "lecithin (from soyabean)] and iodine salt"
+    ]
+  },
+  {
+    "image": "in86.jpg",
+    "ocr_text": "SOLIDS, IODIZED SALT\nCONTAINS ADOED ARTIFICIAL FLAVOURING SUBSTANCES (VANILLA , MILK)] , MILK SOLIDS, RAISING AGENTS [5030) . 500(I)] , IODIZED SALT,\nACIDITY REGULATOR[341 (I AND EMULSIFIERS [322.472(\nCONTAINS ADDEO FLAVOURS\nARTIFICIAL FLAVOURING SUbSTANCES-SALTED CARAMEL):",
+    "extracted_ingredients": [
+      "solids",
+      "iodine salt contains adoed artificial flavoring substances vanilla , milk",
+      "milk solids",
+      "raisin agents [5030)",
+      "500(i)]",
+      "iodized salt",
+      "acidity regulator[341 (i and emulsifier [322.472( contains addeo flavors artificial flavoring substances-salted caramel"
+    ],
+    "true_ingredients": [
+      "solids",
+      "iodine salt contains adoed artificial flavoring substances vanilla , milk",
+      "milk solids",
+      "raisin agents [5030)",
+      "500(i)]",
+      "iodized salt",
+      "acidity regulator[341 (i and emulsifier [322.472( contains addeo flavors artificial flavoring substances-salted caramel"
+    ]
+  },
+  {
+    "image": "in87.jpg",
+    "ocr_text": "INGREOIENTS: REFINED WHEAT FLOURIMAIDAL\nBROWN CHOCO CHIPS (20%) [SUGAR, COCOA SOLIDS, COCOA BUTTER, MALTODEXTRIN, DEXTROSE , EMULSIFIER (322)\nCONTAINS ADDEO ARTIFICIAL FLAVOURING SUBSTANCE (VANILLA)I; SUGAR, INTERESTERIFIED VEGETABLE FAT, BUTTER, MILK SOLIDS COCOA SOLIDS, LIQUID\nCONTAINS ADDEO FLAVOURS\nARTIFICIAL FLAVOURING SUBSTANCES-CHOCOLATE, VANILLA)",
+    "extracted_ingredients": [
+      "ingreoients: refined wheat flourimaidal brown cocoa chives (20%) sugar",
+      "cocoa solids",
+      "cocoa butter",
+      "maltodextrin",
+      "dextrose",
+      "emulsifier e322 contains addeo artificial flavoring substance (vanilla)i",
+      "sugar",
+      "interesterified vegetable oat",
+      "butter",
+      "milk solids cocoa solids",
+      "squid contains addeo flavors artificial flavoring substances-chocolate",
+      "vanilla"
+    ],
+    "true_ingredients": [
+      "ingreoients: refined wheat flourimaidal brown cocoa chives (20%) sugar",
+      "cocoa solids",
+      "cocoa butter",
+      "maltodextrin",
+      "dextrose",
+      "emulsifier e322 contains addeo artificial flavoring substance (vanilla)i",
+      "sugar",
+      "interesterified vegetable oat",
+      "butter",
+      "milk solids cocoa solids",
+      "squid contains addeo flavors artificial flavoring substances-chocolate",
+      "vanilla"
+    ]
+  },
+  {
+    "image": "in88.jpg",
+    "ocr_text": "INGREDIENTS: REFINED WHEAT FLOUR(MADA), CENTRE FILLED CHOCO PASTE(3090) [SUGAR, REFINED PALM OLEIN OIL, REFINED PALM OIL _\nCONTAINS ADDED FLAVOURS (ARTIFICIAL FLAVOURING SUBSTANCES\nCHOCOLATE VANILLA] . SUGAR, INTERESTERIFIED\nCONTAINS Permitted NATURAL Food COLOUR (150d) AND Added FLAVOURS (ARTIFicial FLAVOURING SUBSTANCES-CHOCOLATE) .",
+    "extracted_ingredients": [
+      "refined wheat flour(mada)",
+      "centre millet cocoa paste(3090) sugar",
+      "refined palm olein oil",
+      "refined palm oil _ contains added flavors artificial flavoring substances chocolate vanilla . sugar interesterified contains permitted natural food flour e150d and added flavors artificial flavoring substances-chocolate) ."
+    ],
+    "true_ingredients": [
+      "refined wheat flour(mada)",
+      "centre millet cocoa paste(3090) sugar",
+      "refined palm olein oil",
+      "refined palm oil _ contains added flavors artificial flavoring substances chocolate vanilla . sugar interesterified contains permitted natural food flour e150d and added flavors artificial flavoring substances-chocolate) ."
+    ]
+  },
+  {
+    "image": "in89.jpg",
+    "ocr_text": "INGREDIENTS: REFINED WHEAT FLOUR(MAIDA), SUGAR, INTERESTERIFIED VEGETABLE FAT; MILK SOLIDS, STARCH, INVERT SYRUP BUTTER BROWN SUGAR;\nCONTAINS ADDEO FLAVOURS\n(Numbers E\nbrackets\nper International Numbering System)",
+    "extracted_ingredients": [
+      "refined wheat flour(maida)",
+      "sugar",
+      "interesterified vegetable oat",
+      "milk solids",
+      "starch",
+      "invert syrup butter brown sugar",
+      "addeo flavors (numbers e brackets pear international numbering system)"
+    ],
+    "true_ingredients": [
+      "refined wheat flour(maida)",
+      "sugar",
+      "interesterified vegetable oat",
+      "milk solids",
+      "starch",
+      "invert syrup butter brown sugar",
+      "addeo flavors (numbers e brackets pear international numbering system)"
+    ]
+  },
+  {
+    "image": "in9.jpg",
+    "ocr_text": "INGREDIENTS\nMango\nPieces\n(6570),  Edible\nCommon Salt Water, Cottonseed Oil; Chilli Powder;\nSpices\nCondiments, Acidity Regulator (INS 260)\nand Asafoetida;\nand",
+    "extracted_ingredients": [
+      "mango spices (6570)",
+      "edible common salt water",
+      "cottonseed oil",
+      "chili powder",
+      "spices condiments",
+      "acidity regulator (ins 260)",
+      "asafoetida",
+      "lard"
+    ],
+    "true_ingredients": [
+      "mango spices (6570)",
+      "edible common salt water",
+      "cottonseed oil",
+      "chili powder",
+      "spices condiments",
+      "acidity regulator (ins 260)",
+      "asafoetida",
+      "lard"
+    ]
+  },
+  {
+    "image": "in90.jpg",
+    "ocr_text": "Ingredients: Whole Wheat Flour\"\nButter;\nRagi Flour (13%)\" , Amaranth Flour\n(13%)\nOrganic Jaggery (12%)\"_\nFruits & Seeds (Sesame Seeds/Til 5%\nAlmonds; Walnuls\nDates\nCashews\nPista\nWatermelon Seeds). Milk\nRock\nSalt & Nothing Else\n'The flours are processed from certified\norganic whole grains. The rest of them\nare premium natural\ningredients\nContains No Relined White Sugar;\nNo Egg; No Soda\nBaking Powder _\nRaising Agents; No Preservatives or\nArtilicial Flavours used.\nThe Product Is 100% Chemical Free.\nAllergy Advice: Contains Gluten ,\nNuts & Milk\nDry",
+    "extracted_ingredients": [
+      "whole wheat flour butter",
+      "ragi flour (13%)\"",
+      "amaranth flour (13%) organic jaggery (12%)\"_ fruit",
+      "seeds sesame seeds/til 5% almonds walnuts dates cashews pista watermelon seeds). milk rock salt",
+      "nothing else 'the flour are processed from fortified organic whole grains. the rest of them are premium natural contains no refined white sugar",
+      "no egg",
+      "no soya baking powder _ raisin agents",
+      "soy preservatives",
+      "artificial flavors used. the product is 100% chemical green allergy advice: contains gluten",
+      "nuts",
+      "milk dry"
+    ],
+    "true_ingredients": [
+      "whole wheat flour butter",
+      "ragi flour (13%)\"",
+      "amaranth flour (13%) organic jaggery (12%)\"_ fruit",
+      "seeds sesame seeds/til 5% almonds walnuts dates cashews pista watermelon seeds). milk rock salt",
+      "nothing else 'the flour are processed from fortified organic whole grains. the rest of them are premium natural contains no refined white sugar",
+      "no egg",
+      "no soya baking powder _ raisin agents",
+      "soy preservatives",
+      "artificial flavors used. the product is 100% chemical green allergy advice: contains gluten",
+      "nuts",
+      "milk dry"
+    ]
+  },
+  {
+    "image": "in91.jpg",
+    "ocr_text": "INGREDIENTS:\nRAGI\nFLOUR,\nJOWAR\nFLOUR,\nBAJRA\nFLOUR,\nCHICKPEA FLOUR\nWHOLE WHEAT FLOUR, CORNFLOUR,\nRICE\nBRAN\nOIL,\nJAGGERY\nPOWDER,\nSOY\nPROTEIN\nISOLATE,\nWHEAT\nBRAN;\nCHIA\nSEED,\nSESAME\nSEED,\nSUNFLOWER\nSEED,\nFLAX SEED,\nBAKING POWDER,\nVANILLA",
+    "extracted_ingredients": [
+      "ragi flour",
+      "jowar flour",
+      "bajra flour",
+      "chickpea flour whole wheat flour",
+      "corn flour",
+      "rice bran oil",
+      "jaggery powder",
+      "soy protein isolate",
+      "wheat bran",
+      "chia seed",
+      "sesame seed",
+      "sunflower seed",
+      "flax seed",
+      "baking powder",
+      "vanilla"
+    ],
+    "true_ingredients": [
+      "ragi flour",
+      "jowar flour",
+      "bajra flour",
+      "chickpea flour whole wheat flour",
+      "corn flour",
+      "rice bran oil",
+      "jaggery powder",
+      "soy protein isolate",
+      "wheat bran",
+      "chia seed",
+      "sesame seed",
+      "sunflower seed",
+      "flax seed",
+      "baking powder",
+      "vanilla"
+    ]
+  },
+  {
+    "image": "in93.jpg",
+    "ocr_text": "Ingredients\n(Rice; Sorghum, Millet; Corn; Channa\nDal, Amaranth) , Salt, Ajwain, Sugar;\nHydrogenated Veg: Fat, Milk Powder;\nLeavening Agents (ESoOii, E503ii)",
+    "extracted_ingredients": [
+      "rice sorghum millet corn channa dal, amaranth",
+      "salt",
+      "ajwain",
+      "sugar",
+      "hydrogenated veg: oat",
+      "milk powder",
+      "leavening agents (esooii, e503ii)"
+    ],
+    "true_ingredients": [
+      "rice sorghum millet corn channa dal, amaranth",
+      "salt",
+      "ajwain",
+      "sugar",
+      "hydrogenated veg: oat",
+      "milk powder",
+      "leavening agents (esooii, e503ii)"
+    ]
+  },
+  {
+    "image": "in94.jpg",
+    "ocr_text": "PISTA BISCUITS INGREDIENTS\nRefined Wheat Flour(49%) , Sugar;\nMilk Solids, Salt\nCONTAINS NATURAL FLAVOURS",
+    "extracted_ingredients": [
+      "pista biscuits refined wheat flour(49%)",
+      "sugar",
+      "milk solids",
+      "salt contains natural flavors"
+    ],
+    "true_ingredients": [
+      "pista biscuits refined wheat flour(49%)",
+      "sugar",
+      "milk solids",
+      "salt contains natural flavors"
+    ]
+  },
+  {
+    "image": "in95.jpg",
+    "ocr_text": "Ingredients\nWhole Wheat\nButter, Jaggery Powder;\nOats Flour; Dates Powder, Jowar Flour; Ragi Flour;\nSesame Seeds, Milk Solids; Cocoa Powder\nand Baking Soda.\nFlour;",
+    "extracted_ingredients": [
+      "whole wheat butter",
+      "jaggery powder",
+      "oat flour",
+      "dates powder",
+      "jowar flour",
+      "ragi flour",
+      "sesame seeds",
+      "milk solids",
+      "cocoa powder",
+      "baking soya flour"
+    ],
+    "true_ingredients": [
+      "whole wheat butter",
+      "jaggery powder",
+      "oat flour",
+      "dates powder",
+      "jowar flour",
+      "ragi flour",
+      "sesame seeds",
+      "milk solids",
+      "cocoa powder",
+      "baking soya flour"
+    ]
+  },
+  {
+    "image": "in97.jpg",
+    "ocr_text": "Ingredients: Cake Concentrate [Milk Solids,\nStarch, Baking Powder; Refined Wheat Flour;\nEmulsifiers and Stabilizers (E417, E415) , Salt,\nColour (E171), Flavouring\nVanilla], Refined\nWheat Flour; Sugar; Vegetable Oil, Water\nCoco Powder; Salt Preservative (INS202, INS2O0) ,\nHumectant (INS422, Leaving Agents (INSSOO (ii)):",
+    "extracted_ingredients": [
+      "cake concentrate milk solids",
+      "starch",
+      "baking powder",
+      "refined wheat flour",
+      "emulsifier",
+      "stabilizer e417 e415",
+      "salt",
+      "flour e171",
+      "flavoring vanilla",
+      "refined wheat flour",
+      "sugar",
+      "vegetable oil",
+      "water cocoa powder",
+      "salt preservative (ins202, ins2o0)",
+      "humectant (ins422, leaving agents (inssoo (ii)):"
+    ],
+    "true_ingredients": [
+      "cake concentrate milk solids",
+      "starch",
+      "baking powder",
+      "refined wheat flour",
+      "emulsifier",
+      "stabilizer e417 e415",
+      "salt",
+      "flour e171",
+      "flavoring vanilla",
+      "refined wheat flour",
+      "sugar",
+      "vegetable oil",
+      "water cocoa powder",
+      "salt preservative (ins202, ins2o0)",
+      "humectant (ins422, leaving agents (inssoo (ii)):"
+    ]
+  },
+  {
+    "image": "in98.jpg",
+    "ocr_text": "Ingredlents:\nEggs, Sunflower Oll; Bananas\n(16%), Wholewheat Flour (Atta) Walnuts (1496),\nBanana Powder, Ralsing Agent (INssoo(i)):\nSugar,",
+    "extracted_ingredients": [
+      "eggs",
+      "sunflower oil",
+      "bananas (16%)",
+      "whole wheat flour (atta) walnuts (1496)",
+      "banana powder",
+      "raisin agent (inssoo(i)): sugar"
+    ],
+    "true_ingredients": [
+      "eggs",
+      "sunflower oil",
+      "bananas (16%)",
+      "whole wheat flour (atta) walnuts (1496)",
+      "banana powder",
+      "raisin agent (inssoo(i)): sugar"
+    ]
+  },
+  {
+    "image": "in99.jpg",
+    "ocr_text": "INGREDIENTS\nStevia Reb Ag8%, All purpose flour; Walnuts, Dates, Green and\nBlack raisins, Eggs,\nButter;,  Vanilla extract, Zests\nof lemon,\nBaking sodaand powder & lodized salt",
+    "extracted_ingredients": [
+      "stevia red ag8%",
+      "all purpose flour",
+      "walnuts",
+      "dates",
+      "green",
+      "black raisins",
+      "eggs",
+      "butter",
+      "vanilla extract",
+      "zests of lemon",
+      "baking sodaand powder",
+      "iodized salt"
+    ],
+    "true_ingredients": [
+      "stevia red ag8%",
+      "all purpose flour",
+      "walnuts",
+      "dates",
+      "green",
+      "black raisins",
+      "eggs",
+      "butter",
+      "vanilla extract",
+      "zests of lemon",
+      "baking sodaand powder",
+      "iodized salt"
+    ]
+  }
+]

@@ -407,6 +407,45 @@ class TestExtractIngredients:
         assert "sugar" in result
         assert "salt" in result
 
+    def test_extract_splits_on_ampersand(self):
+        """Test that & is treated as delimiter (e.g., Milk & Tree Nuts)."""
+        result = extract_ingredients("Ingredients: milk & tree nuts, sugar")
+        assert "milk" in result
+        assert "tree nuts" in result
+        assert "sugar" in result
+
+    def test_extract_splits_on_and(self):
+        """Test that ' and ' is treated as delimiter."""
+        result = extract_ingredients("water, milk and cream, salt")
+        assert "water" in result
+        assert "milk" in result
+        assert "cream" in result
+        assert "salt" in result
+
+    def test_extract_splits_on_or(self):
+        """Test that ' or ' is treated as delimiter."""
+        result = extract_ingredients("soy or sunflower lecithin, sugar")
+        assert "sugar" in result
+        assert any("lecithin" in ing or "soy" in ing or "sunflower" in ing for ing in result)
+
+    def test_extract_filters_allergen_warning_segments(self):
+        """Test that allergen warning text is filtered out."""
+        text = (
+            "Ingredients: wheat, sugar, milk & tree nut walnuts . "
+            "the product is being produced on the same premises where nuts are processed"
+        )
+        result = extract_ingredients(text)
+        assert "wheat" in result
+        assert "sugar" in result
+        assert "milk" in result
+        assert not any("product is" in ing or "premises" in ing or "beans produced" in ing for ing in result)
+
+    def test_extract_preserves_parenthetical_content(self):
+        """Test that content in parentheses stays with parent (e.g., Emulsifier (E322 and E476))."""
+        result = extract_ingredients("sugar, emulsifier (e322 and e476), salt")
+        emulsifier_ings = [ing for ing in result if "emulsifier" in ing or "e322" in ing or "e476" in ing]
+        assert len(emulsifier_ings) >= 1
+
 
 class TestGetENumberName:
     """Tests for the get_e_number_name function."""

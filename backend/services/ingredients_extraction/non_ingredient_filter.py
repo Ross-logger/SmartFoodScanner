@@ -79,10 +79,31 @@ VALIDATION_GARBAGE_PATTERNS: List[str] = [
     r'^\d+$',
     r'^[a-z]\s*$',
     r'^[^\w\s]+$',
-    r'\b(instructions?|warning|contains?|allergen|prepared|manufactured)\b',
+    r'\b(instructions?|warning|prepared|manufactured)\b',
     r'\b(address|contact|website|email|phone|store|keep|refrigerated)\b',
     r'\b(expir|best\s+before|net\s+weight|product\s+of|made\s+in)\b',
     r'\b(distributed\s+by|imported\s+from|country\s+of\s+origin)\b',
+]
+
+# Patterns for allergen/warning segments to exclude from ingredients list.
+# These are typically "Contains:", "May contain traces", "Produced on equipment", etc.
+ALLERGEN_WARNING_PATTERNS: List[str] = [
+    r'^contains?\s*[:.]?\s*$',  # "Contains:" or "Contains." alone
+    r'\bthe\s+product\s+is\s+(being\s+)?produced\s+on\b',
+    r'\bprocessed\s+(and\s+packaged\s+)?in\s+a\s+(facility|plant)\b',
+    r'\bmade\s+on\s+equipment\s+that\b',
+    r'\bproduced\s+on\s+(the\s+same\s+)?(equipment|premises)\b',
+    r'\bpremises\s+where\b',
+    r'\bmay\s+contain\s+traces?\s+of\b',
+    r'\bfor\s+identification\s+of\s+manufacturing\b',
+    r'\bfor\s+reference\s+only\b',
+    r'\bsole\s+distributor\b',
+    r'\bproduct\s+of\s+\.\s*$',  # "Product of." or similar
+    r'\bstore\s+in\s+a\s+cool\b',
+    r'\bkeep\s+away\s+from\s+heat\b',
+    r'\bonce\s+(pack\s+)?is\s+opened\b',
+    r'\bair\s+tight\s+container\b',
+    r'\bbeans?\s+produced\b',  # OCR error for "being produced"
 ]
 
 
@@ -95,6 +116,7 @@ _compiled_start_patterns: Optional[List[re.Pattern]] = None
 _compiled_stop_patterns: Optional[List[re.Pattern]] = None
 _compiled_garbage_patterns: Optional[List[re.Pattern]] = None
 _compiled_validation_patterns: Optional[List[re.Pattern]] = None
+_compiled_allergen_patterns: Optional[List[re.Pattern]] = None
 
 
 def _get_compiled_patterns(patterns: List[str], cache_attr: str) -> List[re.Pattern]:
@@ -104,9 +126,10 @@ def _get_compiled_patterns(patterns: List[str], cache_attr: str) -> List[re.Patt
     
     cache_map = {
         'start': '_compiled_start_patterns',
-        'stop': '_compiled_stop_patterns', 
+        'stop': '_compiled_stop_patterns',
         'garbage': '_compiled_garbage_patterns',
         'validation': '_compiled_validation_patterns',
+        'allergen': '_compiled_allergen_patterns',
     }
     
     cache_var = cache_map.get(cache_attr)
@@ -173,6 +196,22 @@ def is_garbage_text(text: str) -> bool:
 
 
 
+def is_allergen_warning_segment(text: str) -> bool:
+    """
+    Check if text is an allergen warning or non-ingredient message.
+    These should be excluded from the main ingredients list.
+    
+    Args:
+        text: Text to check (e.g., "the product is being produced on the same premises")
+        
+    Returns:
+        True if text matches allergen/warning patterns
+    """
+    patterns = _get_compiled_patterns(ALLERGEN_WARNING_PATTERNS, 'allergen')
+    text_lower = text.lower().strip()
+    return any(p.search(text_lower) for p in patterns)
+
+
 def is_valid_ingredient(text: str) -> bool:
     """
     Check if text is likely a valid ingredient.
@@ -195,6 +234,10 @@ def is_valid_ingredient(text: str) -> bool:
     
     # Check for stop patterns (addresses, instructions, etc.)
     if is_stop_pattern(text):
+        return False
+    
+    # Exclude allergen warning segments
+    if is_allergen_warning_segment(text):
         return False
     
     return True

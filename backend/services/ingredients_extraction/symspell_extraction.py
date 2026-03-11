@@ -23,6 +23,65 @@ from backend.services.ingredients_extraction.non_ingredient_filter import (
     is_valid_ingredient,
 )
 
+
+def _split_ingredients_text(text: str) -> List[str]:
+    """
+    Split ingredients text by delimiters: comma, semicolon, &, " and ", " or ".
+    Respects parentheses so "Emulsifier (E322 and E476)" stays as one segment.
+    """
+    if not text or not text.strip():
+        return []
+    text = text.strip()
+    segments = []
+    current = []
+    paren_depth = 0
+    i = 0
+    n = len(text)
+
+    def flush_current() -> None:
+        if current:
+            s = "".join(current).strip()
+            if s:
+                segments.append(s)
+            current.clear()
+
+    while i < n:
+        # Check for " and ", " or ", or " . " (sentence boundary, outside parentheses)
+        if paren_depth == 0:
+            for sep in (" and ", " or ", " . "):
+                if i + len(sep) <= n and text[i : i + len(sep)] == sep:
+                    flush_current()
+                    i += len(sep)
+                    continue
+        # Check for & (only when outside parentheses)
+        if paren_depth == 0 and text[i] == "&":
+            flush_current()
+            i += 1
+            # Skip optional spaces after &
+            while i < n and text[i] == " ":
+                i += 1
+            continue
+        # Comma and semicolon
+        if text[i] in ",;" and paren_depth == 0:
+            flush_current()
+            i += 1
+            while i < n and text[i] == " ":
+                i += 1
+            continue
+        # Parentheses
+        if text[i] == "(":
+            paren_depth += 1
+            current.append(text[i])
+        elif text[i] == ")":
+            paren_depth = max(0, paren_depth - 1)
+            current.append(text[i])
+        else:
+            current.append(text[i])
+        i += 1
+
+    flush_current()
+    return segments
+
 logger = logging.getLogger(__name__)
 
 # =============================================================================
@@ -162,8 +221,8 @@ def spellcheck_ingredients(ocr_text: str) -> str:
     
     sym_spell = _get_spell_checker()
     
-    # Split by common delimiters
-    ingredients = re.split(r'[,;]', ocr_text)
+    # Split by delimiters: comma, semicolon, &, " and ", " or "
+    ingredients = _split_ingredients_text(ocr_text)
     
     corrected = []
     for ing in ingredients:
@@ -196,8 +255,8 @@ def extract_ingredients(ocr_text: str) -> List[str]:
     
     sym_spell = _get_spell_checker()
     
-    # Step 2: Split by common delimiters
-    ingredients = re.split(r'[,;]', ingredients_text)
+    # Step 2: Split by delimiters (comma, semicolon, &, " and ", " or ")
+    ingredients = _split_ingredients_text(ingredients_text)
     
     # Step 3: Pre-filter and spell-correct each segment
     # Check validity BEFORE spell correction to avoid false positives
@@ -205,11 +264,14 @@ def extract_ingredients(ocr_text: str) -> List[str]:
     corrected_list = []
     for ing in ingredients:
         ing = ing.strip()
+        # Strip "Contains:" or "Contains " prefix (allergen list header)
+        if re.match(r'^contains?\s*[:.]?\s*', ing, re.IGNORECASE):
+            ing = re.sub(r'^contains?\s*[:.]?\s*', '', ing, flags=re.IGNORECASE).strip()
         if ing and len(ing) > 1:
             # Check if original text is valid BEFORE spell correction
             if not is_valid_ingredient(ing):
                 continue
-            
+
             corrected = _correct_text(ing, sym_spell)
             if corrected:
                 corrected_list.append(corrected)
