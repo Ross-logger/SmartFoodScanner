@@ -33,7 +33,9 @@ FOOD_INGREDIENTS: Set[str] = {
     "olive oil", "extra virgin olive oil", "corn oil", "peanut oil", "sesame oil",
     "safflower oil", "cottonseed oil", "rice bran oil", "avocado oil", "grapeseed oil",
     "walnut oil", "flaxseed oil", "hemp oil", "mct oil",
-    "hydrogenated vegetable oil", "partially hydrogenated oil", "interesterified fat",
+    "hydrogenated vegetable oil", "partially hydrogenated oil", "fully hydrogenated palm oil",
+    "fully hydrogenated oil", "hydrogenated palm oil", "fully hydrogenated palm oil",
+    "refined palm olein oil", "refined palmolein oil", "rbd palmolein", "interesterified fat",
     "olein", "stearin", "shortening", "margarine", "lard", "tallow", "ghee",
     "butter", "unsalted butter", "salted butter", "clarified butter", "butter oil",
     "cocoa butter", "shea butter", "mango butter",
@@ -62,12 +64,15 @@ FOOD_INGREDIENTS: Set[str] = {
     
     # === SOY & LEGUMES ===
     "soy", "soya", "soybean", "soybeans", "soy protein", "soy protein isolate",
+    "isolated soy protein", "isolated soya protein",
     "soy protein concentrate", "textured soy protein", "hydrolyzed soy protein",
     "soy flour", "soy lecithin", "soya lecithin", "lecithin",
-    "soy sauce", "tamari", "shoyu", "teriyaki", "miso", "tempeh", "tofu",
+    "soy sauce", "tamari", "tamarind", "tamarind concentrate", "shoyu", "teriyaki", "miso", "tempeh", "tofu",
     "edamame", "soy milk", "soy cream",
     "pea protein", "pea starch", "pea fiber", "yellow pea", "green pea",
     "chickpea", "chickpea flour", "garbanzo bean", "hummus",
+    "besan", "gram flour", "bengal gram flour", "channa dal", "chana dal",
+    "moth dal", "tapary beans", "tapary beans (moth dal)", "blackgram dal", "bengalgram dal",
     "lentil", "red lentil", "green lentil", "lentil flour",
     "black bean", "kidney bean", "navy bean", "pinto bean", "white bean",
     "cannellini bean", "great northern bean", "lima bean", "fava bean",
@@ -85,13 +90,15 @@ FOOD_INGREDIENTS: Set[str] = {
     "beet sugar", "turbinado sugar", "demerara sugar", "muscovado sugar",
     "powdered sugar", "confectioners sugar", "icing sugar", "caster sugar",
     "invert sugar", "invert syrup", "golden syrup", "treacle",
-    "glucose", "glucose syrup", "glucose solids", "dextrose", "dextrose monohydrate",
+    "glucose", "glucose syrup", "glucose solids", "liquid glucose", "squid glucose",  # OCR
+    "dextrose", "dextrose monohydrate",
     "fructose", "crystalline fructose", "high fructose corn syrup", "hfcs",
     "corn syrup", "corn syrup solids", "maltodextrin", "maltose", "malt syrup",
     "honey", "raw honey", "pasteurized honey", "honey powder",
     "maple syrup", "maple sugar", "agave", "agave syrup", "agave nectar",
     "molasses", "blackstrap molasses", "date syrup", "date sugar",
     "coconut sugar", "palm sugar", "jaggery", "panela", "piloncillo",
+    "oligofructose", "fructo-oligosaccharide", "polydextrose",
     "rice syrup", "brown rice syrup", "barley malt syrup",
     
     # === ARTIFICIAL SWEETENERS ===
@@ -102,9 +109,11 @@ FOOD_INGREDIENTS: Set[str] = {
     "lactitol", "polyol", "sugar alcohol",
     
     # === COCOA & CHOCOLATE ===
-    "cocoa", "cocoa powder", "dutch process cocoa", "natural cocoa",
+    "cocoa", "cocoa powder", "cococa powder",  # OCR variant
+    "dutch process cocoa", "natural cocoa",
     "cocoa butter", "cocoa mass", "cocoa liquor", "cocoa solids", "cacao",
     "chocolate", "dark chocolate", "milk chocolate", "white chocolate",
+    "choco cream", "choco chips", "cocoa cream",
     "chocolate liquor", "chocolate chips", "chocolate coating",
     "bittersweet chocolate", "semisweet chocolate", "unsweetened chocolate",
     "carob", "carob powder", "carob chips",
@@ -129,6 +138,7 @@ FOOD_INGREDIENTS: Set[str] = {
     "paprika", "smoked paprika", "sweet paprika", "hot paprika",
     "turmeric", "ground turmeric", "cumin", "ground cumin", "cumin seed",
     "coriander", "ground coriander", "coriander seed", "coriander leaf",
+    "coriander powder", "corlander", "corlander powder",  # OCR variants
     "fennel", "fennel seed", "anise", "star anise", "aniseed",
     "mustard", "mustard seed", "mustard powder", "dry mustard",
     "oregano", "basil", "thyme", "rosemary", "sage", "marjoram",
@@ -136,7 +146,7 @@ FOOD_INGREDIENTS: Set[str] = {
     "bay leaf", "bay leaves", "mint", "spearmint", "peppermint",
     "curry", "curry powder", "garam masala", "tandoori", "ras el hanout",
     "saffron", "sumac", "za'atar", "herbes de provence", "italian seasoning",
-    "fenugreek", "caraway", "caraway seed", "juniper", "juniper berry",
+    "fenugreek", "asafoetida", "ajwain", "ajwain seed", "caraway", "caraway seed", "juniper", "juniper berry",
     
     # === ALLIUMS ===
     "garlic", "garlic powder", "garlic salt", "granulated garlic", "garlic flakes",
@@ -144,7 +154,7 @@ FOOD_INGREDIENTS: Set[str] = {
     "shallot", "leek", "chive", "chives", "scallion", "green onion", "spring onion",
     
     # === VEGETABLES ===
-    "tomato", "tomatoes", "tomato paste", "tomato puree", "tomato sauce",
+    "tomato", "tomatoes", "tomato paste", "tomato puree", "tomato pureed", "tomato sauce",
     "tomato powder", "sun dried tomato", "diced tomato", "crushed tomato",
     "carrot", "carrots", "carrot powder", "carrot juice",
     "celery", "celery powder", "celery salt", "celery seed",
@@ -174,14 +184,16 @@ FOOD_INGREDIENTS: Set[str] = {
     "strawberry", "strawberries", "raspberry", "raspberries",
     "blueberry", "blueberries", "blackberry", "blackberries", "cranberry", "cranberries",
     "banana", "bananas", "plantain", "banana puree",
-    "mango", "mangoes", "mango puree", "papaya", "guava", "passion fruit",
+    "mango", "mangoes", "mango puree", "mango pulp", "mango pieces", "mango spices",
+    "papaya", "guava", "guava pulp", "passion fruit",
     "pineapple", "pineapple juice", "coconut", "coconut milk", "coconut cream",
     "coconut water", "desiccated coconut", "shredded coconut", "coconut flakes",
     "peach", "peaches", "nectarine", "apricot", "apricots", "plum", "prune",
     "pear", "pears", "cherry", "cherries", "sour cherry",
     "fig", "figs", "date", "dates", "date paste",
     "watermelon", "cantaloupe", "honeydew", "melon",
-    "kiwi", "kiwifruit", "pomegranate", "persimmon", "lychee", "dragon fruit",
+    "kiwi", "kiwifruit", "pomegranate", "pomegranate juice", "pomegranate rice",  # OCR: rice for juice
+    "persimmon", "lychee", "litchi", "jamun", "bael", "dragon fruit",
     "fruit", "mixed fruit", "dried fruit", "fruit juice", "fruit puree",
     
     # === VINEGAR & ACIDS ===
@@ -193,9 +205,10 @@ FOOD_INGREDIENTS: Set[str] = {
     
     # === NUTS & SEEDS ===
     "almond", "almonds", "almond flour", "almond meal", "almond butter",
+    "californian almonds", "californian", "colifornion",  # OCR: colifornion
     "almond milk", "almond extract", "marzipan", "almond paste",
     "peanut", "peanuts", "peanut butter", "peanut oil", "peanut flour",
-    "walnut", "walnuts", "walnut oil",
+    "walnut", "walnuts", "walnut kernels", "natural walnut kernels", "walnut oil",
     "cashew", "cashews", "cashew butter",
     "hazelnut", "hazelnuts", "hazelnut paste", "praline",
     "pistachio", "pistachios", "pistachio paste",
@@ -212,7 +225,8 @@ FOOD_INGREDIENTS: Set[str] = {
     "nut", "nuts", "mixed nuts", "tree nuts", "nut butter",
     
     # === GRAINS & CEREALS ===
-    "wheat", "whole wheat", "wheat germ", "wheat berry", "cracked wheat",
+    "wheat", "whole wheat", "wheat flour", "atta", "maida", "refined wheat flour",
+    "wheat germ", "wheat berry", "cracked wheat",
     "bulgur", "couscous", "farro", "spelt", "kamut", "einkorn",
     "gluten", "wheat gluten", "vital wheat gluten", "seitan",
     "oat", "oats", "rolled oats", "steel cut oats", "instant oats", "oat flour",
@@ -221,7 +235,8 @@ FOOD_INGREDIENTS: Set[str] = {
     "wild rice", "rice bran", "rice protein",
     "barley", "pearl barley", "barley flour", "barley malt",
     "rye", "rye flour", "rye bread", "pumpernickel",
-    "millet", "sorghum", "teff", "amaranth", "buckwheat", "buckwheat flour",
+    "millet", "finger millet", "ragi", "ragi flour", "sorghum", "teff", "amaranth", "buckwheat", "buckwheat flour",
+    "jowar", "jowar flour", "bajra", "bajra flour",
     "quinoa", "triticale",
     "cereal", "breakfast cereal", "cereal flour", "multigrain",
     
@@ -246,6 +261,7 @@ FOOD_INGREDIENTS: Set[str] = {
     
     # === LEAVENING ===
     "yeast", "active dry yeast", "instant yeast", "fresh yeast", "nutritional yeast",
+    "bread improvers", "permitted bread improvers", "cream improvers",  # OCR: cream for bread
     "yeast extract", "autolyzed yeast", "autolyzed yeast extract",
     "baking powder", "baking soda", "sodium bicarbonate", "bicarbonate of soda",
     "cream of tartar", "ammonium bicarbonate",

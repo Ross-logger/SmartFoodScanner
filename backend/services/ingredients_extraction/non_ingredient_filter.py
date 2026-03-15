@@ -21,15 +21,26 @@ from typing import List, Tuple, Optional
 # Patterns that indicate the START of ingredients section
 START_PATTERNS: List[str] = [
     r'\bingredients?\s*[:]',
-    r'\bcontains?\s*[:]',
     r'\bingredients?\s*$',
-    r'\binoredients?\s*[:]?',  # OCR error: "inoredients"
-    r'\bingred\w*\s*[:]?',  # OCR errors: "ingred", "ingredents", etc.
+    r'\binoredients?\s*[:]?',  # OCR: "inoredients" (i→o)
+    r'\bingred\w*\s*[:]?',  # OCR: "ingred", "ingredents", "ingredlents", etc.
+    r'\bingredicnt\s*[:]?',  # OCR: "Ingredicnt"
+    r'\bingnedienes?\s*[:]?',  # OCR: "Ingnedienes"
+    r'\bingrodlonts?\s*[:]?',  # OCR: "Ingrodlonts"
+    r'\bingrcdients?\s*[:]?',  # OCR: "Ingrcdients" (e→c)
+    r'\bincredients?\s*[:]?',  # OCR: "INCREDIENTS" (extra C)
+    r'\bingreoients?\s*[:]?',  # OCR: "ingreoients" (e/o swapped)
+    r'\bingridients?\s*[:]?',  # OCR: "ingridients" (e→i)
+    r'\bingr[03]dients?\s*[:]?',  # OCR: "ingr0dients", "ingr3dients" (digit for e)
+    r'\bingrédients?\s*[:]?',  # French: "Ingrédients"
+    r'\bingr[eo]d[il]ents?\s*[:]?',  # OCR: "ingredlents", "ingrodients"
 ]
 
 # Patterns that indicate the END of ingredients section (stop extraction)
 STOP_PATTERNS: List[str] = [
     r'\ballergen\s+warning',
+    r'\ballergen\s+(?:information|info)',
+    r'\bcontains?\s*[:].*\b(?:wheat|gluten|milk|egg|nut|soy|tree)\b',  # Allergen list
     r'\bcontains?\s+.*\ballergen',
     r'\binstructions?\s*[:]',
     r'\bprepared\s+in',
@@ -57,6 +68,7 @@ STOP_PATTERNS: List[str] = [
     r'\bsunlight',
     r'\bopened',
     r'\bcontainer',
+    r'\bcontains?\s+naturally\s+occurring',  # "Contains naturally occurring sugars"
 ]
 
 
@@ -72,6 +84,41 @@ GARBAGE_PATTERNS: List[str] = [
     r'^[^\w\s]+$',  # Only special characters
     r'^\d+\s*[gGmMlL]$',  # Weight/volume (e.g., "100g", "250ml")
     r'^\d+\s*%$',  # Percentage only
+    r'^1[oO0]{2}\s*%\s*natural$',  # "1oo% natural", "100% natural"
+    # Section headers as standalone segments (nothing meaningful after strip)
+    r'^ingredicnt\s*[:.]?\s*$',
+    r'^ingrcdients?\s*[:.]?\s*$',
+    r'^ingreoients?\s*[:.]?\s*$',
+    r'^ingrodlonts?\s*[:.]?\s*$',
+    r'^ingnedienes?\s*[:.]?\s*$',
+    r'^incredients?\s*[:.]?\s*$',
+    r'^ingridients?\s*[:.]?\s*$',
+    r'^inoredients?\s*[:.]?\s*$',
+    r'^ingred\w*\s*[:.]?\s*$',  # ingredlents, ingredienes, etc. alone
+    r'^ingr[03]dients?\s*[:.]?\s*$',
+    r'^ngredients?\s*[:.]?\s*$',
+    # Other garbage
+    r'^1[oO0]{2}\s*%\s*$',  # "1oo%", "100%" alone
+    r'^natural\s*$',  # "natural" alone (from "100% natural")
+]
+
+# Section headers to strip from start of segments (ingrodlonts:, ingnedienes, etc.)
+SECTION_HEADER_PATTERNS: List[str] = [
+    r'^ingredients?\s*[:.]?\s*',
+    r'^ingred\w*\s*[:.]?\s*',  # Catches ingredlents, ingredienes, ingrediants, etc.
+    r'^ingrodlonts?\s*[:.]?\s*',
+    r'^ingnedienes?\s*[:.]?\s*',
+    r'^ingnedienes\s+',  # "Ingnedienes " at start (no colon)
+    r'^inoredients?\s*[:.]?\s*',
+    r'^ingredicnt\s*[:.]?\s*',
+    r'^ingrcdients?\s*[:.]?\s*',
+    r'^incredients?\s*[:.]?\s*',
+    r'^ingreoients?\s*[:.]?\s*',
+    r'^ingridients?\s*[:.]?\s*',
+    r'^ingr[03]dients?\s*[:.]?\s*',
+    r'^ingrédients?\s*[:.]?\s*',
+    r'^ingreoients\s*[:.]?\s*',  # "ingreoients:" (typo)
+    r'^ochttps?://[^\s]+\s*',  # OCR garbage: "ochttps://..." merged with text
 ]
 
 # Patterns to remove from ingredients during validation
@@ -177,6 +224,14 @@ def is_stop_pattern(text: str) -> bool:
     text_lower = text.lower().strip()
     
     return any(p.search(text_lower) for p in patterns)
+
+
+def strip_section_header(text: str) -> str:
+    """Strip section header prefixes like 'ingrodlonts:', 'ingnedienes' from segment."""
+    result = text.strip()
+    for pattern in SECTION_HEADER_PATTERNS:
+        result = re.sub(pattern, '', result, flags=re.IGNORECASE).strip()
+    return result
 
 
 def is_garbage_text(text: str) -> bool:
@@ -297,6 +352,7 @@ def extract_ingredients_section(text: str) -> str:
 def filter_ingredients(ingredients: List[str]) -> List[str]:
     """
     Filter a list of extracted ingredients to remove non-ingredients.
+    Strips section headers and invalid segments.
     
     Args:
         ingredients: List of potential ingredients
@@ -308,6 +364,10 @@ def filter_ingredients(ingredients: List[str]) -> List[str]:
     
     for ing in ingredients:
         ing = ing.strip()
+        # Strip section headers (ingrodlonts:, ingnedienes, etc.)
+        ing = strip_section_header(ing)
+        if not ing:
+            continue
         
         if is_valid_ingredient(ing):
             filtered.append(ing)

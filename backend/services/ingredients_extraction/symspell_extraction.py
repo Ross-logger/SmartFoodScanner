@@ -49,7 +49,7 @@ def _split_ingredients_text(text: str) -> List[str]:
         # Check for " and ", " or ", or " . " (sentence boundary, outside parentheses)
         if paren_depth == 0:
             for sep in (" and ", " or ", " . "):
-                if i + len(sep) <= n and text[i : i + len(sep)] == sep:
+                if i + len(sep) <= n and text[i : i + len(sep)].lower() == sep:
                     flush_current()
                     i += len(sep)
                     continue
@@ -279,7 +279,21 @@ def extract_ingredients(ocr_text: str) -> List[str]:
     # Step 4: Final filter on corrected ingredients
     filtered = filter_ingredients(corrected_list)
     
+    # Step 6: Remove percentages from ingredient names (e.g. "(65%)" -> "")
+    filtered = [_strip_percentages(ing) for ing in filtered]
+    filtered = [ing for ing in filtered if ing and len(ing.strip()) > 1]
+    
     return filtered
+
+
+
+def _strip_percentages(text: str) -> str:
+    """Remove percentage patterns like (65%), (38%), 30% from ingredient names."""
+    # Remove (XX%), (X.X%), (XXX%) patterns
+    text = re.sub(r'\s*\(\d+(?:\.\d+)?\s*%\)\s*', ' ', text, flags=re.IGNORECASE)
+    # Remove trailing % and digits like "30%" at end
+    text = re.sub(r'\s*\d+(?:\.\d+)?\s*%\s*$', '', text, flags=re.IGNORECASE)
+    return text.strip()
 
 
 def get_e_number_name(e_number: str) -> Optional[str]:

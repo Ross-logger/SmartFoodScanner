@@ -72,6 +72,41 @@ def calculate_f1_score(predicted: List[str], ground_truth: List[str]) -> float:
     return 2 * (precision * recall) / (precision + recall)
 
 
+def calculate_merge_precision(predicted: List[str], ground_truth: List[str]) -> float:
+    """
+    Merge-based precision: join ground truth into one string, check how many
+    predicted items appear as substrings. High value + low split precision
+    suggests over-splitting (correct text but wrong boundaries).
+    """
+    if not predicted:
+        return 0.0
+    merged_gt = " ".join(g.lower().strip() for g in ground_truth)
+    count = sum(1 for p in predicted if p.lower().strip() in merged_gt)
+    return count / len(predicted)
+
+
+def calculate_merge_recall(predicted: List[str], ground_truth: List[str]) -> float:
+    """
+    Merge-based recall: join predicted into one string, check how many
+    ground truth items appear as substrings. High value + low split recall
+    suggests wrong splitting (text is there but merged or split incorrectly).
+    """
+    if not ground_truth:
+        return 1.0 if not predicted else 0.0
+    merged_pred = " ".join(p.lower().strip() for p in predicted)
+    count = sum(1 for g in ground_truth if g.lower().strip() in merged_pred)
+    return count / len(ground_truth)
+
+
+def calculate_merge_f1(predicted: List[str], ground_truth: List[str]) -> float:
+    """F1 for merge-based (containment) metrics."""
+    p = calculate_merge_precision(predicted, ground_truth)
+    r = calculate_merge_recall(predicted, ground_truth)
+    if p + r == 0:
+        return 0.0
+    return 2 * (p * r) / (p + r)
+
+
 def calculate_ocr_accuracy(predicted_text: str, ground_truth_text: str) -> float:
     """
     Calculate character-level OCR accuracy using sequence matching.
