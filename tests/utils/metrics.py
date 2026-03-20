@@ -26,7 +26,7 @@ def calculate_precision(predicted: List[str], ground_truth: List[str]) -> float:
     
     predicted_set = set(item.lower().strip() for item in predicted)
     ground_truth_set = set(item.lower().strip() for item in ground_truth)
-    
+
     true_positives = len(predicted_set & ground_truth_set)
     return true_positives / len(predicted_set)
 

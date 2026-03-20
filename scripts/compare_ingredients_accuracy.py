@@ -34,6 +34,7 @@ from tests.utils.metrics import (
 
 IMAGES_DIR = PROJECT_ROOT / "tests" / "data" / "images"
 GROUND_TRUTH_PATH = PROJECT_ROOT / "tests" / "data" / "true_ingredients.json"
+COMPARISON_RESULT_PATH = PROJECT_ROOT / "tests" / "data" / "comparison_result.json"
 FUZZY_THRESHOLD = 0.8
 
 # Strip percentages before comparison (we don't evaluate percentages)
@@ -146,27 +147,26 @@ def compare_with_ground_truth(
 
         # Normalize: strip percentages before comparison
         extracted_norm = _normalize_for_comparison(extracted)
-        gt_norm = _normalize_for_comparison(ground_truth_ingredients)
 
         metrics.add_extraction_result(
             image,
             extracted_norm,
-            gt_norm,
+            ground_truth_ingredients,
             metadata={"ocr_text_preview": (entry.get("ocr_text") or "")[:80]},
         )
 
-        exact_precision = calculate_precision(extracted_norm, gt_norm)
-        exact_recall = calculate_recall(extracted_norm, gt_norm)
-        exact_f1 = calculate_f1_score(extracted_norm, gt_norm)
+        exact_precision = calculate_precision(extracted_norm, ground_truth_ingredients)
+        exact_recall = calculate_recall(extracted_norm, ground_truth_ingredients)
+        exact_f1 = calculate_f1_score(extracted_norm, ground_truth_ingredients)
 
         fuzzy = calculate_fuzzy_match_accuracy(
-            extracted_norm, gt_norm, threshold=fuzzy_threshold
+            extracted_norm, ground_truth_ingredients, threshold=fuzzy_threshold
         )
 
         # Merge-based: check containment in joined text (quantifies splitting error)
-        merge_precision = calculate_merge_precision(extracted_norm, gt_norm)
-        merge_recall = calculate_merge_recall(extracted_norm, gt_norm)
-        merge_f1 = calculate_merge_f1(extracted_norm, gt_norm)
+        merge_precision = calculate_merge_precision(extracted_norm, ground_truth_ingredients)
+        merge_recall = calculate_merge_recall(extracted_norm, ground_truth_ingredients)
+        merge_f1 = calculate_merge_f1(extracted_norm, ground_truth_ingredients)
 
         details.append({
             "image": image,
@@ -253,13 +253,32 @@ def compare_with_ground_truth(
     }
 
 
-def _save_dataset(results: Dict[str, Any], output_path: Path) -> None:
-    """Save extracted + true ingredients + metrics to ingredients_dataset.json."""
+def save_comparison_result(results: Dict[str, Any], output_path: Path = COMPARISON_RESULT_PATH) -> None:
+    """Save the full comparison result (summary + per-image details) to JSON."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    # Each entry: image, ocr_text, extracted_ingredients, true_ingredients, exact, fuzzy
+
+    # Enrich details with extracted + true ingredients from dataset_for_export
+    export_by_image = {e["image"]: e for e in results.get("dataset_for_export", [])}
+    enriched_details = []
+    for d in results["details"]:
+        export = export_by_image.get(d["image"], {})
+        enriched_details.append({
+            **d,
+            "extracted_ingredients": export.get("extracted_ingredients", []),
+            "true_ingredients": export.get("true_ingredients", []),
+        })
+
+    payload = {
+        "summary": results["summary"],
+        "exact": results["exact"],
+        "fuzzy": results["fuzzy"],
+        "merge": results.get("merge", {}),
+        "details": enriched_details,
+    }
+
     with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(results["dataset_for_export"], f, indent=2, ensure_ascii=False)
-    print(f"\n  Results saved to {output_path}")
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+    print(f"\n  Comparison result saved to {output_path}")
 
 
 def print_summary(results: Dict[str, Any]) -> None:
@@ -368,6 +387,7 @@ def main() -> int:
     print_worst_cases(results, n=10)
     print_splitting_gap(results, n=10)
     print_worst_precision(results, n=15)
+    save_comparison_result(results)
     return 0
 
 

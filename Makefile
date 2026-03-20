@@ -1,10 +1,13 @@
-.PHONY: help shell install run dev frontend backend stop-frontend stop-backend stop
+.PHONY: help shell install run dev frontend backend vllm stop-frontend stop-backend stop-vllm stop screens
 
 # Variables
 VENV = .venv
 PYTHON = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 PROJECT_ROOT = $(shell pwd)
+SCREEN_BACKEND = backend
+SCREEN_FRONTEND = frontend
+SCREEN_VLLM = vllm
 
 shell: ## Start Python shell with project imports enabled
 	@cd $(PROJECT_ROOT) && \
@@ -20,28 +23,40 @@ install:
 	@$(PIP) install --upgrade pip
 	@$(PIP) install -r requirements.txt
 
-run: ## Run both backend and frontend servers
-	@echo "Starting both backend and frontend servers..."
-	@make backend & make frontend
+run: ## Start backend and frontend in detached GNU screen sessions
+	@echo "Starting backend and frontend in screen sessions ($(SCREEN_BACKEND), $(SCREEN_FRONTEND))..."
+	@$(MAKE) backend
+	@$(MAKE) frontend
+	@echo "Attach with: screen -r $(SCREEN_BACKEND)   or   screen -r $(SCREEN_FRONTEND)"
 
-backend: ## Run backend server
-	@echo "Starting backend server..."
-	@cd $(PROJECT_ROOT) && \
-		source $(VENV)/bin/activate && \
-		uvicorn backend.main:app --reload
+dev: run ## Alias for run
 
-frontend: ## Run frontend development server
-	@echo "Starting frontend server..."
-	@cd frontend && npm run dev
+backend: ## Run backend server (detached screen: $(SCREEN_BACKEND))
+	@echo "Starting backend in screen session $(SCREEN_BACKEND)..."
+	@screen -dmS $(SCREEN_BACKEND) bash -lc 'cd $(PROJECT_ROOT) && source $(VENV)/bin/activate && exec uvicorn backend.main:app --reload'
 
-stop-backend: ## Stop backend server (port 8000)
-	@echo "Stopping backend server..."
-	@-lsof -t -i:8000 | xargs kill -9 2>/dev/null || echo "No backend process found on port 8000"
+frontend: ## Run frontend dev server (detached screen: $(SCREEN_FRONTEND))
+	@echo "Starting frontend in screen session $(SCREEN_FRONTEND)..."
+	@screen -dmS $(SCREEN_FRONTEND) bash -lc 'cd $(PROJECT_ROOT)/frontend && exec npm run dev'
 
-stop-frontend: ## Stop frontend server (port 3000)
-	@echo "Stopping frontend server..."
-	@-lsof -t -i:3000 | xargs kill -9 2>/dev/null || echo "No frontend process found on port 3000"
+vllm: ## Start LLM spellcheck corrector via vLLM (detached screen: $(SCREEN_VLLM))
+	@echo "Starting vLLM in screen session $(SCREEN_VLLM)..."
+	@screen -dmS $(SCREEN_VLLM) bash -lc 'cd $(PROJECT_ROOT) && source $(VENV)/bin/activate && exec vllm serve "openfoodfacts/spellcheck-mistral-7b"'
 
-stop: stop-backend stop-frontend ## Stop both backend and frontend servers
-	@echo "All servers stopped."
+screens: ## List SmartFoodScanner screen sessions
+	@screen -ls | grep -E '$(SCREEN_BACKEND)|$(SCREEN_FRONTEND)|$(SCREEN_VLLM)' || echo "No sfs-* screen sessions."
 
+stop-backend: ## Stop backend screen session ($(SCREEN_BACKEND))
+	@echo "Stopping backend screen session..."
+	@-screen -S $(SCREEN_BACKEND) -X quit 2>/dev/null || echo "No session $(SCREEN_BACKEND)."
+
+stop-frontend: ## Stop frontend screen session ($(SCREEN_FRONTEND))
+	@echo "Stopping frontend screen session..."
+	@-screen -S $(SCREEN_FRONTEND) -X quit 2>/dev/null || echo "No session $(SCREEN_FRONTEND)."
+
+stop-vllm: ## Stop vLLM screen session ($(SCREEN_VLLM))
+	@echo "Stopping vLLM screen session..."
+	@-screen -S $(SCREEN_VLLM) -X quit 2>/dev/null || echo "No session $(SCREEN_VLLM)."
+
+stop: stop-backend stop-frontend stop-vllm ## Stop backend, frontend, and vLLM screen sessions
+	@echo "All service screen sessions stopped."

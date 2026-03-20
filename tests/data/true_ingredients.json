@@ -9,7 +9,7 @@
       "egg powder",
       "cocoa powder",
       "whole milk powder",
-      "baking powder (E-450I)",
+      "450(i)",
       "walnut",
       "cardamom powder",
       "salt"
@@ -33,7 +33,7 @@
       "common salt",
       "spices",
       "condiments",
-      "permitted stabilizer (e 460(i))"
+      "460(i)"
     ]
   },
   {
@@ -51,7 +51,7 @@
       "iodized salt",
       "red chilli powder",
       "black salt",
-      "acidity regulator (ins 330)",
+      "330",
       "black pepper",
       "clove",
       "cardamom",
@@ -75,7 +75,7 @@
       "cottonseed oil",
       "chilli powder",
       "spices condiments",
-      "acidity regulator (ins 260)",
+      "260",
       "asafoetida"
     ]
   },
@@ -87,14 +87,14 @@
       "salt",
       "tamarind concentrate",
       "edible vegetable oil",
-      "red chlll powder",
+      "red chilli powder",
       "mustard",
       "acetic acid",
       "blackgram dal",
       "garlic",
       "fenugreek powder",
       "curry leaves",
-      "corlander powder",
+      "coriander powder",
       "cumin powder",
       "bengalgram dal",
       "asafoetida",
@@ -105,8 +105,14 @@
     "image": "in11.jpg",
     "ocr_text": "Ingredients: Greek yogurt (pasteurized double\ntoned milk; milk solids, permitted starter cultures),\nprocessed blueberry pulp (sugar blueberry puree,water;\npectin ( INS 440), lemon juice concentrate)\nTotal Fruit Content: 3%",
     "true_ingredients": [
-      "greek yogurt (pasteurized double toned milk, milk solids, permitted starter cultures)",
-      "processed blueberry pulp (sugar, blueberry puree,water; pectin (ins 440), lemon juice concentrate)"
+      "pasteurized double toned milk",
+      "milk solids",
+      "permitted starter cultures",
+      "sugar",
+      "blueberry puree",
+      "water",
+      "440",
+      "lemon juice concentrate"
     ]
   },
   {
@@ -122,10 +128,12 @@
       "mixed spices",
       "garlic",
       "herbs",
-      "acidity regulators (ins 260, ins 330)",
-      "emulsifier and stabilizer (s322, ins 415)",
-      "preservative (ins 211)",
-      "antioxidant (ins 319)"
+      "260",
+      "330",
+      "322",
+      "415",
+      "211",
+      "319"
     ]
   },
   {
@@ -138,11 +146,11 @@
       "sugar",
       "salt",
       "fresh coriander",
-      "acidity regulator (ins 260)",
+      "260",
       "garlic",
       "cornflour",
-      "stabilizer (ins 415)",
-      "preservative (ins 211)",
+      "415",
+      "211",
       "spices condiments"
     ]
   },
@@ -165,7 +173,7 @@
     "ocr_text": "INGREDIENTS:\nSugar; Cocoa Powder (3096*],\nCONTAINS ADDED FLAVOUR (ARTIFICHALNAHLLA\nFLAVOURING SUBSTANCES}\nAllergenInformation: Contains Sulphides",
     "true_ingredients": [
       "sugar",
-      "cococa powder"
+      "cocoa powder"
     ]
   },
   {
@@ -179,13 +187,13 @@
       "guava pulp",
       "pineapple pulp",
       "watermelon pulp",
-      "polydextrose (dietary fiber)",
-      "acidity regulator (ins 330)",
+      "polydextrose",
+      "330",
       "bael pulp",
       "jamun pulp",
       "litchi pulp",
-      "stabilizer (ins 440)",
-      "antioxidant (ins 300)",
+      "440",
+      "300",
       "pomegranate rice"
     ]
   },
@@ -199,17 +207,17 @@
       "yeast",
       "salt",
       "permitted bread improvers",
-      "preservative (ins 282) and acidity regulator (ins260)}",
+      "282",
+      "260",
       "edible vegetable oil (rbd palmolein)",
-      "wheat flour",
       "corn flour",
       "corn starch",
-      "salt and emulsifier (ins 466)}",
+      "466",
       "soy",
       "isolated soy protein",
-      "iodized salt",
       "spices",
-      "condiments and texturizer (ins 451(i))"
+      "condiments",
+      "451(i)"
     ]
   },
   {
@@ -221,18 +229,17 @@
       "yeast",
       "salt",
       "permitted cream improvers",
-      "preservative (ins 282) and acidity regulator (ins 260)]",
+      "282",
+      "260",
       "water",
       "edible vegetable oil (refined palm olein oil)",
-      "wheat flour",
       "corn flour",
       "corn starch",
-      "salt",
-      "emulsifier (ins 466))",
+      "466",
       "soy protein",
       "spices",
       "condiments",
-      "lodized salt and texturizer (ins 451(i))"
+      "451(i)"
     ]
   },
   {
@@ -241,7 +248,7 @@
     "true_ingredients": [
       "carbonated water",
       "sugar",
-      "acidity regulator e338",
+      "338",
       "caffeine"
     ]
   },
@@ -250,7 +257,7 @@
     "ocr_text": "INGREDIENTS: COCONUT WATER(1OO%),\nBIO-PRESERVATIVE (INS 234)\nCONTAINS NATURALLY OCCURING SUGARS",
     "true_ingredients": [
       "coconut water",
-      "bio-preservative (ins 234)"
+      "234"
     ]
   },
   {
@@ -265,8 +272,9 @@
       "cereal extract",
       "edible vegetable oil (palmolein)",
       "iodized salt",
-      "colour (ins 150d)",
-      "vitamins"
+      "150d",
+      "vitamins",
+      "320"
     ]
   },
   {
@@ -284,7 +292,7 @@
       "solids",
       "water",
       "sugar",
-      "stabilizer (440)",
+      "440",
       "natural identical and artificial flavoring substances (rose)",
       "active culture"
     ]
@@ -298,7 +306,7 @@
       "sugar",
       "butter",
       "apple cider vinegar",
-      "raising agent (ins500(ii))",
+      "500(ii)",
       "vanilla essence"
     ]
   },
@@ -314,9 +322,10 @@
       "fat-reduced cocoa",
       "chocolate (sugar cocoa mass) in the cream filling",
       "skimmed milk powder",
-      "raisinfg agents (sodium hydrogen carbonate, sodium diphosphates)",
+      "sodium hydrogen carbonate",
+      "disodium diphosphate",
       "hazelnuts",
-      "emulsifier soy lecithin",
+      "soy lecithin",
       "salt",
       "barley malt extract",
       "concentrated apple rice",
@@ -331,14 +340,15 @@
       "sugar",
       "vegetable fat",
       "cocoa solids",
-      "emulsifier e322 from soya",
+      "322",
       "refined wheat flour (maida)",
       "sugar",
       "palm oil",
       "milk solids",
       "golden syrup",
       "cocoa powder",
-      "leaving agents (e503ii, e500ii)",
+      "503(ii)",
+      "500(ii)",
       "salt"
     ]
   },
@@ -351,7 +361,7 @@
       "cashew",
       "milk solids",
       "salt",
-      "raising agent (e500)",
+      "500",
       "flavor vanilla",
       "butterscotch"
     ]
@@ -380,15 +390,17 @@
       "edible vegetable oil (palm)",
       "sugar",
       "liquid glucose",
-      "raising agent (e503(ii), e500(ii), e450(i))",
+      "503(ii)",
+      "500(ii)",
+      "450(i)",
       "butter",
       "black salt",
       "milk solids",
       "edible vegetable product",
       "iodised salt",
-      "acidity regulator (e341(ii))",
-      "dough conditioner (e223)",
-      "improver (e1101(i))"
+      "341(ii)",
+      "223",
+      "1101(i)"
     ]
   },
   {
@@ -447,11 +459,12 @@
       "refined palm oil",
       "invert sugar syrup",
       "milk solids",
-      "raising agents e503 (ii), e500 (ii)",
+      "503(ii)",
+      "500(ii)",
       "iodized salt",
-      "emulsifier (e472e)",
+      "472e",
       "calcium salt",
-      "dough conditioner (e223)",
+      "223",
       "ferrous salt",
       "potassium iodate"
     ]
@@ -518,7 +531,8 @@
       "sugar",
       "edible vegetable fat (hydrogenated)",
       "cocoa solids",
-      "emulsifier (ins 491,322)",
+      "491",
+      "322",
       "peanuts",
       "rice flour",
       "wheat flour",
@@ -532,7 +546,6 @@
       "sunflower oil",
       "liquid glucose",
       "cocoa powder",
-      "antioxidant (ins 322)",
       "edible common salt",
       "cocoa butter"
     ]
@@ -545,12 +558,13 @@
       "sugar",
       "cocoa solids",
       "cocoa butter",
-      "permitted emulsifier [322,476])",
+      "322",
+      "476",
       "demerara sugar",
       "edible hydrogenated vegetable shortening",
       "eggs",
       "cocoa powder",
-      "raising agent [500(ii)]",
+      "500(ii)",
       "salt"
     ]
   },
@@ -565,9 +579,10 @@
       "liquid glucose",
       "sprinkled sugar",
       "milk solids",
-      "raisin agents [503(ii), 500(ii)]",
+      "503(ii)",
+      "500(ii)",
       "iodized salt",
-      "emulsifier (322(i))"
+      "322(i)"
     ]
   },
   {
@@ -584,7 +599,7 @@
       "figs",
       "organic brown sugar",
       "vanilla",
-      "raising agent (ins 500(ii))"
+      "500(ii)"
     ]
   },
   {
@@ -619,7 +634,7 @@
       "dehydrated apple",
       "rice bran oil",
       "organic brown sugar",
-      "raising agent (ins 500(ii))",
+      "500(ii)",
       "cinnamon",
       "vanilla"
     ]
@@ -652,17 +667,16 @@
       "cocoa butter",
       "malto dextrin",
       "dextrose",
-      "antioxidant (322)",
+      "322",
       "sugar",
       "interesterified vegetable fat",
       "milk solids",
       "butter oats",
       "liquid glucose",
       "sugar solution",
-      "raising agent e503 (ii)",
+      "503(ii)",
       "edible common salt",
-      "emulsifier (e322)",
-      "raisin agent e500 (ii)"
+      "500(ii)"
     ]
   },
   {
@@ -681,7 +695,8 @@
       "sugar",
       "hydrogenated vegetable fat",
       "milk powder",
-      "leavening agents (e500(ii), e503(ii))"
+      "500(ii)",
+      "503(ii)"
     ]
   },
   {
@@ -693,17 +708,17 @@
       "cocoa solids",
       "cocoa butter",
       "dextrose",
-      "emulsifier (ins 322(i))",
+      "322(i)",
       "vanilla",
       "refined palm oil",
-      "hydrogenated vegetable oat",
+      "hydrogenated vegetable fat",
       "milk solids",
       "cocoa solids",
       "invert syrup",
       "edible desiccated coconut",
-      "raising agents (ins503(ii), ins500(ii))",
-      "iodized salt",
-      "emulsifier (ins 322(i))"
+      "503(ii)",
+      "500(ii)",
+      "iodized salt"
     ]
   },
   {
@@ -712,18 +727,19 @@
     "true_ingredients": [
       "refined wheat flour (maida)",
       "sugar",
-      "interesterified vegetable oat",
+      "interesterified vegetable fat",
       "milk solids",
       "starch",
       "invert syrup",
       "butter",
       "brown sugar",
       "liquid glucose",
-      "raising agent (e503(ii), e500(ii))",
+      "503(ii)",
+      "500(ii)",
       "cinnamon powder",
       "iodized salt",
-      "acidity regulator (e341(i))",
-      "emulsifier (e472e)"
+      "341(i)",
+      "472e"
     ]
   },
   {
@@ -783,7 +799,8 @@
       "sugar",
       "hydrogenated vegetable fat",
       "milk powder",
-      "leavening agents (e500(ii), e503(ii))"
+      "500(ii)",
+      "503(ii)"
     ]
   },
   {
@@ -822,17 +839,19 @@
       "baking powder",
       "refined wheat flour",
       "emulsifier",
-      "stabilizers (e417, e415)",
+      "417",
+      "415",
       "salt",
-      "colour e171",
+      "171",
       "vanilla",
       "refined wheat flour",
       "sugar",
       "vegetable oil",
       "water coco powder",
-      "salt preservative (ins202, ins200)",
-      "humectant (ins 422)",
-      "leaving agents (ins 500 (ii)):"
+      "202",
+      "200",
+      "422",
+      "500(ii)"
     ]
   },
   {
@@ -846,7 +865,7 @@
       "wholewheat flour (atta)",
       "walnuts",
       "banana powder",
-      "raisin agent (ins 500(ii))"
+      "500(ii)"
     ]
   },
   {
@@ -877,9 +896,10 @@
       "baking powder",
       "refined wheat flour",
       "emulsifier",
-      "stabilizers (e471,e415)",
+      "471",
+      "415",
       "salt",
-      "colour e171",
+      "171",
       "vanilla",
       "refined wheat flour",
       "sugar",
@@ -891,9 +911,10 @@
       "almonds",
       "salt",
       "caramelised sugar",
-      "preservative (ins202, ins200)",
-      "humectant (ins422)",
-      "leaving agents (ins500 (ii))"
+      "202",
+      "200",
+      "422",
+      "500(ii)"
     ]
   },
   {
@@ -918,7 +939,7 @@
       "orange",
       "milkmaid",
       "added flavors",
-      "additive (e422)"
+      "422"
     ]
   },
   {
@@ -930,8 +951,9 @@
       "cocoa solids",
       "cocoa butter",
       "mango flavor",
-      "emulsifiers (e322, e476)",
-      "glazing agents (shellac)"
+      "322",
+      "476",
+      "shellac"
     ]
   },
   {
@@ -942,8 +964,8 @@
       "hydrogenated vegetable oil",
       "milk solids",
       "cocoa solids",
-      "ins 322",
-      "ins 476",
+      "322",
+      "476",
       "salt"
     ]
   },
@@ -954,8 +976,8 @@
       "sugar",
       "edible vegetable fat",
       "cocoa solids",
-      "e492",
-      "e322"
+      "492",
+      "322"
     ]
   },
   {
@@ -967,7 +989,8 @@
       "cocoa butter",
       "cocoa solids",
       "almond bits",
-      "emulsifiers (e476, e322 (i))"
+      "476",
+      "322(i)"
     ]
   },
   {
@@ -978,19 +1001,21 @@
       "milk solids",
       "cocoa butter",
       "cocoa solids",
-      "emulsifiers (e476, e322 (i))"
+      "476",
+      "322(i)"
     ]
   },
   {
     "image": "in112.jpg",
     "ocr_text": "Ingredients: Maltitol (INS 965()), Cocoa Butter\n(33%), Cocoa Powder (18%), Almonds (10%),\nFructo-oligosaccharides; Emulsifiers (INS 322,\nINS 476), Flavouring (Hazelnut)",
     "true_ingredients": [
-      "maltitol (ins 965(i))",
+      "965(i)",
       "cocoa butter",
       "cocoa powder",
       "almonds",
       "fructo-oligosaccharides",
-      "emulsifiers (ins 322, ins 476)",
+      "322",
+      "476",
       "flavoring (hazelnut)"
     ]
   },
@@ -1001,7 +1026,7 @@
       "cocoa solids",
       "sugar",
       "cocoa butter",
-      "emulsifier (ins 322)"
+      "322"
     ]
   },
   {
@@ -1019,9 +1044,10 @@
       "wheat starch",
       "sunflower seed oil (high oleic acid)",
       "whey protein",
-      "emulsifier (ins 322)",
+      "322",
       "powdered barley malt extract",
-      "raising agents (e503(ii), e500(ii))",
+      "503(ii)",
+      "500(ii)",
       "iodized salt"
     ]
   },
@@ -1036,11 +1062,13 @@
       "starch",
       "cocoa solids",
       "palm olein oil",
-      "emulsifiers e442 e322, e476",
+      "442",
+      "322",
+      "476",
       "edible salt",
       "yeast",
-      "raising agent (500(ii))",
-      "improver (enzyme)"
+      "500(ii)",
+      "enzyme"
     ]
   },
   {
@@ -1051,7 +1079,8 @@
       "sugar",
       "hydrogenated vegetable oil",
       "milk solids",
-      "e322, e476",
+      "322",
+      "476",
       "salt",
       "artificial flavoring",
       "trans fat"
@@ -1067,7 +1096,7 @@
       "edible vegetable oil (palm oil)",
       "milk solids",
       "iodised salt",
-      "emulsifier (lecithin of soya origin)"
+      "soya lecithin"
     ]
   },
   {
@@ -1091,8 +1120,8 @@
       "spice extract",
       "rice flour",
       "iodized salt",
-      "e508",
-      "e330"
+      "508",
+      "330"
     ]
   },
   {
@@ -1101,8 +1130,8 @@
     "true_ingredients": [
       "water",
       "tomato paste",
-      "ins 330",
-      "ins 300"
+      "330",
+      "300"
     ]
   },
   {
@@ -1116,12 +1145,12 @@
       "corn starch",
       "onion",
       "garlic",
-      "e1422",
-      "e415",
-      "e260",
+      "1422",
+      "415",
+      "260",
       "spices",
       "condiments",
-      "e211"
+      "211"
     ]
   },
   {
@@ -1146,8 +1175,8 @@
       "cashew nut",
       "salt",
       "curry leaves",
-      "ins 500 (ii)",
-      "ins 551",
+      "500(ii)",
+      "551",
       "mustard",
       "green chilli",
       "ginger"
@@ -1162,15 +1191,15 @@
       "water",
       "sugar",
       "cream (from milk)",
-      "e1422 (from maize)",
-      "e1442 (from maize))",
+      "1422",
+      "1442",
       "milk solids",
       "gelatine",
       "flavors",
-      "e331",
-      "e332",
-      "e270",
-      "e330",
+      "331",
+      "332",
+      "270",
+      "330",
       "enzyme (lactase)",
       "live cultures"
     ]
@@ -1197,8 +1226,10 @@
       "water",
       "milk solids",
       "sugar",
-      "stabilizers (e461, e412, e407)",
-      "emulsifier (e471)"
+      "461",
+      "412",
+      "407",
+      "471"
     ]
   }
 ]

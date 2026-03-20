@@ -59,6 +59,11 @@ UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
 
 IS_OCR_CONFIDENCE_FILTER = os.getenv("IS_OCR_CONFIDENCE_FILTER", "true").lower() in ("true", "1", "yes")
 
+# Automatic preprocessing before EasyOCR (contrast + resize); no user action required
+OCR_PREPROCESS_ENABLED = os.getenv("OCR_PREPROCESS_ENABLED", "true").lower() in ("true", "1", "yes")
+OCR_PREPROCESS_TARGET_SHORT_EDGE = int(os.getenv("OCR_PREPROCESS_TARGET_SHORT_EDGE", "1000"))
+OCR_PREPROCESS_MAX_LONG_EDGE = int(os.getenv("OCR_PREPROCESS_MAX_LONG_EDGE", "2400"))
+
 # =============================================================================
 # Cookies
 # =============================================================================

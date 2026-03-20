@@ -4,12 +4,17 @@ Extracts text from images using EasyOCR.
 """
 
 import io
+import logging
 from PIL import Image
 import numpy as np
 import easyocr
 from typing import List, Tuple
+
 from backend import settings
+from backend.services.ocr.preprocess import preprocess_image_for_ocr
 from pillow_heif import register_heif_opener
+
+logger = logging.getLogger(__name__)
 
 register_heif_opener()
 
@@ -105,12 +110,25 @@ def extract_text_from_image(image_data: bytes) -> str:
             if image.mode != 'RGB':
                 image = image.convert('RGB')
         
-        # Convert PIL Image to numpy array for EasyOCR
+        # RGB numpy for pipeline
         image_array = np.array(image)
-        
+
+        # Automatic preprocess: contrast (CLAHE), upscale small images, cap huge ones
+        if settings.OCR_PREPROCESS_ENABLED:
+            image_array = preprocess_image_for_ocr(
+                image_array,
+                enabled=True,
+                target_short_edge=settings.OCR_PREPROCESS_TARGET_SHORT_EDGE,
+                max_long_edge=settings.OCR_PREPROCESS_MAX_LONG_EDGE,
+            )
+            logger.debug(
+                "OCR preprocess applied -> shape %s",
+                getattr(image_array, "shape", None),
+            )
+
         # Get OCR reader (singleton)
         reader = get_ocr_reader()
-        
+
         # Perform OCR using EasyOCR
         # EasyOCR returns list of tuples: (bbox, text, confidence)
         results = reader.readtext(image_array)

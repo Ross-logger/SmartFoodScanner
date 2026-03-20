@@ -1,6 +1,10 @@
 """
 Food Ingredients Data
 Contains dictionaries for ingredient spell-checking and E-number lookup.
+
+FOOD_INGREDIENTS must use correct spellings only (canonical / dictionary English
+and legitimate label wording). OCR typos are not listed here—SymSpell suggests
+the closest valid term from this set.
 """
 
 from typing import Dict, Set
@@ -14,11 +18,12 @@ VERY_COMMON_INGREDIENTS: Set[str] = {
     "wheat", "corn", "rice", "soy", "palm", "cocoa", "vanilla", "cream",
     "starch", "vinegar", "honey", "yeast", "garlic", "onion", "pepper",
     "chocolate", "cheese", "tomato", "lemon", "orange", "apple",
+    "coconut", "acid", "chilli", "chili", "berry", "yogurt",
 }
 
 # =============================================================================
-# Food Ingredients Dictionary (~500 entries)
-# All valid ingredient terms for spell-checking
+# Food Ingredients Dictionary
+# Canonical correctly spelled terms only (no intentional OCR misspellings).
 # =============================================================================
 
 FOOD_INGREDIENTS: Set[str] = {
@@ -29,12 +34,16 @@ FOOD_INGREDIENTS: Set[str] = {
     
     # === OILS & FATS ===
     "oil", "vegetable oil", "palm oil", "palm olein", "palm kernel oil",
-    "sunflower oil", "soybean oil", "rapeseed oil", "canola oil", "coconut oil",
+    "sunflower oil", "soybean oil", "soyabean oil", "refined soyabean oil",
+    "rapeseed oil", "canola oil", "coconut oil",
     "olive oil", "extra virgin olive oil", "corn oil", "peanut oil", "sesame oil",
     "safflower oil", "cottonseed oil", "rice bran oil", "avocado oil", "grapeseed oil",
     "walnut oil", "flaxseed oil", "hemp oil", "mct oil",
-    "hydrogenated vegetable oil", "partially hydrogenated oil", "fully hydrogenated palm oil",
-    "fully hydrogenated oil", "hydrogenated palm oil", "fully hydrogenated palm oil",
+    "hydrogenated vegetable oil", "partially hydrogenated oil",
+    "fully hydrogenated palm oil", "fully hydrogenated oil", "hydrogenated palm oil",
+    "hydrogenated palm olein", "hydrogenated palmolein",
+    "edible vegetable oil", "edible vegetable oil (palmolein)",
+    "edible vegetable oil (rbd palmolein)", "edible vegetable oil (refined palm olein oil)",
     "refined palm olein oil", "refined palmolein oil", "rbd palmolein", "interesterified fat",
     "olein", "stearin", "shortening", "margarine", "lard", "tallow", "ghee",
     "butter", "unsalted butter", "salted butter", "clarified butter", "butter oil",
@@ -51,6 +60,9 @@ FOOD_INGREDIENTS: Set[str] = {
     "gouda cheese", "swiss cheese", "provolone cheese", "blue cheese",
     "processed cheese", "cheese powder", "cheese flavor",
     "yogurt", "greek yogurt", "plain yogurt", "yogurt powder",
+    "double toned milk", "toned milk", "pasteurized double toned milk",
+    "permitted starter cultures", "starter cultures", "active culture",
+    "live cultures", "lactic cultures",
     "whey", "whey powder", "whey protein", "whey protein concentrate",
     "whey protein isolate", "sweet whey", "acid whey",
     "casein", "caseinate", "sodium caseinate", "calcium caseinate", "milk protein",
@@ -90,7 +102,7 @@ FOOD_INGREDIENTS: Set[str] = {
     "beet sugar", "turbinado sugar", "demerara sugar", "muscovado sugar",
     "powdered sugar", "confectioners sugar", "icing sugar", "caster sugar",
     "invert sugar", "invert syrup", "golden syrup", "treacle",
-    "glucose", "glucose syrup", "glucose solids", "liquid glucose", "squid glucose",  # OCR
+    "glucose", "glucose syrup", "glucose solids", "liquid glucose",
     "dextrose", "dextrose monohydrate",
     "fructose", "crystalline fructose", "high fructose corn syrup", "hfcs",
     "corn syrup", "corn syrup solids", "maltodextrin", "maltose", "malt syrup",
@@ -109,7 +121,7 @@ FOOD_INGREDIENTS: Set[str] = {
     "lactitol", "polyol", "sugar alcohol",
     
     # === COCOA & CHOCOLATE ===
-    "cocoa", "cocoa powder", "cococa powder",  # OCR variant
+    "cocoa", "cocoa powder",
     "dutch process cocoa", "natural cocoa",
     "cocoa butter", "cocoa mass", "cocoa liquor", "cocoa solids", "cacao",
     "chocolate", "dark chocolate", "milk chocolate", "white chocolate",
@@ -135,10 +147,13 @@ FOOD_INGREDIENTS: Set[str] = {
     "cardamom", "green cardamom", "black cardamom",
     "pepper", "black pepper", "white pepper", "ground pepper", "peppercorn",
     "cayenne", "cayenne pepper", "red pepper", "chili pepper", "chili powder",
+    "red chilli powder", "red chili powder",
+    "chilli powder", "green chilli", "green chili",
     "paprika", "smoked paprika", "sweet paprika", "hot paprika",
-    "turmeric", "ground turmeric", "cumin", "ground cumin", "cumin seed",
+    "turmeric", "ground turmeric", "turmeric powder",
+    "cumin", "ground cumin", "cumin seed", "cumin powder",
     "coriander", "ground coriander", "coriander seed", "coriander leaf",
-    "coriander powder", "corlander", "corlander powder",  # OCR variants
+    "coriander powder",
     "fennel", "fennel seed", "anise", "star anise", "aniseed",
     "mustard", "mustard seed", "mustard powder", "dry mustard",
     "oregano", "basil", "thyme", "rosemary", "sage", "marjoram",
@@ -146,7 +161,8 @@ FOOD_INGREDIENTS: Set[str] = {
     "bay leaf", "bay leaves", "mint", "spearmint", "peppermint",
     "curry", "curry powder", "garam masala", "tandoori", "ras el hanout",
     "saffron", "sumac", "za'atar", "herbes de provence", "italian seasoning",
-    "fenugreek", "asafoetida", "ajwain", "ajwain seed", "caraway", "caraway seed", "juniper", "juniper berry",
+    "fenugreek", "fenugreek powder", "asafoetida", "ajwain", "ajwain seed",
+    "caraway", "caraway seed", "juniper", "juniper berry",
     
     # === ALLIUMS ===
     "garlic", "garlic powder", "garlic salt", "granulated garlic", "garlic flakes",
@@ -183,7 +199,7 @@ FOOD_INGREDIENTS: Set[str] = {
     "grape", "grapes", "grape juice", "raisin", "raisins", "sultana", "currant",
     "strawberry", "strawberries", "raspberry", "raspberries",
     "blueberry", "blueberries", "blackberry", "blackberries", "cranberry", "cranberries",
-    "banana", "bananas", "plantain", "banana puree",
+    "banana", "bananas", "plantain", "banana puree", "banana pureed",
     "mango", "mangoes", "mango puree", "mango pulp", "mango pieces", "mango spices",
     "papaya", "guava", "guava pulp", "passion fruit",
     "pineapple", "pineapple juice", "coconut", "coconut milk", "coconut cream",
@@ -192,8 +208,10 @@ FOOD_INGREDIENTS: Set[str] = {
     "pear", "pears", "cherry", "cherries", "sour cherry",
     "fig", "figs", "date", "dates", "date paste",
     "watermelon", "cantaloupe", "honeydew", "melon",
-    "kiwi", "kiwifruit", "pomegranate", "pomegranate juice", "pomegranate rice",  # OCR: rice for juice
-    "persimmon", "lychee", "litchi", "jamun", "bael", "dragon fruit",
+    "kiwi", "kiwifruit", "pomegranate", "pomegranate juice",
+    "persimmon", "lychee", "litchi", "litchi pulp", "jamun", "jamun pulp",
+    "bael", "bael pulp", "dragon fruit",
+    "watermelon pulp", "pineapple pulp",
     "fruit", "mixed fruit", "dried fruit", "fruit juice", "fruit puree",
     
     # === VINEGAR & ACIDS ===
@@ -205,9 +223,9 @@ FOOD_INGREDIENTS: Set[str] = {
     
     # === NUTS & SEEDS ===
     "almond", "almonds", "almond flour", "almond meal", "almond butter",
-    "californian almonds", "californian", "colifornion",  # OCR: colifornion
+    "californian almonds", "californian",
     "almond milk", "almond extract", "marzipan", "almond paste",
-    "peanut", "peanuts", "peanut butter", "peanut oil", "peanut flour",
+    "peanut", "peanuts", "roasted peanuts", "peanut butter", "peanut oil", "peanut flour",
     "walnut", "walnuts", "walnut kernels", "natural walnut kernels", "walnut oil",
     "cashew", "cashews", "cashew butter",
     "hazelnut", "hazelnuts", "hazelnut paste", "praline",
@@ -226,6 +244,8 @@ FOOD_INGREDIENTS: Set[str] = {
     
     # === GRAINS & CEREALS ===
     "wheat", "whole wheat", "wheat flour", "atta", "maida", "refined wheat flour",
+    "refined wheat flour (maida)",
+    "wheat solids", "cereal extract",
     "wheat germ", "wheat berry", "cracked wheat",
     "bulgur", "couscous", "farro", "spelt", "kamut", "einkorn",
     "gluten", "wheat gluten", "vital wheat gluten", "seitan",
@@ -241,7 +261,7 @@ FOOD_INGREDIENTS: Set[str] = {
     "cereal", "breakfast cereal", "cereal flour", "multigrain",
     
     # === MEAT & POULTRY ===
-    "chicken", "chicken breast", "chicken thigh", "chicken wing",
+    "chicken", "chicken meat", "chicken breast", "chicken thigh", "chicken wing",
     "chicken stock", "chicken broth", "chicken fat", "chicken powder",
     "beef", "ground beef", "beef stock", "beef broth", "beef fat",
     "pork", "bacon", "ham", "pork fat", "pork rinds",
@@ -261,10 +281,12 @@ FOOD_INGREDIENTS: Set[str] = {
     
     # === LEAVENING ===
     "yeast", "active dry yeast", "instant yeast", "fresh yeast", "nutritional yeast",
-    "bread improvers", "permitted bread improvers", "cream improvers",  # OCR: cream for bread
+    "bread improvers", "permitted bread improvers",
     "yeast extract", "autolyzed yeast", "autolyzed yeast extract",
     "baking powder", "baking soda", "sodium bicarbonate", "bicarbonate of soda",
     "cream of tartar", "ammonium bicarbonate",
+    "raising agents", "raising agent", "raising agent (e500)", "raising agent (ins500(ii))",
+    "leavening agents",
     
     # === GUMS & THICKENERS ===
     "guar gum", "xanthan gum", "locust bean gum", "carob bean gum",
@@ -274,7 +296,11 @@ FOOD_INGREDIENTS: Set[str] = {
     "sodium alginate", "alginic acid", "konjac", "glucomannan",
     
     # === EMULSIFIERS & STABILIZERS ===
-    "emulsifier", "stabilizer", "thickener",
+    "emulsifier", "stabilizer", "stabiliser", "thickener",
+    "emulsifier soy lecithin", "emulsifier soy lecithins",
+    "emulsifier e322 from soya", "emulsifier e322 from soy",
+    "emulsifier and stabilizer (s322, ins 415)",
+    "emulsifier and stabiliser (s322, ins 415)",
     "mono and diglycerides", "monoglycerides", "diglycerides",
     "glycerin", "glycerol", "glycerine", "vegetable glycerin",
     "polysorbate", "polysorbate 80", "polysorbate 60",
@@ -283,19 +309,23 @@ FOOD_INGREDIENTS: Set[str] = {
     
     # === PRESERVATIVES ===
     "preservative", "preservatives",
+    "bio-preservative", "bio preservative", "bio-preservative (ins 234)",
+    "preservative (ins 211)", "preservative (ins 282)",
     "sodium benzoate", "potassium sorbate", "calcium propionate",
     "sodium nitrite", "sodium nitrate", "sodium erythorbate",
     "sorbic acid", "benzoic acid", "propionic acid",
-    "bht", "bha", "tbhq", "antioxidant", "tocopherol",
+    "bht", "bha", "tbhq", "antioxidant", "antioxidant (ins 300)", "antioxidant (ins 319)", "tocopherol",
     
     # === MINERALS & VITAMINS ===
+    "minerals", "vitamins",
     "calcium", "calcium carbonate", "calcium phosphate", "calcium chloride",
     "iron", "ferrous sulfate", "ferric orthophosphate", "reduced iron",
     "zinc", "zinc oxide", "zinc sulfate",
     "magnesium", "magnesium oxide", "magnesium carbonate",
     "potassium", "potassium chloride", "potassium phosphate",
     "sodium", "sodium chloride", "sodium phosphate",
-    "iodine", "potassium iodide", "iodized salt",
+    "iodine", "potassium iodide",
+    "iodized salt", "iodised salt",
     "selenium", "copper", "manganese", "chromium", "molybdenum",
     "vitamin a", "retinol", "beta carotene", "vitamin a palmitate",
     "vitamin c", "ascorbic acid", "sodium ascorbate",
@@ -328,6 +358,51 @@ FOOD_INGREDIENTS: Set[str] = {
     "tea", "black tea", "green tea", "tea extract",
     "malt", "malt extract", "malted barley", "barley malt extract",
     "dextrin", "maltodextrin", "cyclodextrin",
+    
+    # === LABEL COMPOUNDS (multi-word names as printed on packaging) ===
+    "edible common salt",
+    "common salt",
+    "spices condiments",
+    "acidity regulator (ins 260)",
+    "acidity regulator (ins 330)",
+    "acidity regulator e338",
+    "acidity regulators (ins 260, ins 330)",
+    "stabilizer (ins 415)",
+    "stabiliser (ins 415)",
+    "stabilizer (ins 440)",
+    "stabiliser (ins 440)",
+    "stabilizer (440)",
+    "texturizer (ins 451(i))",
+    "colour (ins 150d)",
+    "color (ins 150d)",
+    "polydextrose (dietary fiber)",
+    "polydextrose (dietary fibre)",
+    "whey powder (milk)",
+    "fat-reduced cocoa",
+    "fat reduced cocoa",
+    "vegetable fat",
+    "golden syrup",
+    "bourbon vanilla pods",
+    "bourbon vanilla pod",
+    "vanilla essence",
+    "flavor vanilla",
+    "flavour vanilla",
+    "butterscotch",
+    "hydrogenated vegetable fat",
+    "caffeine",
+    "carbonated water",
+    "cornflour",
+    "processed blueberry pulp",
+    "blueberry puree",
+    "concentrated apple juice",
+    "natural identical and artificial flavoring substances (rose)",
+    "nature identical and artificial flavouring substances (rose)",
+    "fresh coriander",
+    "black salt",
+    "refined sugar",
+    "mint leaves",
+    "curry leaves",
+    "baking powder (e-450i)",
     
     # === DESCRIPTORS (for word-by-word correction) ===
     "powder", "powdered", "extract", "concentrate", "dried", "dehydrated",

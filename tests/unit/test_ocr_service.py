@@ -214,7 +214,10 @@ class TestExtractTextFromImage:
         
         with patch('backend.services.ocr.service.settings') as mock_settings:
             mock_settings.IS_OCR_CONFIDENCE_FILTER = True
-            
+            mock_settings.OCR_PREPROCESS_ENABLED = True
+            mock_settings.OCR_PREPROCESS_TARGET_SHORT_EDGE = 1000
+            mock_settings.OCR_PREPROCESS_MAX_LONG_EDGE = 2400
+
             image_bytes = create_test_image()
             result = extract_text_from_image(image_bytes)
             
@@ -230,7 +233,10 @@ class TestExtractTextFromImage:
         
         with patch('backend.services.ocr.service.settings') as mock_settings:
             mock_settings.IS_OCR_CONFIDENCE_FILTER = False
-            
+            mock_settings.OCR_PREPROCESS_ENABLED = True
+            mock_settings.OCR_PREPROCESS_TARGET_SHORT_EDGE = 1000
+            mock_settings.OCR_PREPROCESS_MAX_LONG_EDGE = 2400
+
             image_bytes = create_test_image()
             result = extract_text_from_image(image_bytes)
             
