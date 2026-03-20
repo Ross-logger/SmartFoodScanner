@@ -113,20 +113,6 @@ LMSTUDIO_MODEL = os.getenv("LMSTUDIO_MODEL", "mistral-7b-instruct-v0.2")
 LMSTUDIO_JSON_MODE = os.getenv("LMSTUDIO_JSON_MODE", "false").lower() in ("true", "1", "yes")
 
 # =============================================================================
-# ML
-# =============================================================================
-
-ML_PATH = Path(__file__).parent / "ML"
-
-ocr_corrector = None
-try:
-    from backend.ML.inference_hybrid import OcrCorrector
-    ocr_corrector = OcrCorrector(model_dir=str(ML_PATH / "models" / "hybrid"))
-except Exception as e:
-    print(f"⚠️  ML OCR Corrector not available: {e}")
-    print("   Falling back to rule-based correction")
-
-# =============================================================================
 # Startup Status
 # =============================================================================
 
