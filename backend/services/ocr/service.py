@@ -75,6 +75,16 @@ def filter_ocr_results_by_confidence(
     return text_lines
 
 
+def _run_readtext(reader, image_array: np.ndarray):
+    """Run EasyOCR readtext, re-raising any OS-level I/O errors as Python exceptions."""
+    try:
+        return reader.readtext(image_array)
+    except OSError as e:
+        raise e
+    except Exception as e:
+        raise e
+
+
 def extract_text_from_image(image_data: bytes) -> str:
     """
     Extract text from image using EasyOCR.
@@ -97,6 +107,8 @@ def extract_text_from_image(image_data: bytes) -> str:
     Raises:
         Exception: If OCR extraction fails
     """
+    global _ocr_reader
+
     try:
         # Open and process image
         image = Image.open(io.BytesIO(image_data))
@@ -129,10 +141,26 @@ def extract_text_from_image(image_data: bytes) -> str:
         # Get OCR reader (singleton)
         reader = get_ocr_reader()
 
-        # Perform OCR using EasyOCR
-        # EasyOCR returns list of tuples: (bbox, text, confidence)
-        results = reader.readtext(image_array)
-        
+        # Perform OCR — if the GPU backend raises an I/O error (errno 5, common with
+        # Apple MPS) reset the singleton and retry on CPU so the process stays alive.
+        try:
+            results = _run_readtext(reader, image_array)
+        except OSError as e:
+            logger.warning(
+                "GPU OCR failed with OS error (%s), resetting reader and retrying on CPU.",
+                e,
+            )
+            _ocr_reader = None
+            try:
+                _ocr_reader = easyocr.Reader(['en'], gpu=False)
+                logger.info("EasyOCR CPU fallback reader initialised.")
+            except Exception as init_err:
+                raise Exception(f"OCR extraction failed (CPU fallback init): {init_err}") from init_err
+            try:
+                results = _run_readtext(_ocr_reader, image_array)
+            except Exception as cpu_err:
+                raise Exception(f"OCR extraction failed (CPU fallback): {cpu_err}") from cpu_err
+
         # Extract text from results, filtering by confidence if enabled
         if settings.IS_OCR_CONFIDENCE_FILTER:
             text_lines = filter_ocr_results_by_confidence(results)
@@ -144,7 +172,7 @@ def extract_text_from_image(image_data: bytes) -> str:
         
         return text.strip()
     except Exception as e:
-        raise Exception(f"OCR extraction failed: {str(e)}")
+        raise Exception(f"OCR extraction failed: {str(e)}") from e
 
 
 def extract_ingredients(text: str) -> list:
