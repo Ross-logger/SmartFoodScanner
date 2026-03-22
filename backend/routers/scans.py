@@ -50,22 +50,25 @@ def scan_ocr(
             detail="File too large"
         )
     
+    # Get user's dietary profile (needed before OCR to check TrOCR preference)
+    dietary_profile = db.query(DietaryProfile).filter(
+        DietaryProfile.user_id == current_user.id
+    ).first()
+
+    use_trocr = bool(dietary_profile and dietary_profile.use_trocr)
+
     # Extract text using OCR
     try:
-        ocr_text = extract_text_from_image(image_data)
-        print("OCR Text: ", ocr_text)
+        ocr_text = extract_text_from_image(image_data, use_trocr=use_trocr)
+        ocr_engine = "TrOCR" if use_trocr else "EasyOCR"
+        print(f"OCR Text ({ocr_engine}): ", ocr_text)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"OCR failed: {str(e)}"
         )
     
-    # Get user's dietary profile
-    dietary_profile = db.query(DietaryProfile).filter(
-        DietaryProfile.user_id == current_user.id
-    ).first()
-    
-    # Extract ingredients - use LLM if user has it enabled, otherwise use SymSpell
+    # Extract ingredients — use LLM if enabled, otherwise fall back to SymSpell
     if dietary_profile and dietary_profile.use_llm_ingredient_extractor:
         # Use LLM-based extraction
         llm_result = extract_ingredients_with_llm(ocr_text)

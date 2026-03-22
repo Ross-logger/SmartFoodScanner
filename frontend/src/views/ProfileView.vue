@@ -274,25 +274,42 @@
         </form>
       </div>
 
-      <!-- LLM Ingredient Extractor -->
+      <!-- Options -->
       <div class="card mb-6">
-        <h3 class="section-title mb-4">LLM Ingredient Extractor</h3>
+        <h3 class="section-title mb-4">Options</h3>
 
-        <div class="llm-toggle-container">
+        <div class="llm-toggle-container space-y-4">
+          <!-- LLM Ingredient Extractor -->
           <label class="llm-toggle-item">
             <input 
               type="checkbox" 
               v-model="dietaryProfile.use_llm_ingredient_extractor" 
-              @change="handleLLMToggleChange"
+              @change="handleOptionsToggleChange"
               class="preference-checkbox" 
-              :disabled="isSavingLLMSetting"
+              :disabled="isSavingOptions"
             />
             <div class="toggle-content">
               <span class="toggle-label">Enable LLM Ingredient Extractor</span>
-              <span class="toggle-description">When enabled, scans will use AI to extract and translate ingredients</span>
+              <span class="toggle-description">Use AI to extract and translate ingredients from scanned text</span>
             </div>
           </label>
-          <div v-if="isSavingLLMSetting" class="saving-indicator">
+
+          <!-- TrOCR -->
+          <label class="llm-toggle-item">
+            <input 
+              type="checkbox" 
+              v-model="dietaryProfile.use_trocr" 
+              @change="handleOptionsToggleChange"
+              class="preference-checkbox" 
+              :disabled="isSavingOptions"
+            />
+            <div class="toggle-content">
+              <span class="toggle-label">Enable TrOCR</span>
+              <span class="toggle-description">Use a transformer-based OCR model for higher-quality text recognition</span>
+            </div>
+          </label>
+
+          <div v-if="isSavingOptions" class="saving-indicator">
             <svg class="animate-spin h-4 w-4 text-primary-600" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -347,14 +364,15 @@ const dietaryProfile = ref({
   dairy_free: false,
   allergens: [],
   custom_restrictions: [],
-  use_llm_ingredient_extractor: false
+  use_llm_ingredient_extractor: false,
+  use_trocr: false
 })
 
 const newAllergen = ref('')
 const newCustomRestriction = ref('')
 
-// LLM toggle auto-save state
-const isSavingLLMSetting = ref(false)
+// Options auto-save state
+const isSavingOptions = ref(false)
 
 const isUpdating = ref(false)
 const updateError = ref(null)
@@ -391,7 +409,8 @@ async function loadDietaryProfile() {
       dairy_free: profile.dairy_free || false,
       allergens: profile.allergens || [],
       custom_restrictions: profile.custom_restrictions || [],
-      use_llm_ingredient_extractor: profile.use_llm_ingredient_extractor || false
+      use_llm_ingredient_extractor: profile.use_llm_ingredient_extractor || false,
+      use_trocr: profile.use_trocr || false
     }
   } catch (err) {
     dietaryUpdateError.value = err.message || 'Failed to load dietary profile'
@@ -438,7 +457,8 @@ async function handleUpdateDietaryProfile() {
       dairy_free: dietaryProfile.value.dairy_free,
       allergens: dietaryProfile.value.allergens,
       custom_restrictions: dietaryProfile.value.custom_restrictions,
-      use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor
+      use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor,
+      use_trocr: dietaryProfile.value.use_trocr
     }
 
     await api.post('/dietary-profiles/custom', profileData)
@@ -490,7 +510,8 @@ async function saveDietaryProfile() {
       dairy_free: dietaryProfile.value.dairy_free,
       allergens: dietaryProfile.value.allergens,
       custom_restrictions: dietaryProfile.value.custom_restrictions,
-      use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor
+      use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor,
+      use_trocr: dietaryProfile.value.use_trocr
     }
 
     await api.post('/dietary-profiles/custom', profileData)
@@ -500,9 +521,13 @@ async function saveDietaryProfile() {
   }
 }
 
-async function handleLLMToggleChange() {
-  isSavingLLMSetting.value = true
-  
+async function handleOptionsToggleChange() {
+  isSavingOptions.value = true
+
+  // Snapshot current toggle values so we can revert on failure
+  const prevLlm = dietaryProfile.value.use_llm_ingredient_extractor
+  const prevTrocr = dietaryProfile.value.use_trocr
+
   try {
     const profileData = {
       halal: dietaryProfile.value.halal,
@@ -513,17 +538,19 @@ async function handleLLMToggleChange() {
       dairy_free: dietaryProfile.value.dairy_free,
       allergens: dietaryProfile.value.allergens,
       custom_restrictions: dietaryProfile.value.custom_restrictions,
-      use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor
+      use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor,
+      use_trocr: dietaryProfile.value.use_trocr
     }
 
     await api.post('/dietary-profiles/custom', profileData)
     notification.success('Changes saved')
   } catch (err) {
-    // Revert the toggle on error
-    dietaryProfile.value.use_llm_ingredient_extractor = !dietaryProfile.value.use_llm_ingredient_extractor
+    // Revert both toggles to their pre-change state
+    dietaryProfile.value.use_llm_ingredient_extractor = prevLlm
+    dietaryProfile.value.use_trocr = prevTrocr
     notification.error('Failed to save changes')
   } finally {
-    isSavingLLMSetting.value = false
+    isSavingOptions.value = false
   }
 }
 

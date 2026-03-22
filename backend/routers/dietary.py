@@ -26,7 +26,6 @@ def get_dietary_profile(
     ).first()
     
     if not profile:
-        # Create default profile
         profile = DietaryProfile(
             user_id=current_user.id,
             halal=False,
@@ -35,12 +34,19 @@ def get_dietary_profile(
             vegan=False,
             nut_free=False,
             dairy_free=False,
-            use_llm_ingredient_extractor=False
+            use_llm_ingredient_extractor=False,
+            use_trocr=False,
         )
         db.add(profile)
         db.commit()
         db.refresh(profile)
-    
+
+    # Guard against NULL columns from migrations applied before server_default was set
+    if profile.use_trocr is None:
+        profile.use_trocr = False
+    if profile.use_llm_ingredient_extractor is None:
+        profile.use_llm_ingredient_extractor = False
+
     return profile
 
 

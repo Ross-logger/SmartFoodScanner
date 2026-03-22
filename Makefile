@@ -1,4 +1,4 @@
-.PHONY: help shell install run dev frontend backend vllm stop-frontend stop-backend stop-vllm stop screens
+.PHONY: help shell install run dev frontend backend vllm stop-frontend stop-backend stop-vllm stop screens migrate-generate migrate migrate-downgrade migrate-history
 
 # Variables
 VENV = .venv
@@ -60,3 +60,21 @@ stop-vllm: ## Stop vLLM screen session ($(SCREEN_VLLM))
 
 stop: stop-backend stop-frontend stop-vllm ## Stop backend, frontend, and vLLM screen sessions
 	@echo "All service screen sessions stopped."
+
+# =============================================================================
+# Database migrations (Alembic)
+# =============================================================================
+ALEMBIC = PYTHONPATH=$(PROJECT_ROOT) $(VENV)/bin/alembic
+
+make-migrations: ## Generate a new migration: make migrate-generate m="describe_your_change"
+	@if [ -z "$(m)" ]; then echo "Usage: make migrate-generate m=\"describe_your_change\""; exit 1; fi
+	$(ALEMBIC) revision --autogenerate -m "$(m)"
+
+migrate: ## Apply all pending migrations to the database
+	$(ALEMBIC) upgrade head
+
+migrate-downgrade: ## Roll back the last migration
+	$(ALEMBIC) downgrade -1
+
+migrate-history: ## Show migration history
+	$(ALEMBIC) history --verbose

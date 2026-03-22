@@ -8,8 +8,13 @@ and reports precision, recall, and F1 (exact and fuzzy matching).
 
 Usage:
   python scripts/compare_ingredients_accuracy.py
+  python scripts/compare_ingredients_accuracy.py --use_trocr
+  python scripts/compare_ingredients_accuracy.py --use_llm
+  python scripts/compare_ingredients_accuracy.py --use_trocr --use_llm
+  python scripts/compare_ingredients_accuracy.py --use_trocr --images_dir tests/data/new_images
 """
 
+import argparse
 import json
 import re
 import sys
@@ -21,6 +26,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend.services.ocr import extract_text_from_image, extract_ingredients
+from backend.services.ingredients_extraction import extract_ingredients_with_llm
 from tests.utils.metrics import (
     calculate_precision,
     calculate_recall,
@@ -67,7 +73,12 @@ def _load_ground_truth(path: Optional[Path] = None) -> Dict[str, List[str]]:
     return {e["image"]: e.get("true_ingredients", []) for e in data}
 
 
-def _run_pipeline(images_dir: Path, ground_truth: Dict[str, List[str]]) -> List[Dict[str, Any]]:
+def _run_pipeline(
+    images_dir: Path,
+    ground_truth: Dict[str, List[str]],
+    use_trocr: bool = False,
+    use_llm: bool = False,
+) -> List[Dict[str, Any]]:
     """
     Run OCR + extraction on each image that has ground truth.
     Returns list of {image, ocr_text, extracted_ingredients, true_ingredients}.
@@ -86,14 +97,24 @@ def _run_pipeline(images_dir: Path, ground_truth: Dict[str, List[str]]) -> List[
             f"Ground truth has: {list(ground_truth.keys())[:5]}..."
         )
 
+    if use_trocr:
+        engine_label = "TrOCR"
+    elif use_llm:
+        engine_label = "EasyOCR+LLM"
+    else:
+        engine_label = "EasyOCR"
     dataset = []
     total = len(valid_images)
-    for i, img_path in enumerate(sorted(valid_images, key=lambda n: _natural_sort_key(Path(n)))):
-        img_path = images_dir / img_path
+    for img_name in sorted(valid_images, key=lambda n: _natural_sort_key(Path(n))):
+        img_path = images_dir / img_name
         try:
             image_data = img_path.read_bytes()
-            ocr_text = extract_text_from_image(image_data)
-            extracted = extract_ingredients(ocr_text)
+            ocr_text = extract_text_from_image(image_data, use_trocr=use_trocr)
+            if use_llm:
+                llm_result = extract_ingredients_with_llm(ocr_text)
+                extracted = llm_result.get("ingredients", [])
+            else:
+                extracted = extract_ingredients(ocr_text)
             true_ingredients = ground_truth.get(img_path.name, [])
 
             dataset.append({
@@ -102,7 +123,10 @@ def _run_pipeline(images_dir: Path, ground_truth: Dict[str, List[str]]) -> List[
                 "extracted_ingredients": extracted,
                 "true_ingredients": true_ingredients,
             })
-            print(f"  [{len(dataset)}/{total}] {img_path.name} -> {len(extracted)} extracted, {len(true_ingredients)} ground truth")
+            print(
+                f"  [{len(dataset)}/{total}] {img_path.name} "
+                f"[{engine_label}] -> {len(extracted)} extracted, {len(true_ingredients)} ground truth"
+            )
 
         except Exception as e:
             print(f"  [{len(dataset) + 1}/{total}] {img_path.name} ERROR: {e}")
@@ -121,6 +145,8 @@ def compare_with_ground_truth(
     images_dir: Optional[Path] = None,
     ground_truth_path: Optional[Path] = None,
     fuzzy_threshold: float = FUZZY_THRESHOLD,
+    use_trocr: bool = False,
+    use_llm: bool = False,
 ) -> Dict[str, Any]:
     """
     Run full pipeline on images, compare with ground truth.
@@ -134,8 +160,15 @@ def compare_with_ground_truth(
         raise FileNotFoundError(f"Images directory not found: {images_dir}")
 
     ground_truth = _load_ground_truth(ground_truth_path)
-    print(f"\nProcessing images from {images_dir} (ground truth: {len(ground_truth)} images)...")
-    dataset = _run_pipeline(images_dir, ground_truth)
+    if use_trocr:
+        engine_label = "TrOCR"
+    elif use_llm:
+        engine_label = "EasyOCR+LLM"
+    else:
+        engine_label = "EasyOCR"
+    print(f"\nOCR engine : {engine_label}")
+    print(f"Processing images from {images_dir} (ground truth: {len(ground_truth)} images)...")
+    dataset = _run_pipeline(images_dir, ground_truth, use_trocr=use_trocr, use_llm=use_llm)
 
     metrics = EvaluationMetrics()
     details: List[Dict[str, Any]] = []
@@ -226,6 +259,7 @@ def compare_with_ground_truth(
         })
 
     return {
+        "engine": engine_label,
         "exact": {
             "precision": extraction.get("avg_precision", 0),
             "recall": extraction.get("avg_recall", 0),
@@ -290,7 +324,8 @@ def print_summary(results: Dict[str, Any]) -> None:
 
     print("\n" + "=" * 80)
     print("  INGREDIENT EXTRACTION vs GROUND TRUTH")
-    print("  Pipeline: OCR + extract_ingredients | Ground truth: true_ingredients.json")
+    print(f"  OCR engine : {results.get('engine', 'EasyOCR')}")
+    print("  Pipeline   : OCR + extract_ingredients | Ground truth: true_ingredients.json")
     print("=" * 80)
     print(f"  Total images: {s['total_images']}")
     print()
@@ -375,10 +410,64 @@ def print_worst_precision(results: Dict[str, Any], n: int = 15) -> None:
     print()
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Compare OCR + ingredient extraction against ground truth."
+    )
+    parser.add_argument(
+        "--use_trocr",
+        action="store_true",
+        default=False,
+        help="Use TrOCR for recognition (EasyOCR still used for detection). "
+             "Default: EasyOCR end-to-end.",
+    )
+    parser.add_argument(
+        "--use_llm",
+        action="store_true",
+        default=False,
+        help="Use LLM for ingredient extraction instead of SymSpell. "
+             "Requires a configured LLM provider (LLM_PROVIDER / API key in settings). "
+             "Can be combined with --use_trocr.",
+    )
+    parser.add_argument(
+        "--images_dir",
+        type=Path,
+        default=None,
+        help=f"Directory of test images. Default: {IMAGES_DIR}",
+    )
+    parser.add_argument(
+        "--ground_truth",
+        type=Path,
+        default=None,
+        help=f"Path to true_ingredients.json. Default: {GROUND_TRUTH_PATH}",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help=f"Path to save the JSON result. Default: {COMPARISON_RESULT_PATH}",
+    )
+    parser.add_argument(
+        "--fuzzy_threshold",
+        type=float,
+        default=FUZZY_THRESHOLD,
+        help=f"Fuzzy match threshold (0–1). Default: {FUZZY_THRESHOLD}",
+    )
+    return parser.parse_args()
+
+
 def main() -> int:
     """Run pipeline, compare with ground truth, print results."""
+    args = _parse_args()
+
     try:
-        results = compare_with_ground_truth()
+        results = compare_with_ground_truth(
+            images_dir=args.images_dir,
+            ground_truth_path=args.ground_truth,
+            fuzzy_threshold=args.fuzzy_threshold,
+            use_trocr=args.use_trocr,
+            use_llm=args.use_llm,
+        )
     except FileNotFoundError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
@@ -387,7 +476,7 @@ def main() -> int:
     print_worst_cases(results, n=10)
     print_splitting_gap(results, n=10)
     print_worst_precision(results, n=15)
-    save_comparison_result(results)
+    save_comparison_result(results, output_path=args.output or COMPARISON_RESULT_PATH)
     return 0
 
 

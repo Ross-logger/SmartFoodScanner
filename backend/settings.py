@@ -64,6 +64,11 @@ OCR_PREPROCESS_ENABLED = os.getenv("OCR_PREPROCESS_ENABLED", "true").lower() in 
 OCR_PREPROCESS_TARGET_SHORT_EDGE = int(os.getenv("OCR_PREPROCESS_TARGET_SHORT_EDGE", "1000"))
 OCR_PREPROCESS_MAX_LONG_EDGE = int(os.getenv("OCR_PREPROCESS_MAX_LONG_EDGE", "2400"))
 
+# TrOCR — transformer-based OCR for printed text (microsoft/trocr-large-printed)
+# The model is loaded on first use (lazy singleton).  The per-user on/off toggle
+# lives in DietaryProfile.use_trocr so each user can enable it independently.
+TROCR_MODEL = os.getenv("TROCR_MODEL", "microsoft/trocr-large-printed")
+
 # =============================================================================
 # Cookies
 # =============================================================================
