@@ -57,7 +57,8 @@ class DietaryProfileCreate(BaseModel):
     allergens: List[str] = []
     custom_restrictions: List[str] = []
     use_llm_ingredient_extractor: bool = False
-    use_trocr: bool = False
+    use_mistral_ocr: bool = False
+    use_hf_section_detection: bool = False
     
     class Config:
         json_schema_extra = {
@@ -71,7 +72,8 @@ class DietaryProfileCreate(BaseModel):
                 "allergens": [],
                 "custom_restrictions": [],
                 "use_llm_ingredient_extractor": False,
-                "use_trocr": False
+                "use_mistral_ocr": False,
+                "use_hf_section_detection": False
             }
         }
 
@@ -86,7 +88,8 @@ class DietaryProfileUpdate(BaseModel):
     allergens: Optional[List[str]] = None
     custom_restrictions: Optional[List[str]] = None
     use_llm_ingredient_extractor: Optional[bool] = None
-    use_trocr: Optional[bool] = None
+    use_mistral_ocr: Optional[bool] = None
+    use_hf_section_detection: Optional[bool] = None
     
     class Config:
         json_schema_extra = {
@@ -100,7 +103,8 @@ class DietaryProfileUpdate(BaseModel):
                 "allergens": [],
                 "custom_restrictions": [],
                 "use_llm_ingredient_extractor": False,
-                "use_trocr": False
+                "use_mistral_ocr": False,
+                "use_hf_section_detection": False
             }
         }
 
@@ -117,7 +121,8 @@ class DietaryProfileResponse(BaseModel):
     allergens: List[str]
     custom_restrictions: List[str]
     use_llm_ingredient_extractor: bool
-    use_trocr: bool
+    use_mistral_ocr: bool
+    use_hf_section_detection: bool
     created_at: datetime
     updated_at: Optional[datetime]
     

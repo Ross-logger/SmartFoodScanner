@@ -8,9 +8,8 @@ can be manually reviewed and corrected to serve as a new ground truth.
 
 Usage:
   python scripts/extract_new_images.py
-  python scripts/extract_new_images.py --use_trocr
+  python scripts/extract_new_images.py --use_mistral_ocr
   python scripts/extract_new_images.py --use_llm
-  python scripts/extract_new_images.py --use_trocr --use_llm
   python scripts/extract_new_images.py --limit 10
   python scripts/extract_new_images.py --images_dir tests/data/new_images
   python scripts/extract_new_images.py --output tests/data/new_images_result.json
@@ -44,10 +43,11 @@ def _parse_args() -> argparse.Namespace:
         description="Extract ingredients from new images (no ground truth required)."
     )
     parser.add_argument(
-        "--use_trocr",
+        "--use_mistral_ocr",
         action="store_true",
         default=False,
-        help="Use TrOCR for recognition instead of EasyOCR end-to-end.",
+        help="Use Mistral OCR cloud API instead of local EasyOCR. "
+             "Requires MISTRAL_API_KEY in .env.",
     )
     parser.add_argument(
         "--use_llm",
@@ -55,8 +55,7 @@ def _parse_args() -> argparse.Namespace:
         default=False,
         help=(
             "Use LLM for ingredient extraction instead of SymSpell. "
-            "Requires LLM_PROVIDER / API key configured in settings. "
-            "Can be combined with --use_trocr."
+            "Requires LLM_PROVIDER / API key configured in settings."
         ),
     )
     parser.add_argument(
@@ -102,10 +101,10 @@ def main() -> int:
     if args.limit is not None:
         image_files = image_files[: args.limit]
 
-    if args.use_trocr and args.use_llm:
-        engine_label = "TrOCR+LLM"
-    elif args.use_trocr:
-        engine_label = "TrOCR"
+    if args.use_mistral_ocr and args.use_llm:
+        engine_label = "Mistral OCR+LLM"
+    elif args.use_mistral_ocr:
+        engine_label = "Mistral OCR"
     elif args.use_llm:
         engine_label = "EasyOCR+LLM"
     else:
@@ -122,7 +121,7 @@ def main() -> int:
     for i, img_path in enumerate(image_files, 1):
         try:
             image_data = img_path.read_bytes()
-            ocr_text = extract_text_from_image(image_data, use_trocr=args.use_trocr)
+            ocr_text = extract_text_from_image(image_data, use_mistral_ocr=args.use_mistral_ocr)
 
             if args.use_llm:
                 llm_result = extract_ingredients_with_llm(ocr_text)

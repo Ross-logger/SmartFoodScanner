@@ -1,6 +1,6 @@
 """
 LLM-based Ingredient Extractor
-Uses LLM to accurately extract and translate ingredients to English.
+Uses LLM to accurately extract ingredients from food product labels.
 """
 
 from typing import Dict, Any, Optional
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 EXTRACTION_SYSTEM_PROMPT = (
     "You are an expert food ingredient extractor. "
-    "Extract ingredients accurately and translate them to English. "
+    "Extract ingredients accurately given the instructions."
     "Always respond with valid JSON only."
 )
 
@@ -28,13 +28,16 @@ def build_extraction_prompt(text: str) -> str:
 
 CRITICAL INSTRUCTIONS:
 1. Extract ONLY the actual food ingredients - not packaging info, brand names, nutritional values, or marketing text
-2. Translate ALL ingredients to English if they are in another language
-3. Preserve scientific names in parentheses when present (e.g., "Vitamin C (Ascorbic Acid)")
-4. Split compound ingredients appropriately (e.g., "vegetable oils (palm, sunflower)" becomes separate entries)
-5. Include E-numbers with their names when identifiable (e.g., "E471" becomes "E471 (Mono- and Diglycerides)")
-6. Normalize ingredient names to their common English form
-7. Remove percentages, quantities, and "contains X%" type annotations - just extract the ingredient name
-8. If no ingredients are found or the text doesn't contain ingredient information, return an empty array
+2. Preserve scientific names in parentheses when present (e.g., "Vitamin C (Ascorbic Acid)")
+3. Split compound ingredients appropriately (e.g., "vegetable oils (palm, sunflower)" becomes separate entries)
+4. For food additive codes (E-numbers / INS numbers), preserve the EXACT prefix format from the original text:
+   - If the text uses "E" prefix (E322, E-450, E 471), output with "E" prefix (e.g., "E322", "E450", "E471")
+   - If the text uses "INS" prefix (INS 330, INS322), output with "INS" prefix (e.g., "INS 330", "INS 322")
+   - Preserve sub-part notation like (i), (ii) when present (e.g., "E500(ii)", "INS 451(i)")
+   - Do NOT expand additive codes with their chemical names - output ONLY the code (e.g., "E471" not "E471 (Mono- and Diglycerides)")
+5. Normalize ingredient names to their standard form
+6. Remove percentages, quantities, and "contains X%" type annotations - just extract the ingredient name
+7. If no ingredients are found or the text doesn't contain ingredient information, return an empty array
 
 INPUT TEXT:
 {text}
@@ -42,19 +45,12 @@ INPUT TEXT:
 Respond ONLY with valid JSON in this exact format:
 {{
     "ingredients": ["ingredient1", "ingredient2", "ingredient3"],
-    "detected_language": "detected source language or 'english' if already in English",
     "confidence": "high/medium/low"
 }}
 
-EXAMPLES:
-- Input: "Zutaten: Wasser, Zucker, Weizenmehl"
-  Output: {{"ingredients": ["Water", "Sugar", "Wheat Flour"], "detected_language": "german", "confidence": "high"}}
-
-- Input: "مكونات: ماء، سكر، دقيق القمح"
-  Output: {{"ingredients": ["Water", "Sugar", "Wheat Flour"], "detected_language": "arabic", "confidence": "high"}}
-
-- Input: "Ingredients: Water, Sugar (15%), Wheat Flour, Emulsifier (E471), Natural Flavoring"
-  Output: {{"ingredients": ["Water", "Sugar", "Wheat Flour", "E471 (Mono- and Diglycerides)", "Natural Flavoring"], "detected_language": "english", "confidence": "high"}}"""
+EXAMPLE:
+- Input: "Ingredients: Water, Sugar (15%), Wheat Flour, Emulsifier (E471), Acidity Regulator (INS 330), Natural Flavoring"
+  Output: {{"ingredients": ["Water", "Sugar", "Wheat Flour", "E471", "INS 330", "Natural Flavoring"], "confidence": "high"}}"""
 
 
 def _validate_extraction_result(result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -115,7 +111,7 @@ class LLMIngredientExtractor:
             
         Returns:
             Dictionary with:
-            - ingredients: List of extracted ingredient names in English
+            - ingredients: List of extracted ingredient names
             - success: Boolean indicating if extraction was successful
             - message: Optional message about the extraction
             - provider: Name of the provider that succeeded (if any)
@@ -169,7 +165,6 @@ class LLMIngredientExtractor:
             "success": True,
             "message": f"Extracted {len(validated['ingredients'])} ingredients using {provider_name}",
             "provider": provider_name,
-            "detected_language": validated.get("detected_language", "unknown"),
             "confidence": validated.get("confidence", "unknown")
         }
 

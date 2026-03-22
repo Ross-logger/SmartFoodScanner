@@ -43,8 +43,11 @@ class DietaryProfile(Base):
     # LLM ingredient extractor preference
     use_llm_ingredient_extractor = Column(Boolean, default=False)
 
-    # TrOCR preference (transformer-based OCR on original image)
-    use_trocr = Column(Boolean, default=False)
+    # Mistral OCR (cloud API replaces local EasyOCR)
+    use_mistral_ocr = Column(Boolean, default=False)
+
+    # HF ingredient section detection (NER model instead of regex)
+    use_hf_section_detection = Column(Boolean, default=False)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

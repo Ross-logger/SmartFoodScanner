@@ -234,7 +234,7 @@ def spellcheck_ingredients(ocr_text: str) -> str:
     return ", ".join(corrected)
 
 
-def extract_ingredients(ocr_text: str) -> List[str]:
+def extract_ingredients(ocr_text: str, *, use_hf_section_detection: bool = False) -> List[str]:
     """
     Extract and correct ingredients from OCR text.
     
@@ -243,6 +243,8 @@ def extract_ingredients(ocr_text: str) -> List[str]:
     
     Args:
         ocr_text: Raw OCR text from food label
+        use_hf_section_detection: Use the HuggingFace NER model for section
+            detection instead of the default regex approach.
         
     Returns:
         List of corrected ingredient names (non-ingredients filtered out)
@@ -251,7 +253,13 @@ def extract_ingredients(ocr_text: str) -> List[str]:
         return []
     
     # Step 1: Extract only the ingredients section (filter headers, footers, etc.)
-    ingredients_text = extract_ingredients_section(ocr_text)
+    if use_hf_section_detection:
+        from backend.services.ingredients_extraction.hf_section_detection import (
+            extract_ingredients_section_hf,
+        )
+        ingredients_text = extract_ingredients_section_hf(ocr_text)
+    else:
+        ingredients_text = extract_ingredients_section(ocr_text)
     
     sym_spell = _get_spell_checker()
     

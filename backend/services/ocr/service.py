@@ -1,19 +1,15 @@
 """
 OCR Service
-Extracts text from images using EasyOCR (default) or TrOCR (optional).
-
-When TrOCR is enabled for a user:
-  - EasyOCR is used for *text-region detection* (bounding boxes only).
-  - Each detected region is cropped from the **original** (non-preprocessed)
-    PIL image and fed to TrOCR for transformer-quality recognition.
-  - The global OCR preprocessing pipeline is bypassed for TrOCR crops.
+Extracts text from images using EasyOCR (default) or Mistral OCR (cloud API).
 """
 
+import base64
 import io
 import logging
 from PIL import Image, ImageOps
 import numpy as np
 import easyocr
+import requests
 from typing import List, Tuple
 
 from backend import settings
@@ -28,12 +24,6 @@ register_heif_opener()
 # EasyOCR singleton
 # ---------------------------------------------------------------------------
 _ocr_reader = None
-
-# ---------------------------------------------------------------------------
-# TrOCR singletons (loaded lazily on first use)
-# ---------------------------------------------------------------------------
-_trocr_processor = None
-_trocr_model = None
 
 
 def get_ocr_reader():
@@ -60,107 +50,6 @@ def get_ocr_reader():
                 raise Exception(f"Failed to initialize EasyOCR: {str(cpu_error)}")
     
     return _ocr_reader
-
-
-def get_trocr_model():
-    """
-    Get or create TrOCR processor + model instances (lazy singleton).
-
-    TrOCR is a VisionEncoderDecoderModel — it MUST be loaded with that class.
-    AutoModelForImageTextToText adds extra pooling layers that are absent from
-    the checkpoint, leaving them randomly initialised and making the decoder
-    produce noise.  TrOCRProcessor is the matching processor.
-
-    Returns:
-        Tuple of (processor, model)
-    """
-    global _trocr_processor, _trocr_model
-
-    if _trocr_processor is None or _trocr_model is None:
-        try:
-            from transformers import TrOCRProcessor, VisionEncoderDecoderModel
-
-            model_name = settings.TROCR_MODEL
-            logger.info("Loading TrOCR model: %s", model_name)
-            _trocr_processor = TrOCRProcessor.from_pretrained(model_name)
-            _trocr_model = VisionEncoderDecoderModel.from_pretrained(model_name)
-            print(f"✅ TrOCR model loaded ({model_name})")
-        except Exception as e:
-            raise Exception(f"Failed to load TrOCR model: {e}") from e
-
-    return _trocr_processor, _trocr_model
-
-
-def extract_text_with_trocr(original_image: Image.Image) -> str:
-    """
-    Extract text using EasyOCR for detection + TrOCR for recognition.
-
-    Strategy:
-    1. Run EasyOCR on the original image to detect text bounding boxes.
-    2. Crop each detected region from the *original* PIL image (no preprocessing).
-    3. Feed each crop to TrOCR for transformer-quality recognition.
-    4. Concatenate all recognised lines.
-
-    Args:
-        original_image: PIL Image in RGB mode (no preprocessing applied).
-
-    Returns:
-        Recognised text as a newline-separated string.
-    """
-    import torch
-
-    if original_image.mode != 'RGB':
-        original_image = original_image.convert('RGB')
-
-    image_array = np.array(original_image)
-
-    # EasyOCR — detection only (bounding boxes)
-    reader = get_ocr_reader()
-    try:
-        detection_results = _run_readtext(reader, image_array)
-    except OSError as e:
-        logger.warning("TrOCR: EasyOCR detection failed (%s), aborting.", e)
-        return ""
-
-    if not detection_results:
-        logger.warning("TrOCR: EasyOCR found no text regions.")
-        return ""
-
-    processor, model = get_trocr_model()
-
-    img_w, img_h = original_image.size
-    text_lines: List[str] = []
-
-    for result in detection_results:
-        bbox = result[0]  # [[x1,y1],[x2,y1],[x2,y2],[x1,y2]]
-
-        xs = [pt[0] for pt in bbox]
-        ys = [pt[1] for pt in bbox]
-        x1 = max(0, int(min(xs)))
-        y1 = max(0, int(min(ys)))
-        x2 = min(img_w, int(max(xs)))
-        y2 = min(img_h, int(max(ys)))
-
-        if x2 <= x1 or y2 <= y1:
-            continue
-
-        # Crop from the original (non-preprocessed) image
-        crop = original_image.crop((x1, y1, x2, y2))
-
-        try:
-            pixel_values = processor(images=crop, return_tensors="pt").pixel_values
-            with torch.no_grad():
-                generated_ids = model.generate(pixel_values)
-            recognised = processor.batch_decode(generated_ids, skip_special_tokens=True)[0].strip()
-            logger.debug("TrOCR crop recognised: %r", recognised)
-            if recognised:
-                text_lines.append(recognised)
-        except Exception as crop_err:
-            logger.debug("TrOCR: skipping crop — %s", crop_err)
-
-    result_text = '\n'.join(text_lines)
-    logger.info("TrOCR recognised %d lines: %s", len(text_lines), result_text[:120])
-    return result_text
 
 
 def filter_ocr_results_by_confidence(
@@ -200,25 +89,67 @@ def _run_readtext(reader, image_array: np.ndarray):
         raise e
 
 
-def extract_text_from_image(image_data: bytes, use_trocr: bool = False) -> str:
+def extract_text_with_mistral_ocr(image_data: bytes) -> str:
     """
-    Extract text from image using EasyOCR (default) or TrOCR.
+    Send image to the Mistral OCR API and return the recognised text.
 
-    Supported image formats:
-    - JPEG/JPG
-    - PNG
-    - GIF
-    - BMP
-    - TIFF
-    - WebP
-    - HEIC/HEIF (iPhone/iPad images)
+    The image bytes are base64-encoded and sent as a data-URI to the
+    ``/v1/ocr`` endpoint.  The response ``pages[].markdown`` fields are
+    concatenated into a single string.
+    """
+    api_key = settings.MISTRAL_API_KEY
+    if not api_key:
+        raise Exception("MISTRAL_API_KEY is not configured")
+
+    image = Image.open(io.BytesIO(image_data))
+    image = ImageOps.exif_transpose(image)
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+
+    buf = io.BytesIO()
+    image.save(buf, format="JPEG", quality=95)
+    b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+
+    payload = {
+        "model": settings.MISTRAL_OCR_MODEL,
+        "document": {
+            "type": "image_url",
+            "image_url": f"data:image/jpeg;base64,{b64}",
+        },
+    }
+
+    resp = requests.post(
+        "https://api.mistral.ai/v1/ocr",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        },
+        json=payload,
+        timeout=60,
+    )
+
+    if resp.status_code != 200:
+        logger.error("Mistral OCR API error %s: %s", resp.status_code, resp.text[:300])
+        raise Exception(f"Mistral OCR API returned {resp.status_code}: {resp.text[:200]}")
+
+    data = resp.json()
+    pages = data.get("pages", [])
+    text_parts = [p.get("markdown", "") for p in pages if p.get("markdown")]
+    text = "\n".join(text_parts)
+    logger.info("Mistral OCR returned %d pages, %d chars", len(pages), len(text))
+    return text.strip()
+
+
+def extract_text_from_image(image_data: bytes, use_mistral_ocr: bool = False) -> str:
+    """
+    Extract text from image using EasyOCR (default) or Mistral OCR.
+
+    Supported image formats: JPEG/JPG, PNG, GIF, BMP, TIFF, WebP, HEIC/HEIF.
 
     Args:
-        image_data:  Raw image bytes.
-        use_trocr:   When True, EasyOCR detects text regions and TrOCR
-                     recognises each crop from the *original* (non-preprocessed)
-                     image.  When False (default) the standard EasyOCR pipeline
-                     runs with optional preprocessing.
+        image_data:       Raw image bytes.
+        use_mistral_ocr:  When True, image is sent to the Mistral OCR cloud
+                          API instead of running EasyOCR locally.
 
     Returns:
         Extracted text as string.
@@ -228,12 +159,14 @@ def extract_text_from_image(image_data: bytes, use_trocr: bool = False) -> str:
     """
     global _ocr_reader
 
+    if use_mistral_ocr:
+        logger.info("Using Mistral OCR for text extraction.")
+        return extract_text_with_mistral_ocr(image_data)
+
     try:
-        # Open image and normalise to RGB
         image = Image.open(io.BytesIO(image_data))
 
-        # Apply EXIF orientation so sideways/upside-down photos (e.g. iPhone
-        # images) are upright before OCR — PIL does NOT do this automatically.
+        # Apply EXIF orientation so sideways/upside-down photos are upright.
         image = ImageOps.exif_transpose(image)
 
         if hasattr(image, 'format') and image.format == 'HEIF':
@@ -244,17 +177,6 @@ def extract_text_from_image(image_data: bytes, use_trocr: bool = False) -> str:
             if image.mode != 'RGB':
                 image = image.convert('RGB')
 
-        # ------------------------------------------------------------------
-        # TrOCR path — use original image (no preprocessing)
-        # ------------------------------------------------------------------
-        if use_trocr:
-            logger.info("Using TrOCR for text extraction.")
-            text = extract_text_with_trocr(image)
-            return text.strip()
-
-        # ------------------------------------------------------------------
-        # EasyOCR path (default)
-        # ------------------------------------------------------------------
         image_array = np.array(image)
 
         # Automatic preprocess: contrast (CLAHE), upscale small images, cap huge ones

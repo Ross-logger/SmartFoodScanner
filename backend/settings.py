@@ -64,10 +64,16 @@ OCR_PREPROCESS_ENABLED = os.getenv("OCR_PREPROCESS_ENABLED", "true").lower() in 
 OCR_PREPROCESS_TARGET_SHORT_EDGE = int(os.getenv("OCR_PREPROCESS_TARGET_SHORT_EDGE", "1000"))
 OCR_PREPROCESS_MAX_LONG_EDGE = int(os.getenv("OCR_PREPROCESS_MAX_LONG_EDGE", "2400"))
 
-# TrOCR — transformer-based OCR for printed text (microsoft/trocr-large-printed)
-# The model is loaded on first use (lazy singleton).  The per-user on/off toggle
-# lives in DietaryProfile.use_trocr so each user can enable it independently.
-TROCR_MODEL = os.getenv("TROCR_MODEL", "microsoft/trocr-large-printed")
+# Mistral OCR — cloud-based OCR via the Mistral AI API (mistral-ocr-latest).
+# Per-user toggle lives in DietaryProfile.use_mistral_ocr.
+MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY") or None
+MISTRAL_OCR_MODEL = os.getenv("MISTRAL_OCR_MODEL", "mistral-ocr-latest")
+
+# HuggingFace ingredient section detection model (NER-based, replaces regex
+# section detection).  Toggle lives in DietaryProfile.use_hf_section_detection.
+HF_INGREDIENT_DETECTION_MODEL = os.getenv(
+    "HF_INGREDIENT_DETECTION_MODEL", "openfoodfacts/ingredient-detection"
+)
 
 # =============================================================================
 # Cookies

@@ -13,11 +13,11 @@ Barcode Scan  ──────────────────────
 
 ## Image Scan Pipeline (`POST /scan/ocr`)
 
-### Stage 1 — Image Preprocessing (EasyOCR path only)
+### Stage 1 — Image Preprocessing
 
 **File:** `backend/services/ocr/preprocess.py`
 
-Runs automatically before EasyOCR on every image. Skipped when TrOCR is used.
+Runs automatically before EasyOCR on every image.
 
 - **EXIF rotation** — applies the EXIF orientation tag so sideways iPhone photos are upright before OCR (`ImageOps.exif_transpose`)
 - **Upscale** — if the shortest image edge is below 1000 px, the image is upscaled (helps with small text)
@@ -33,12 +33,12 @@ Controlled by `OCR_PREPROCESS_ENABLED`, `OCR_PREPROCESS_TARGET_SHORT_EDGE`, `OCR
 
 **File:** `backend/services/ocr/service.py` → `extract_text_from_image()`
 
-Two engines, selectable per-user via `DietaryProfile.use_trocr`:
+Two engines, selectable per-user via `DietaryProfile.use_mistral_ocr`:
 
 | Engine | How it works |
 |---|---|
-| **EasyOCR** (default) | Runs end-to-end on the preprocessed image. Detects and recognises text in one pass. |
-| **TrOCR** | EasyOCR is used only to detect bounding boxes. Each cropped region is then fed to the `microsoft/trocr-large-printed` transformer for higher-quality recognition. Preprocessing is skipped because TrOCR works on the raw crop. |
+| **EasyOCR** (default) | Runs end-to-end locally on the preprocessed image. Detects and recognises text in one pass. |
+| **Mistral OCR** | The original image is base64-encoded and sent to the Mistral AI cloud OCR API (`mistral-ocr-latest`). Preprocessing is skipped — the cloud model handles the raw image. Requires `MISTRAL_API_KEY` in `.env`. |
 
 Output: a raw multi-line string of all text found on the label (not yet split into ingredients).
 
@@ -56,7 +56,12 @@ Two paths, selectable per-user via `DietaryProfile.use_llm_ingredient_extractor`
 
 A purely local, offline pipeline. Four sequential steps:
 
-1. **Section detection** (`non_ingredient_filter.extract_ingredients_section`) — scans the raw OCR text for an `INGREDIENTS:` header (with ~15 OCR-error variants handled) and discards everything outside that section (storage instructions, allergen warnings, website URLs, etc.)
+1. **Section detection** — two methods, selectable per-user via `DietaryProfile.use_hf_section_detection`:
+
+   | Method | How it works |
+   |---|---|
+   | **Regex** (default) | `non_ingredient_filter.extract_ingredients_section` — scans the raw OCR text for an `INGREDIENTS:` header (with ~15 OCR-error variants handled) and discards everything outside that section (storage instructions, allergen warnings, website URLs, etc.) |
+   | **HF NER model** | `hf_section_detection.extract_ingredients_section_hf` — runs the `openfoodfacts/ingredient-detection` NER model (XLM-RoBERTa-large, 0.6B params, token classification) to locate ingredient list spans. Handles missing headers, corrupted text, and multilingual labels. Model is loaded lazily on first use. |
 
 2. **Delimiter splitting** (`_split_ingredients_text`) — splits the ingredients block on commas, semicolons, `&`, ` and `, ` or `. Respects parentheses, so `"Emulsifier (E322 and E476)"` stays as one token.
 
@@ -109,7 +114,8 @@ No OCR or extraction is performed. Ingredients come pre-parsed from the Open Foo
 
 | Field | Controls |
 |---|---|
-| `use_trocr` | Stage 2: EasyOCR end-to-end vs TrOCR hybrid |
+| `use_mistral_ocr` | Stage 2: local EasyOCR vs Mistral OCR cloud API |
+| `use_hf_section_detection` | Stage 3 step 1: Regex section detection vs HF NER model (`openfoodfacts/ingredient-detection`) |
 | `use_llm_ingredient_extractor` | Stage 3: SymSpell (offline) vs LLM (online, falls back to SymSpell on failure) |
 
 ---

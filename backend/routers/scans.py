@@ -14,7 +14,8 @@ from backend.schemas import (
     BarcodeProductResponse
 )
 from backend.security import get_current_user
-from backend.services.ocr import extract_text_from_image, extract_ingredients
+from backend.services.ocr import extract_text_from_image
+from backend.services.ingredients_extraction.symspell_extraction import extract_ingredients
 from backend.services.ingredients_analysis import analyze_ingredients
 from backend.services.ingredients_extraction import extract_ingredients_with_llm
 from backend.services.barcode import get_product_by_barcode
@@ -50,17 +51,18 @@ def scan_ocr(
             detail="File too large"
         )
     
-    # Get user's dietary profile (needed before OCR to check TrOCR preference)
+    # Get user's dietary profile
     dietary_profile = db.query(DietaryProfile).filter(
         DietaryProfile.user_id == current_user.id
     ).first()
 
-    use_trocr = bool(dietary_profile and dietary_profile.use_trocr)
+    use_mistral_ocr = bool(dietary_profile and dietary_profile.use_mistral_ocr)
+    use_hf_section = bool(dietary_profile and dietary_profile.use_hf_section_detection)
 
     # Extract text using OCR
     try:
-        ocr_text = extract_text_from_image(image_data, use_trocr=use_trocr)
-        ocr_engine = "TrOCR" if use_trocr else "EasyOCR"
+        ocr_text = extract_text_from_image(image_data, use_mistral_ocr=use_mistral_ocr)
+        ocr_engine = "Mistral OCR" if use_mistral_ocr else "EasyOCR"
         print(f"OCR Text ({ocr_engine}): ", ocr_text)
     except Exception as e:
         raise HTTPException(
@@ -76,12 +78,12 @@ def scan_ocr(
             ingredients = llm_result["ingredients"]
             print(f"LLM Extracted Ingredients: {ingredients}")
         else:
-            ingredients = extract_ingredients(ocr_text)
+            ingredients = extract_ingredients(ocr_text, use_hf_section_detection=use_hf_section)
             print(f"Fallback to SymSpell - Extracted Ingredients: {ingredients}")
     else:
-
-        ingredients = extract_ingredients(ocr_text)
-        print(f"SymSpell Extracted Ingredients: {ingredients}")
+        ingredients = extract_ingredients(ocr_text, use_hf_section_detection=use_hf_section)
+        section_method = "HF NER" if use_hf_section else "regex"
+        print(f"SymSpell Extracted Ingredients ({section_method} section): {ingredients}")
     
     # Analyze ingredients
     analysis = analyze_ingredients(ingredients, dietary_profile)

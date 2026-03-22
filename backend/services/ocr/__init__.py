@@ -1,6 +1,6 @@
 """
 OCR Service Module
-Provides text extraction from images using EasyOCR.
+Provides text extraction from images using EasyOCR or Mistral OCR.
 """
 
 from backend.services.ocr.service import (

@@ -294,18 +294,33 @@
             </div>
           </label>
 
-          <!-- TrOCR -->
+          <!-- Mistral OCR -->
           <label class="llm-toggle-item">
             <input 
               type="checkbox" 
-              v-model="dietaryProfile.use_trocr" 
+              v-model="dietaryProfile.use_mistral_ocr" 
               @change="handleOptionsToggleChange"
               class="preference-checkbox" 
               :disabled="isSavingOptions"
             />
             <div class="toggle-content">
-              <span class="toggle-label">Enable TrOCR</span>
-              <span class="toggle-description">Use a transformer-based OCR model for higher-quality text recognition</span>
+              <span class="toggle-label">Enable Mistral OCR</span>
+              <span class="toggle-description">Use cloud-based Mistral OCR for higher-quality text recognition</span>
+            </div>
+          </label>
+
+          <!-- HF Section Detection -->
+          <label class="llm-toggle-item">
+            <input 
+              type="checkbox" 
+              v-model="dietaryProfile.use_hf_section_detection" 
+              @change="handleOptionsToggleChange"
+              class="preference-checkbox" 
+              :disabled="isSavingOptions"
+            />
+            <div class="toggle-content">
+              <span class="toggle-label">Enable HF Ingredient Detection</span>
+              <span class="toggle-description">Use a NER model to detect ingredient sections instead of regex patterns</span>
             </div>
           </label>
 
@@ -365,7 +380,8 @@ const dietaryProfile = ref({
   allergens: [],
   custom_restrictions: [],
   use_llm_ingredient_extractor: false,
-  use_trocr: false
+  use_mistral_ocr: false,
+  use_hf_section_detection: false
 })
 
 const newAllergen = ref('')
@@ -410,7 +426,8 @@ async function loadDietaryProfile() {
       allergens: profile.allergens || [],
       custom_restrictions: profile.custom_restrictions || [],
       use_llm_ingredient_extractor: profile.use_llm_ingredient_extractor || false,
-      use_trocr: profile.use_trocr || false
+      use_mistral_ocr: profile.use_mistral_ocr || false,
+      use_hf_section_detection: profile.use_hf_section_detection || false
     }
   } catch (err) {
     dietaryUpdateError.value = err.message || 'Failed to load dietary profile'
@@ -458,7 +475,8 @@ async function handleUpdateDietaryProfile() {
       allergens: dietaryProfile.value.allergens,
       custom_restrictions: dietaryProfile.value.custom_restrictions,
       use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor,
-      use_trocr: dietaryProfile.value.use_trocr
+      use_mistral_ocr: dietaryProfile.value.use_mistral_ocr,
+      use_hf_section_detection: dietaryProfile.value.use_hf_section_detection
     }
 
     await api.post('/dietary-profiles/custom', profileData)
@@ -511,7 +529,8 @@ async function saveDietaryProfile() {
       allergens: dietaryProfile.value.allergens,
       custom_restrictions: dietaryProfile.value.custom_restrictions,
       use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor,
-      use_trocr: dietaryProfile.value.use_trocr
+      use_mistral_ocr: dietaryProfile.value.use_mistral_ocr,
+      use_hf_section_detection: dietaryProfile.value.use_hf_section_detection
     }
 
     await api.post('/dietary-profiles/custom', profileData)
@@ -526,7 +545,8 @@ async function handleOptionsToggleChange() {
 
   // Snapshot current toggle values so we can revert on failure
   const prevLlm = dietaryProfile.value.use_llm_ingredient_extractor
-  const prevTrocr = dietaryProfile.value.use_trocr
+  const prevMistralOcr = dietaryProfile.value.use_mistral_ocr
+  const prevHfSection = dietaryProfile.value.use_hf_section_detection
 
   try {
     const profileData = {
@@ -539,15 +559,16 @@ async function handleOptionsToggleChange() {
       allergens: dietaryProfile.value.allergens,
       custom_restrictions: dietaryProfile.value.custom_restrictions,
       use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor,
-      use_trocr: dietaryProfile.value.use_trocr
+      use_mistral_ocr: dietaryProfile.value.use_mistral_ocr,
+      use_hf_section_detection: dietaryProfile.value.use_hf_section_detection
     }
 
     await api.post('/dietary-profiles/custom', profileData)
     notification.success('Changes saved')
   } catch (err) {
-    // Revert both toggles to their pre-change state
     dietaryProfile.value.use_llm_ingredient_extractor = prevLlm
-    dietaryProfile.value.use_trocr = prevTrocr
+    dietaryProfile.value.use_mistral_ocr = prevMistralOcr
+    dietaryProfile.value.use_hf_section_detection = prevHfSection
     notification.error('Failed to save changes')
   } finally {
     isSavingOptions.value = false

@@ -35,17 +35,19 @@ def get_dietary_profile(
             nut_free=False,
             dairy_free=False,
             use_llm_ingredient_extractor=False,
-            use_trocr=False,
+            use_mistral_ocr=False,
+            use_hf_section_detection=False,
         )
         db.add(profile)
         db.commit()
         db.refresh(profile)
 
-    # Guard against NULL columns from migrations applied before server_default was set
-    if profile.use_trocr is None:
-        profile.use_trocr = False
     if profile.use_llm_ingredient_extractor is None:
         profile.use_llm_ingredient_extractor = False
+    if profile.use_mistral_ocr is None:
+        profile.use_mistral_ocr = False
+    if profile.use_hf_section_detection is None:
+        profile.use_hf_section_detection = False
 
     return profile
 

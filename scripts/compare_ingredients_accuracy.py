@@ -8,10 +8,9 @@ and reports precision, recall, and F1 (exact and fuzzy matching).
 
 Usage:
   python scripts/compare_ingredients_accuracy.py
-  python scripts/compare_ingredients_accuracy.py --use_trocr
+  python scripts/compare_ingredients_accuracy.py --use_mistral_ocr
   python scripts/compare_ingredients_accuracy.py --use_llm
-  python scripts/compare_ingredients_accuracy.py --use_trocr --use_llm
-  python scripts/compare_ingredients_accuracy.py --use_trocr --images_dir tests/data/new_images
+  python scripts/compare_ingredients_accuracy.py --limit 5
 """
 
 import argparse
@@ -25,7 +24,8 @@ from typing import Any, Dict, List, Optional
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.services.ocr import extract_text_from_image, extract_ingredients
+from backend.services.ocr import extract_text_from_image
+from backend.services.ingredients_extraction.symspell_extraction import extract_ingredients
 from backend.services.ingredients_extraction import extract_ingredients_with_llm
 from tests.utils.metrics import (
     calculate_precision,
@@ -76,8 +76,10 @@ def _load_ground_truth(path: Optional[Path] = None) -> Dict[str, List[str]]:
 def _run_pipeline(
     images_dir: Path,
     ground_truth: Dict[str, List[str]],
-    use_trocr: bool = False,
+    use_mistral_ocr: bool = False,
     use_llm: bool = False,
+    use_hf_section: bool = False,
+    limit: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
     """
     Run OCR + extraction on each image that has ground truth.
@@ -97,24 +99,30 @@ def _run_pipeline(
             f"Ground truth has: {list(ground_truth.keys())[:5]}..."
         )
 
-    if use_trocr:
-        engine_label = "TrOCR"
+    ordered_names = sorted(valid_images, key=lambda n: _natural_sort_key(Path(n)))
+    if limit is not None:
+        ordered_names = ordered_names[:limit]
+
+    if use_mistral_ocr:
+        engine_label = "Mistral OCR"
     elif use_llm:
         engine_label = "EasyOCR+LLM"
     else:
         engine_label = "EasyOCR"
+    if use_hf_section:
+        engine_label += "+HF-section"
     dataset = []
-    total = len(valid_images)
-    for img_name in sorted(valid_images, key=lambda n: _natural_sort_key(Path(n))):
+    total = len(ordered_names)
+    for img_name in ordered_names:
         img_path = images_dir / img_name
         try:
             image_data = img_path.read_bytes()
-            ocr_text = extract_text_from_image(image_data, use_trocr=use_trocr)
+            ocr_text = extract_text_from_image(image_data, use_mistral_ocr=use_mistral_ocr)
             if use_llm:
                 llm_result = extract_ingredients_with_llm(ocr_text)
                 extracted = llm_result.get("ingredients", [])
             else:
-                extracted = extract_ingredients(ocr_text)
+                extracted = extract_ingredients(ocr_text, use_hf_section_detection=use_hf_section)
             true_ingredients = ground_truth.get(img_path.name, [])
 
             dataset.append({
@@ -145,8 +153,10 @@ def compare_with_ground_truth(
     images_dir: Optional[Path] = None,
     ground_truth_path: Optional[Path] = None,
     fuzzy_threshold: float = FUZZY_THRESHOLD,
-    use_trocr: bool = False,
+    use_mistral_ocr: bool = False,
     use_llm: bool = False,
+    use_hf_section: bool = False,
+    limit: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Run full pipeline on images, compare with ground truth.
@@ -160,15 +170,23 @@ def compare_with_ground_truth(
         raise FileNotFoundError(f"Images directory not found: {images_dir}")
 
     ground_truth = _load_ground_truth(ground_truth_path)
-    if use_trocr:
-        engine_label = "TrOCR"
+    if use_mistral_ocr:
+        engine_label = "Mistral OCR"
     elif use_llm:
         engine_label = "EasyOCR+LLM"
     else:
         engine_label = "EasyOCR"
+    if use_hf_section:
+        engine_label += "+HF-section"
     print(f"\nOCR engine : {engine_label}")
-    print(f"Processing images from {images_dir} (ground truth: {len(ground_truth)} images)...")
-    dataset = _run_pipeline(images_dir, ground_truth, use_trocr=use_trocr, use_llm=use_llm)
+    if limit is not None:
+        print(f"Processing images from {images_dir} (limit: first {limit} with ground truth)...")
+    else:
+        print(f"Processing images from {images_dir} (ground truth: {len(ground_truth)} images)...")
+    dataset = _run_pipeline(
+        images_dir, ground_truth, use_mistral_ocr=use_mistral_ocr,
+        use_llm=use_llm, use_hf_section=use_hf_section, limit=limit,
+    )
 
     metrics = EvaluationMetrics()
     details: List[Dict[str, Any]] = []
@@ -415,19 +433,32 @@ def _parse_args() -> argparse.Namespace:
         description="Compare OCR + ingredient extraction against ground truth."
     )
     parser.add_argument(
-        "--use_trocr",
+        "--use_mistral_ocr",
         action="store_true",
         default=False,
-        help="Use TrOCR for recognition (EasyOCR still used for detection). "
-             "Default: EasyOCR end-to-end.",
+        help="Use Mistral OCR cloud API instead of local EasyOCR. "
+             "Requires MISTRAL_API_KEY in .env.",
     )
     parser.add_argument(
         "--use_llm",
         action="store_true",
         default=False,
         help="Use LLM for ingredient extraction instead of SymSpell. "
-             "Requires a configured LLM provider (LLM_PROVIDER / API key in settings). "
-             "Can be combined with --use_trocr.",
+             "Requires a configured LLM provider (LLM_PROVIDER / API key in settings).",
+    )
+    parser.add_argument(
+        "--use_hf_section",
+        action="store_true",
+        default=False,
+        help="Use the HuggingFace openfoodfacts/ingredient-detection NER model "
+             "for section detection instead of regex patterns.",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        metavar="N",
+        help="Process only the first N images (sorted naturally). Default: all.",
     )
     parser.add_argument(
         "--images_dir",
@@ -460,13 +491,19 @@ def main() -> int:
     """Run pipeline, compare with ground truth, print results."""
     args = _parse_args()
 
+    if args.limit is not None and args.limit < 1:
+        print("Error: --limit must be >= 1", file=sys.stderr)
+        return 1
+
     try:
         results = compare_with_ground_truth(
             images_dir=args.images_dir,
             ground_truth_path=args.ground_truth,
             fuzzy_threshold=args.fuzzy_threshold,
-            use_trocr=args.use_trocr,
+            use_mistral_ocr=args.use_mistral_ocr,
             use_llm=args.use_llm,
+            use_hf_section=args.use_hf_section,
+            limit=args.limit,
         )
     except FileNotFoundError as e:
         print(f"Error: {e}", file=sys.stderr)
