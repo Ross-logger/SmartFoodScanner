@@ -306,9 +306,9 @@ def extract_ingredients(ocr_text: str, *, use_hf_section_detection: bool = False
     # Step 1: Extract only the ingredients section (filter headers, footers, etc.)
     if use_hf_section_detection:
         from backend.services.ingredients_extraction.hf_section_detection import (
-            extract_ingredients_section_hf,
+            extract_ingredients_list_hf,
         )
-        ingredients_text = extract_ingredients_section_hf(ocr_text)
+        ingredients_text = extract_ingredients_list_hf(ocr_text) or ocr_text
     else:
         ingredients_text = extract_ingredients_section(ocr_text)
     

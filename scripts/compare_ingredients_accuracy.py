@@ -345,28 +345,27 @@ def compare_with_ground_truth(
 
     fuzzy_avg = _avg_fuzzy(extraction_cases)
 
-    def _avg_merge(det: List[Dict]) -> Dict[str, float]:
-        if not det:
-            return {"precision": 0.0, "recall": 0.0, "f1": 0.0}
-        merge = [d.get("merge", {}) for d in det]
-        return {
-            "precision": sum(m.get("precision", 0) for m in merge) / len(merge),
-            "recall": sum(m.get("recall", 0) for m in merge) / len(merge),
-            "f1": sum(m.get("f1", 0) for m in merge) / len(merge),
-        }
-
-    merge_avg = _avg_merge(details)
-    micro_mp = (
+    merge_pooled_precision = (
         merge_micro_hits_p / merge_micro_total_p if merge_micro_total_p else 0.0
     )
-    micro_mr = (
+    merge_pooled_recall = (
         merge_micro_hits_r / merge_micro_total_r if merge_micro_total_r else 0.0
     )
-    micro_mf1 = (
-        2 * micro_mp * micro_mr / (micro_mp + micro_mr)
-        if (micro_mp + micro_mr) > 0
+    merge_pooled_f1 = (
+        2
+        * merge_pooled_precision
+        * merge_pooled_recall
+        / (merge_pooled_precision + merge_pooled_recall)
+        if (merge_pooled_precision + merge_pooled_recall) > 0
         else 0.0
     )
+    merge_summary = {
+        "precision": merge_pooled_precision,
+        "recall": merge_pooled_recall,
+        "f1": merge_pooled_f1,
+        "total_predictions": merge_micro_total_p,
+        "total_ground_truth": merge_micro_total_r,
+    }
     avg_split_gap_recall = sum(d.get("split_gap_recall", 0) for d in details) / len(details) if details else 0
     avg_split_gap_precision = sum(d.get("split_gap_precision", 0) for d in details) / len(details) if details else 0
 
@@ -393,14 +392,7 @@ def compare_with_ground_truth(
             "f1": extraction.get("avg_f1", 0),
         },
         "fuzzy": fuzzy_avg,
-        "merge": merge_avg,
-        "merge_micro": {
-            "precision": micro_mp,
-            "recall": micro_mr,
-            "f1": micro_mf1,
-            "total_predictions": merge_micro_total_p,
-            "total_ground_truth": merge_micro_total_r,
-        },
+        "merge": merge_summary,
         "summary": {
             "total_images": len(dataset),
             "avg_exact_precision": extraction.get("avg_precision", 0),
@@ -409,12 +401,9 @@ def compare_with_ground_truth(
             "avg_fuzzy_precision": fuzzy_avg.get("precision", 0),
             "avg_fuzzy_recall": fuzzy_avg.get("recall", 0),
             "avg_fuzzy_f1": fuzzy_avg.get("f1", 0),
-            "avg_merge_precision": merge_avg.get("precision", 0),
-            "avg_merge_recall": merge_avg.get("recall", 0),
-            "avg_merge_f1": merge_avg.get("f1", 0),
-            "avg_merge_precision_micro": micro_mp,
-            "avg_merge_recall_micro": micro_mr,
-            "avg_merge_f1_micro": micro_mf1,
+            "avg_merge_precision": merge_pooled_precision,
+            "avg_merge_recall": merge_pooled_recall,
+            "avg_merge_f1": merge_pooled_f1,
             "avg_split_gap_recall": avg_split_gap_recall,
             "avg_split_gap_precision": avg_split_gap_precision,
         },
@@ -444,7 +433,6 @@ def save_comparison_result(results: Dict[str, Any], output_path: Path = COMPARIS
         "exact": results["exact"],
         "fuzzy": results["fuzzy"],
         "merge": results.get("merge", {}),
-        "merge_micro": results.get("merge_micro", {}),
         "details": enriched_details,
     }
 
@@ -468,23 +456,16 @@ def print_summary(results: Dict[str, Any]) -> None:
     print(f"  Total images: {s['total_images']}")
     print()
     print("  " + "-" * 76)
-    print("  " + f"{'Metric':<18} {'Split (exact)':>14} {'Fuzzy (0.8)':>14} {'Merge (containment)':>18}")
+    print("  " + f"{'Metric':<18} {'Split (exact)':>14} {'Fuzzy (0.8)':>14} {'Merge (pooled)':>18}")
     print("  " + "-" * 76)
     print(f"  {'Precision':<18} {exact['precision']:>13.2%} {fuzzy['precision']:>13.2%} {merge.get('precision', 0):>17.2%}")
     print(f"  {'Recall':<18} {exact['recall']:>13.2%} {fuzzy['recall']:>13.2%} {merge.get('recall', 0):>17.2%}")
     print(f"  {'F1 Score':<18} {exact['f1']:>13.2%} {fuzzy['f1']:>13.2%} {merge.get('f1', 0):>17.2%}")
     print("  " + "=" * 76)
-    mm = s.get("avg_merge_precision_micro")
-    if mm is not None:
-        print(
-            f"  {'Merge (pooled)*':<18} {mm:>13.2%} "
-            f"{s.get('avg_merge_recall_micro', 0):>13.2%} "
-            f"{s.get('avg_merge_f1_micro', 0):>17.2%}"
-        )
-        print(
-            "    *Pooled over all ingredient tokens (not per-image mean). "
-            "Less dominated by a few noisy packs."
-        )
+    print(
+        "    Merge = containment over all predictions/GT tokens (micro / pooled), "
+        "not a per-image mean."
+    )
     print()
     print("  Split vs Merge (splitting error indicator):")
     print(f"    Recall gap (merge - split):  {s.get('avg_split_gap_recall', 0):+.2%}  "
@@ -581,8 +562,9 @@ def _parse_args() -> argparse.Namespace:
         "--use_hf_section",
         action="store_true",
         default=False,
-        help="Use the HuggingFace openfoodfacts/ingredient-detection NER model "
-             "for section detection instead of regex patterns.",
+        help="SymSpell only: find the ingredients block with HF NER "
+             "(token labels ING) instead of regex/header scanning. "
+             "Ignored with --use_llm. First use downloads/loads the model.",
     )
     parser.add_argument(
         "--limit",

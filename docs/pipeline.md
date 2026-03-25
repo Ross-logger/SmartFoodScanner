@@ -61,7 +61,7 @@ A purely local, offline pipeline. Four sequential steps:
    | Method | How it works |
    |---|---|
    | **Regex** (default) | `non_ingredient_filter.extract_ingredients_section` — scans the raw OCR text for an `INGREDIENTS:` header (with ~15 OCR-error variants handled) and discards everything outside that section (storage instructions, allergen warnings, website URLs, etc.) |
-   | **HF NER model** | `hf_section_detection.extract_ingredients_section_hf` — runs the `openfoodfacts/ingredient-detection` NER model (XLM-RoBERTa-large, 0.6B params, token classification) to locate ingredient list spans. Handles missing headers, corrupted text, and multilingual labels. Model is loaded lazily on first use. |
+   | **HF NER model** | `hf_section_detection.extract_ingredients_list_hf` (alias `extract_ingredients_section_hf`) — runs the `openfoodfacts/ingredient-detection` NER model (XLM-RoBERTa-large, 0.6B params, token classification) to locate ingredient list spans. Handles missing headers, corrupted text, and multilingual labels. Model is loaded lazily on first use. |
 
 2. **Delimiter splitting** (`_split_ingredients_text`) — splits the ingredients block on commas, semicolons, `&`, ` and `, ` or `. Respects parentheses, so `"Emulsifier (E322 and E476)"` stays as one token.
 
