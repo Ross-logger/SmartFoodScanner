@@ -120,6 +120,12 @@ class TestSpellcheckIngredients:
         assert "sugar" in result
         assert "salt" in result
         assert "flour" in result
+
+    def test_spellcheck_middot_normalized_to_comma(self):
+        """Test that middle dot separators are normalized to commas."""
+        result = spellcheck_ingredients("water · sugar · salt")
+
+        assert result == "water, sugar, salt"
     
     def test_spellcheck_extra_whitespace(self):
         """Test with extra whitespace around ingredients."""
@@ -427,6 +433,18 @@ class TestExtractIngredients:
         result = extract_ingredients("soy or sunflower lecithin, sugar")
         assert "sugar" in result
         assert any("lecithin" in ing or "soy" in ing or "sunflower" in ing for ing in result)
+
+    def test_extract_splits_on_middot(self):
+        """EU labels often use middle dot (·) between ingredients."""
+        text = (
+            "Ingredients: Wheatflour (contains Gluten) · Invert Sugar Syrup · Palm Oil · Salt · "
+            "Gelling Agent: Pectins (from Fruit)"
+        )
+        result = extract_ingredients(text)
+        assert "wheatflour" in result or "wheat" in " ".join(result)
+        assert "palm oil" in result
+        assert "salt" in result
+        assert len(result) >= 4
 
     def test_extract_filters_allergen_warning_segments(self):
         """Test that allergen warning text is filtered out."""

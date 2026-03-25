@@ -285,6 +285,7 @@ FOOD_INGREDIENTS: Set[str] = {
     "yeast extract", "autolyzed yeast", "autolyzed yeast extract",
     "baking powder", "baking soda", "sodium bicarbonate", "bicarbonate of soda",
     "cream of tartar", "ammonium bicarbonate",
+    "raising",
     "raising agents", "raising agent", "raising agent (e500)", "raising agent (ins500(ii))",
     "leavening agents",
     

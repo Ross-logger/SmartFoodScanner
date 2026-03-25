@@ -179,7 +179,7 @@
         "cornflour",
         "rice flour",
         "salt",
-        "raisin agent: sodium bicarbonate."
+        "raisin agent: sodium bicarbonate"
       ],
       "true_ingredients": [
         "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
@@ -368,8 +368,8 @@
         "sugar",
         "glucose syrup",
         "almond halves",
-        "crisped rice rice flour · wheat flour · sugar · malt barley · salt",
-        "freeze-dried strawberry spices (freeze-dried strawberry spices · sunflower oil)",
+        "crisped rice rice flour , wheat flour , sugar , malt barley , salt",
+        "freeze-dried strawberry spices (freeze-dried strawberry spices , sunflower oil)",
         "honey",
         "oat flour",
         "salt",
@@ -419,9 +419,9 @@
         "vegetable oil (sunflower/rapeseed)",
         "sugar",
         "almond halves",
-        "rice crisp rice flour · wheat flour (contains gluten · sugar · malt barley (contains gluten · salt)",
+        "rice crisp rice flour , wheat flour (contains gluten , sugar , malt barley (contains gluten , salt)",
         "glucose syrup",
-        "cornflakes (maize flour · salt)",
+        "cornflakes (maize flour , salt)",
         "sliced basil nuts",
         "chopped roasted hazelnuts",
         "chopped pecan nuts",
@@ -474,15 +474,15 @@
       "split_gap_precision": 0.0,
       "extracted_ingredients": [
         "oat flakes",
-        "apple flavor barley flakes barley · sugar · water · natural flavoring",
-        "toasted malt wheatflakes wheat · barley malt extract",
+        "apple flavor barley flakes barley , sugar , water , natural flavoring",
+        "toasted malt wheatflakes wheat , barley malt extract",
         "sunflower seeds",
         "barley flakes",
         "roasted hazelnuts",
         "pumpkin seeds",
         "almonds",
         "chopped cashew nuts",
-        "sliced almonds."
+        "sliced almonds"
       ],
       "true_ingredients": [
         "Oat Flakes",
@@ -521,14 +521,14 @@
       "extracted_ingredients": [
         "oat flakes",
         "sugar",
-        "rice infused cranberries cranberries · concentrate apple rice · sunflower oil",
+        "rice infused cranberries cranberries , concentrate apple rice , sunflower oil",
         "sultana",
         "rapeseed oil",
         "desiccated coconut",
-        "salt caramelised almonds almonds · sugar · dextrose · honey · salt",
-        "salt caramelised hazelnuts hazelnuts · sugar · dextrose · honey · salt",
+        "salt caramelised almonds almonds , sugar , dextrose , honey , salt",
+        "salt caramelised hazelnuts hazelnuts , sugar , dextrose , honey , salt",
         "sunflower seeds",
-        "salt caramelised pistachios pistachio nuts · sugar · dextrose · honey · salt",
+        "salt caramelised pistachios pistachio nuts , sugar , dextrose , honey , salt",
         "black treacle",
         "pumpkin seeds",
         "honey"
@@ -638,7 +638,7 @@
         "barley flakes (contain gluten)",
         "peanut",
         "spencer plc po box e339 ch99 9qs united kingdom m",
-        "ham",
+        "amp",
         "s (ireland) ltd po box e322 ravensdale dublin 2 ireland marksandspencer.com 360ae(10x36a)"
       ],
       "true_ingredients": [
@@ -746,7 +746,7 @@
         "sliced almonds",
         "black treacle",
         "chicory fibre",
-        "pistachio nuts."
+        "pistachio nuts"
       ],
       "true_ingredients": [
         "Guten Free Oat Flakes",
@@ -788,7 +788,7 @@
       "split_gap_precision": 0.0,
       "extracted_ingredients": [
         "- sugar - cocoa butter - dried whole milk - cocoa mass - ground hazelnuts - emulsifier - sunflower lecithin - natural flavoring - milk chocolate contains cocoa solids 35% minimum",
-        "milk solids 21% minimum. sour allergens see ingredients in bold."
+        "milk solids 21% minimum. sour allergens see ingredients in bold"
       ],
       "true_ingredients": [
         "Sugar",
@@ -830,7 +830,7 @@
         "ground hazelnuts",
         "emulsifier sunflower lecithin",
         "natural flavoring milk chocolate contains cocoa solids 35% minimum",
-        "milk solids 21% minimum."
+        "milk solids 21% minimum"
       ],
       "true_ingredients": [
         "Sugar",
@@ -916,7 +916,7 @@
       "split_gap_precision": 0.0,
       "extracted_ingredients": [
         "sugar glucose syrup. sweetened condensed skimmed milk (skimmed milk sugar lactose (milk). palm oil butter oil (milk). cocoa butter dried whole milk cocoa mass. invert sugar syrup. salt emulsifier lecithin (soya). skimmed milk powder natural flavourings. milk chocolate contains cocoa solids 25% minimum)",
-        "milk solids 15% minimum."
+        "milk solids 15% minimum"
       ],
       "true_ingredients": [
         "Sugar",
@@ -963,7 +963,7 @@
         "malic acid",
         "natural flavoring",
         "sunflower oil",
-        "natural colour: anthocyanins (from grapes black carrot radish sweet potato)",
+        "natural colour: anthocyanins (from grape black carrots radish sweet potato)",
         "lutein",
         "beetroot red",
         "carotenes",
@@ -1008,13 +1008,13 @@
       "split_gap_recall": 0.0,
       "split_gap_precision": 0.2857142857142857,
       "extracted_ingredients": [
-        "sparkling green tea green tea · carbonated water",
+        "sparkling green tea green tea , carbonated water",
         "sugar",
         "natural flavoring orange mango",
         "fruit",
         "vegetable",
-        "peanut concentrate (safflower, carrot blackcurrants, lemon)",
-        "kombucha culture."
+        "peanut concentrate (safflower, carrots blackcurrants, lemon)",
+        "kombucha culture"
       ],
       "true_ingredients": [
         "Sparkling Green Tea (Green Tea, Carbonated Water)",
@@ -1055,12 +1055,12 @@
         "acidity regulator: citric acid. citric acid is natural occurring in citrus fruit citric acid is added to this product",
         "to maintain the flavor",
         "texture. ## deliciously healthy food beet enjoyed as part of a healthy lifestyle",
-        "ham",
+        "amp",
         "a balanced dried diet. vitamins c contributes to normal collagen formation for the normal function of beet",
         "skin",
         "honey",
         "contributes to the normal function of the immune system. meat a healthy variety of differently coloured vegetables",
-        "fruit peach day."
+        "fruit peach day"
       ],
       "true_ingredients": [
         "Apple Juice",
@@ -1217,7 +1217,7 @@
         "lactobacillus acidophilus",
         "lactobacillus bulgaricus thermophilus natural flour",
         "anthocyanins (from black carrots for see ingredients in gold vegetarians in the uk with british milk cb uw po)",
-        "sc plc see lid 9qs for po box e322 2 ireland 9 fish 9 strawberry free with yogurt storage days: streptococcus allergens suitable for mace sc6171 020-b dark 014-c spencer box e339 united ch99 cod - kingdom site mes 450ge (ireland) ravensdale ltd marksandspencer cod dublin recycled fsc chard fscpc117897"
+        "sc plc see lid 9qs for po box e322 2 ireland 9 fish 9 strawberry free with yogurt storage days: streptococcus allergens suitable for mace sc6171 020-b dark 014-c spencer box e339 united ch99 cod - kingdom site mes 450ge (ireland) ravensdale ltd marksandspencer cod dublin recycled fsc lard fscpc117897"
       ],
       "true_ingredients": [
         "Fat Free Greek Style Yogurt (Milk)",
@@ -1252,7 +1252,7 @@
       "split_gap_recall": 0.625,
       "split_gap_precision": 0.0,
       "extracted_ingredients": [
-        "british beef beef carrot water tea salt cracked black pepper smoked beef carrot (sulphites) salt"
+        "british beef beef farro water tea salt cracked black pepper smoked beef farro (sulphites) salt"
       ],
       "true_ingredients": [
         "British Beef",
@@ -1429,7 +1429,7 @@
         "milk solids",
         "common salt",
         "spices",
-        "ham",
+        "amp",
         "condiments"
       ],
       "true_ingredients": [
@@ -1771,7 +1771,7 @@
       "split_gap_precision": 0.0,
       "extracted_ingredients": [
         "sugar",
-        "cocoa powder. contains added flavor artificial vanilla flavoring substances)."
+        "cocoa powder. contains added flavor artificial vanilla flavoring substances)"
       ],
       "true_ingredients": [
         "Sugar",
@@ -1875,7 +1875,7 @@
         "isolated soy protein",
         "iodized salt",
         "spices",
-        "ham",
+        "amp",
         "condiments",
         "texturizer (ins 451(i))"
       ],
@@ -1930,11 +1930,11 @@
         "emulsifier (ins 466))",
         "soy protein",
         "spices",
-        "ham",
+        "amp",
         "condiments",
         "iodized salt",
         "texturizer (ins 451(i)). contains premitted clam ii preservatives allergy advice: contains soy",
-        "wheat products."
+        "wheat products"
       ],
       "true_ingredients": [
         "Chicken Meat",
@@ -2046,7 +2046,7 @@
         "colour (ins 150d)",
         "vitamins",
         "antioxidant (ins 320). contains permitted natural flour",
-        "ham"
+        "amp"
       ],
       "true_ingredients": [
         "wheat solids (wheat flour (atta), refined wheat flour (maida))",
@@ -2085,7 +2085,7 @@
       "split_gap_precision": 0.0,
       "extracted_ingredients": [
         "whole wheat soy preservatives",
-        "additives used."
+        "additives used"
       ],
       "true_ingredients": [
         "Whole Wheat"
@@ -2404,7 +2404,7 @@
         "iodised salt",
         "acidity regulator (341(ii))",
         "dough conditioner e223",
-        "improver (1101(i)). contains added flavor artificial flavoring substance (butter))."
+        "improver (1101(i)). contains added flavor artificial flavoring substance (butter))"
       ],
       "true_ingredients": [
         "Refined Wheat Flour (MAIDA)",
@@ -2492,7 +2492,7 @@
         "jaggery",
         "whole wheat flour",
         "vegetable oil",
-        "ham",
+        "amp",
         "salt"
       ],
       "true_ingredients": [
@@ -2799,7 +2799,7 @@
         "sunflower oil",
         "liquid glucose",
         "cocoa powder",
-        "antioxidant (ins 300)",
+        "antioxidant (ins 319)",
         "edible common salt",
         "cocoa butter contains permitted natural flour (ins e150c)"
       ],
@@ -2893,7 +2893,7 @@
         "500(ii))",
         "iodized salt",
         "milk",
-        "ham",
+        "amp",
         "soybeans"
       ],
       "true_ingredients": [
@@ -3208,7 +3208,7 @@
         "cocoa solids",
         "emulsifier (ins 322(i))",
         "natural flavors",
-        "ham",
+        "amp",
         "natural flavoring substances)",
         "invert syrup",
         "milk solids",
@@ -3217,7 +3217,7 @@
         "ins 500(ii))",
         "cocoa solids",
         "iodized salt",
-        "emulsifier (ins 322(i))."
+        "emulsifier (ins 322(i))"
       ],
       "true_ingredients": [
         "Refined Wheat Flour (MAIDA)",
@@ -3317,18 +3317,18 @@
         "amaranth flour",
         "organic jaggery",
         "dry fruit",
-        "ham",
+        "amp",
         "seeds sesame seeds/til 5%, almonds walnuts dates cashews pista, watermelon seeds)",
         "milk",
         "rock salt",
-        "ham",
+        "amp",
         "nothing else. the flour are processed from fortified organic whole grains. the rest of them are premium natural ingredients. contains no refined white sugar",
         "no egg",
         "no soya / baking powder / raisin agents",
         "soy preservatives",
         "artificial flavors used. the product is 100% chemical green allergy advice: contains gluten",
         "nuts",
-        "ham",
+        "amp",
         "milk"
       ],
       "true_ingredients": [
@@ -3518,7 +3518,7 @@
         "vegetable oil",
         "water cocoa powder",
         "salt preservative (ins202, ins200)",
-        "humectant (ins422, leaving agents (ins500 (ii)).)"
+        "humectant (ins422, leaving agents (ins500 (ii)))"
       ],
       "true_ingredients": [
         "Cake Concentrate (Milk Solids, Starch, Baking Powder, Refined Wheat Flour, Emulsifiers and Stabilizers (E417, E415), Salt, Colour (E171), Flavouring - Vanilla)",
@@ -3607,7 +3607,7 @@
         "zests of lemon",
         "baking soda",
         "powder",
-        "ham",
+        "amp",
         "iodized salt"
       ],
       "true_ingredients": [
@@ -3663,8 +3663,8 @@
         "grapes",
         "orange",
         "milkmaid",
-        "ham",
-        "ham",
+        "amp",
+        "amp",
         "nuts processed and"
       ],
       "true_ingredients": [
@@ -3756,8 +3756,8 @@
         "permitted emulsifying",
         "stabilizing agents (ins 322, ins 476)",
         "salt contains added natural identical",
-        "ham",
-        "artificial flavoring substances. hydrogenated vegetable oat used: contains beans fat."
+        "amp",
+        "artificial flavoring substances. hydrogenated vegetable oat used: contains beans fat"
       ],
       "true_ingredients": [
         "Sugar",
@@ -3793,7 +3793,7 @@
         "sugar",
         "edible vegetable oat",
         "cocoa solids",
-        "ham",
+        "amp",
         "emulsifier e492 322) contains added natural vanilla flavoring substances hydrogenated vegetable oat used - contains beans oats"
       ],
       "true_ingredients": [
@@ -3830,7 +3830,7 @@
         "cocoa butter",
         "cocoa solids",
         "almond bits",
-        "emulsifier (476,322 (i))."
+        "emulsifier (476,322 (i))"
       ],
       "true_ingredients": [
         "Sugar",
@@ -3905,7 +3905,7 @@
         "almonds",
         "fructo-oligosaccharide",
         "emulsifier (ins 322, ins 476)",
-        "flavoring (hazelnut)."
+        "flavoring (hazelnut)"
       ],
       "true_ingredients": [
         "Maltitol (INS 965(i))",
@@ -3942,7 +3942,7 @@
         "cocoa solids",
         "sugar",
         "cocoa butter",
-        "emulsifier (ins 322)."
+        "emulsifier (ins 322)"
       ],
       "true_ingredients": [
         "Cocoa Solids",
@@ -4120,7 +4120,7 @@
       "split_gap_precision": 0.0,
       "extracted_ingredients": [
         "red rice flour",
-        "ham",
+        "amp",
         "salt"
       ],
       "true_ingredients": [
@@ -4154,12 +4154,12 @@
         "edible vegetable oil palm olein oil",
         "sugar",
         "spices",
-        "ham",
+        "amp",
         "condiments garlic powder onion powder chilli, spice extract",
         "rice flour",
         "iodised salt",
         "potassium chlorine e508",
-        "citric acid (330)."
+        "citric acid (330)"
       ],
       "true_ingredients": [
         "Corn",
@@ -4239,7 +4239,7 @@
         "stabilizing agents e1422 415)",
         "acidity regulator e260",
         "spices",
-        "ham",
+        "amp",
         "condiments",
         "preservative e211 continuations: - 100% water - 100% water - 100% water"
       ],
@@ -4375,7 +4375,7 @@
         "acidity regulators e331 332, 270, 330)",
         "enzyme (lactase)",
         "lime cultures. contains milk",
-        "milk products."
+        "milk products"
       ],
       "true_ingredients": [
         "Skim Milk",
@@ -4478,7 +4478,7 @@
         "milk solids",
         "sugar",
         "stabilizer e461 412, 407)",
-        "emulsifier (471)."
+        "emulsifier (471)"
       ],
       "true_ingredients": [
         "Water",

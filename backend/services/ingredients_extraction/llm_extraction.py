@@ -1,12 +1,22 @@
 """
 LLM-based Ingredient Extractor
 Uses LLM to accurately extract ingredients from food product labels.
+
+Benchmark (offline artefact ``tests/data/comparison_result_with_llm_extraction.json``):
+100 label images with ground truth in ``tests/data/true_ingredients.json`` (``IMG_0045.png``
+excluded: unusable Mistral OCR in cache). Per-image macro averages:
+
+- **Exact (set overlap):** precision 95.09%, recall 95.05%, F1 95.06%
+- **Fuzzy (threshold 0.8):** precision 95.78%, recall 95.74%, F1 95.75%
+- **Merge (substring containment):** precision 95.18%, recall 95.19%, F1 95.17%
+- **Split vs merge gap (mean):** recall +0.14%pt, precision +0.09%pt (merge − exact)
 """
 
 from typing import Dict, Any, Optional
 import logging
 
 from backend.services.llm import LLMService
+from backend.services.ingredients_extraction.utils import post_process_ingredients
 
 logger = logging.getLogger(__name__)
 
@@ -27,20 +37,25 @@ def build_extraction_prompt(text: str) -> str:
     return f"""You are an expert food ingredient extractor. Your task is to extract ALL ingredients from the given text, which may be from a food product label.
 
 CRITICAL INSTRUCTIONS:
-1. Extract ONLY the actual food ingredients - not packaging info, brand names, nutritional values, or marketing text
+1. Extract ONLY the actual food ingredients - not packaging info, brand names, nutritional values, marketing text, or standalone allergen advisory lines (e.g. "Contains: Milk", "May contain traces of nuts"). Do NOT treat the words "contains" or "with" inside a single compound ingredient as an allergen line to skip.
 2. Preserve scientific names in parentheses when present (e.g., "Vitamin C (Ascorbic Acid)")
-3. Keep compound/nested ingredients together as a single entry, preserving the sub-ingredient list:
-   - "Choco Cream (36%) [Sugar, Vegetable Fat, Cocoa Solids, Emulsifiers (E322 from Soya)]" → one entry: "Choco Cream [Sugar, Vegetable Fat, Cocoa Solids, Emulsifiers (E322 from Soya)]"
-   - "Breadcrumbs [Wheat Flour, Yeast, Salt]" → one entry: "Breadcrumbs [Wheat Flour, Yeast, Salt]"
-   - "Dark Chocolate Chips (17%) (Sugar, Cocoa Solids, Cocoa Butter)" → one entry: "Dark Chocolate Chips (Sugar, Cocoa Solids, Cocoa Butter)"
-   - Only split at the TOP-LEVEL comma separators between ingredients, not within brackets/parentheses
+3. Keep compound/nested ingredients together as a single entry, preserving the sub-ingredient list in round parentheses ONLY (never square brackets or curly braces):
+   - "Choco Cream (36%) [Sugar, Vegetable Fat, Cocoa Solids, Emulsifiers (E322)]" -> one entry: "Choco Cream (Sugar, Vegetable Fat, Cocoa Solids, Emulsifiers (E322))"
+   - "Breadcrumbs {{Wheat Flour, Yeast, Salt}}" -> one entry: "Breadcrumbs (Wheat Flour, Yeast, Salt)"
+   - Only split at the TOP-LEVEL comma separators between ingredients, not within parentheses
+3b. UK/EU flour and similar compound declarations: copy the label wording for that one ingredient; do NOT shorten or rephrase.
+   - If the text says "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)" or "Wheatflour (contains Gluten) (with ...)", output it that way — keep the phrase "contains Gluten" and the "(with ...)" fortification list exactly as written (aside from removing percentages and normalising "&amp;" to "&").
+   - Wrong: "Wheatflour (Gluten, Calcium Carbonate, Iron, Niacin, Thiamin)" or dropping "contains Gluten" / "(with ...)".
 4. For food additive codes (E-numbers / INS numbers), preserve the EXACT prefix format from the original text:
    - If the text uses "E" prefix (E322, E-450, E 471), output with "E" prefix (e.g., "E322", "E450", "E471")
    - If the text uses "INS" prefix (INS 330, INS322), output with "INS" prefix (e.g., "INS 330", "INS 322")
    - Preserve sub-part notation like (i), (ii) when present (e.g., "E500(ii)", "INS 451(i)")
    - Do NOT expand additive codes with their chemical names - output ONLY the code (e.g., "E471" not "E471 (Mono- and Diglycerides)")
 5. Remove percentages and "contains X%" annotations, but keep sub-ingredient lists intact
-6. If no ingredients are found or the text doesn't contain ingredient information, return an empty array
+6. Do NOT use accented characters - use plain ASCII (e.g., "Puree" not "Puree", "Creme" not "Creme")
+7. Do NOT include "&amp;" in output - use "&" instead
+8. Do NOT include asterisks (*) in ingredient names
+9. If no ingredients are found or the text doesn't contain ingredient information, return an empty array
 
 INPUT TEXT:
 {text}
@@ -51,29 +66,22 @@ Respond ONLY with valid JSON in this exact format:
 }}
 
 EXAMPLE:
-- Input: "Ingredients: Choco Cream (36%) [Sugar, Vegetable Fat, Cocoa Solids, Emulsifiers (E322 from Soya)], Refined Wheat Flour (Maida), Sugar, Palm Oil, Raising Agents [E503(ii), E500(ii)], Salt"
-  Output: {{"ingredients": ["Choco Cream [Sugar, Vegetable Fat, Cocoa Solids, Emulsifiers (E322 from Soya)]", "Refined Wheat Flour (Maida)", "Sugar", "Palm Oil", "Raising Agents [E503(ii), E500(ii)]", "Salt"]}}"""
+- Input: "Ingredients: Choco Cream (36%) [Sugar, Vegetable Fat, Cocoa Solids, Emulsifiers (E322 from Soya)], Refined Wheat Flour (Maida), Sugar, Edible Vegetable Oil (Palm), Raising Agents [E503(ii), E500(ii)], Iodised Salt"
+  Output: {{"ingredients": ["Choco Cream (Sugar, Vegetable Fat, Cocoa Solids, Emulsifiers (E322 from Soya))", "Refined Wheat Flour (Maida)", "Sugar", "Edible Vegetable Oil (Palm)", "Raising Agents (E503(ii), E500(ii))", "Iodised Salt"]}}
+- Input: "INGREDIENTS Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin), Butter (Milk), Sugar"
+  Output: {{"ingredients": ["Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)", "Butter (Milk)", "Sugar"]}}"""
 
 
 def _validate_extraction_result(result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    """Validate and clean extraction result."""
+    """Validate, clean and post-process extraction result."""
     if "ingredients" not in result:
         logger.warning("LLM response missing 'ingredients' field")
         return None
-    
-    # Ensure ingredients is a list
+
     if not isinstance(result["ingredients"], list):
         result["ingredients"] = []
-    
-    # Clean and validate ingredients
-    cleaned_ingredients = []
-    for ing in result["ingredients"]:
-        if isinstance(ing, str):
-            cleaned = ing.strip()
-            if cleaned and len(cleaned) > 1:  # Filter out single characters
-                cleaned_ingredients.append(cleaned)
-    
-    result["ingredients"] = cleaned_ingredients
+
+    result["ingredients"] = post_process_ingredients(result["ingredients"])
     return result
 
 

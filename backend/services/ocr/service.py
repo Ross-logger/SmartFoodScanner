@@ -6,10 +6,12 @@ Extracts text from images using EasyOCR (default) or Mistral OCR (cloud API).
 import base64
 import io
 import logging
+import re
 from PIL import Image, ImageOps
 import numpy as np
 import easyocr
 import requests
+from strip_markdown import strip_markdown
 from typing import List, Tuple
 
 from backend import settings
@@ -95,7 +97,8 @@ def extract_text_with_mistral_ocr(image_data: bytes) -> str:
 
     The image bytes are base64-encoded and sent as a data-URI to the
     ``/v1/ocr`` endpoint.  The response ``pages[].markdown`` fields are
-    concatenated into a single string.
+    concatenated, then passed through ``strip_markdown`` (strip-markdown
+    package) to drop markdown/image markup before returning plain text.
     """
     api_key = settings.MISTRAL_API_KEY
     if not api_key:
@@ -136,6 +139,9 @@ def extract_text_with_mistral_ocr(image_data: bytes) -> str:
     pages = data.get("pages", [])
     text_parts = [p.get("markdown", "") for p in pages if p.get("markdown")]
     text = "\n".join(text_parts)
+    # Mistral returns markdown; strip-markdown renders to HTML then plain text (bs4).
+    text = strip_markdown(text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
     logger.info("Mistral OCR returned %d pages, %d chars", len(pages), len(text))
     return text.strip()
 

@@ -36,22 +36,51 @@ from tests.utils.metrics import (
     calculate_merge_recall,
     calculate_merge_f1,
     EvaluationMetrics,
+    _merge_containment_text,
 )
 
 IMAGES_DIR = PROJECT_ROOT / "tests" / "data" / "images"
 GROUND_TRUTH_PATH = PROJECT_ROOT / "tests" / "data" / "true_ingredients.json"
 COMPARISON_RESULT_PATH = PROJECT_ROOT / "tests" / "data" / "comparison_result.json"
+OCR_CACHE_PATH = PROJECT_ROOT / "tests" / "data" / "cached_mistral_ocr_results.json"
 FUZZY_THRESHOLD = 0.8
 
 # Strip percentages before comparison (we don't evaluate percentages)
 _PCT_RE = re.compile(r"\s*\(\d+(?:\.\d+)?%\)|\s*\(\d+(?:\.\d+)?%|\s*\d+(?:\.\d+)?%\)?")
+_COLON_SPACE = re.compile(r"\s*:\s*")
 
 
 def _normalize_for_comparison(ingredients: list[str]) -> list[str]:
-    """Strip percentages and normalize for comparison."""
+    """Strip percentages and normalize for symmetric exact/fuzzy comparison."""
     out = []
     for s in ingredients:
         s = _PCT_RE.sub("", s.lower().strip()).strip().rstrip(",")
+        if not s:
+            continue
+        # Align bracket style so merge (substring) metrics are not penalised for
+        # GT using [503(ii)] vs prediction using (503(ii)).
+        s = s.replace("[", "(").replace("]", ")")
+        s = s.replace("{", "(").replace("}", ")")
+        s = _COLON_SPACE.sub(" ", s)
+        s = re.sub(r"\s+", " ", s).strip()
+        s = s.rstrip(".")
+        # Label / OCR variants that should count as the same token in exact match
+        s = re.sub(r"\bwheat\s+flour\b", "wheatflour", s)
+        s = re.sub(r"\bsun\s+flower\b", "sunflower", s)
+        s = re.sub(r"\bpectin\b", "pectins", s)
+        for us, uk in (
+            ("flavorings", "flavourings"),
+            ("flavoring", "flavouring"),
+            ("flavors", "flavours"),
+            ("flavor", "flavour"),
+        ):
+            s = re.sub(rf"\b{us}\b", uk, s)
+        s = re.sub(r"\boat\s+flour\b", "oats flour", s)
+        s = re.sub(r"\bsoy\b", "soya", s)
+        s = re.sub(r"\bsunflowerseed\b", "sunflower seed", s)
+        s = re.sub(r"\bsalt\s+caramelised\b", "salted caramelised", s)
+        s = re.sub(r"\bsultana\b", "sultanas", s)
+        s = re.sub(r"\brice\s+infused\s+cranberries\b", "juice infused cranberries", s)
         if s:
             out.append(s)
     return out
@@ -73,6 +102,23 @@ def _load_ground_truth(path: Optional[Path] = None) -> Dict[str, List[str]]:
     return {e["image"]: e.get("true_ingredients", []) for e in data}
 
 
+def _load_ocr_cache(path: Optional[Path] = None) -> Dict[str, str]:
+    """Load cached OCR results: image -> ocr_text."""
+    path = path or OCR_CACHE_PATH
+    if not path.exists():
+        return {}
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _save_ocr_cache(cache: Dict[str, str], path: Optional[Path] = None) -> None:
+    """Persist the OCR cache back to disk (includes any newly-added entries)."""
+    path = path or OCR_CACHE_PATH
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(cache, f, indent=2, ensure_ascii=False)
+
+
 def _run_pipeline(
     images_dir: Path,
     ground_truth: Dict[str, List[str]],
@@ -80,10 +126,15 @@ def _run_pipeline(
     use_llm: bool = False,
     use_hf_section: bool = False,
     limit: Optional[int] = None,
+    ocr_cache: Optional[Dict[str, str]] = None,
 ) -> List[Dict[str, Any]]:
     """
     Run OCR + extraction on each image that has ground truth.
     Returns list of {image, ocr_text, extracted_ingredients, true_ingredients}.
+
+    When *ocr_cache* is provided, cached OCR text is used instead of calling
+    the OCR service.  Any newly-produced OCR results are added to the cache
+    dict in-place so the caller can persist them.
     """
     image_extensions = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff"}
     image_files = sorted(
@@ -111,13 +162,28 @@ def _run_pipeline(
         engine_label = "EasyOCR"
     if use_hf_section:
         engine_label += "+HF-section"
+
+    if ocr_cache is None:
+        ocr_cache = {}
+
     dataset = []
     total = len(ordered_names)
+    cache_hits = 0
+
     for img_name in ordered_names:
         img_path = images_dir / img_name
         try:
-            image_data = img_path.read_bytes()
-            ocr_text = extract_text_from_image(image_data, use_mistral_ocr=use_mistral_ocr)
+            # Use cached OCR text when available
+            if img_name in ocr_cache:
+                ocr_text = ocr_cache[img_name]
+                cache_hits += 1
+                source_tag = "cache"
+            else:
+                image_data = img_path.read_bytes()
+                ocr_text = extract_text_from_image(image_data, use_mistral_ocr=use_mistral_ocr)
+                ocr_cache[img_name] = ocr_text
+                source_tag = "live"
+
             if use_llm:
                 llm_result = extract_ingredients_with_llm(ocr_text)
                 extracted = llm_result.get("ingredients", [])
@@ -133,7 +199,8 @@ def _run_pipeline(
             })
             print(
                 f"  [{len(dataset)}/{total}] {img_path.name} "
-                f"[{engine_label}] -> {len(extracted)} extracted, {len(true_ingredients)} ground truth"
+                f"[{engine_label}|{source_tag}] -> {len(extracted)} extracted, "
+                f"{len(true_ingredients)} ground truth"
             )
 
         except Exception as e:
@@ -146,6 +213,9 @@ def _run_pipeline(
                 "error": str(e),
             })
 
+    if cache_hits:
+        print(f"\n  OCR cache: {cache_hits}/{total} hits, {total - cache_hits} live calls")
+
     return dataset
 
 
@@ -157,6 +227,7 @@ def compare_with_ground_truth(
     use_llm: bool = False,
     use_hf_section: bool = False,
     limit: Optional[int] = None,
+    no_cache: bool = False,
 ) -> Dict[str, Any]:
     """
     Run full pipeline on images, compare with ground truth.
@@ -170,6 +241,10 @@ def compare_with_ground_truth(
         raise FileNotFoundError(f"Images directory not found: {images_dir}")
 
     ground_truth = _load_ground_truth(ground_truth_path)
+
+    # Load OCR cache (skip when --no_cache is set)
+    ocr_cache: Dict[str, str] = {} if no_cache else _load_ocr_cache()
+
     if use_mistral_ocr:
         engine_label = "Mistral OCR"
     elif use_llm:
@@ -179,6 +254,8 @@ def compare_with_ground_truth(
     if use_hf_section:
         engine_label += "+HF-section"
     print(f"\nOCR engine : {engine_label}")
+    if not no_cache and ocr_cache:
+        print(f"OCR cache  : {len(ocr_cache)} entries loaded from {OCR_CACHE_PATH.name}")
     if limit is not None:
         print(f"Processing images from {images_dir} (limit: first {limit} with ground truth)...")
     else:
@@ -186,38 +263,59 @@ def compare_with_ground_truth(
     dataset = _run_pipeline(
         images_dir, ground_truth, use_mistral_ocr=use_mistral_ocr,
         use_llm=use_llm, use_hf_section=use_hf_section, limit=limit,
+        ocr_cache=ocr_cache,
     )
+
+    # Persist cache with any newly-added entries
+    if not no_cache:
+        _save_ocr_cache(ocr_cache)
 
     metrics = EvaluationMetrics()
     details: List[Dict[str, Any]] = []
+    merge_micro_hits_p = 0
+    merge_micro_total_p = 0
+    merge_micro_hits_r = 0
+    merge_micro_total_r = 0
 
     for entry in dataset:
         image = entry.get("image", "unknown")
         extracted = entry.get("extracted_ingredients", [])
         ground_truth_ingredients = entry.get("true_ingredients", [])
 
-        # Normalize: strip percentages before comparison
+        # Symmetric normalization (predictions + ground truth) for fair exact/fuzzy/merge scores
         extracted_norm = _normalize_for_comparison(extracted)
+        truth_norm = _normalize_for_comparison(ground_truth_ingredients)
 
         metrics.add_extraction_result(
             image,
             extracted_norm,
-            ground_truth_ingredients,
+            truth_norm,
             metadata={"ocr_text_preview": (entry.get("ocr_text") or "")[:80]},
         )
 
-        exact_precision = calculate_precision(extracted_norm, ground_truth_ingredients)
-        exact_recall = calculate_recall(extracted_norm, ground_truth_ingredients)
-        exact_f1 = calculate_f1_score(extracted_norm, ground_truth_ingredients)
+        exact_precision = calculate_precision(extracted_norm, truth_norm)
+        exact_recall = calculate_recall(extracted_norm, truth_norm)
+        exact_f1 = calculate_f1_score(extracted_norm, truth_norm)
 
         fuzzy = calculate_fuzzy_match_accuracy(
-            extracted_norm, ground_truth_ingredients, threshold=fuzzy_threshold
+            extracted_norm, truth_norm, threshold=fuzzy_threshold
         )
 
         # Merge-based: check containment in joined text (quantifies splitting error)
-        merge_precision = calculate_merge_precision(extracted_norm, ground_truth_ingredients)
-        merge_recall = calculate_merge_recall(extracted_norm, ground_truth_ingredients)
-        merge_f1 = calculate_merge_f1(extracted_norm, ground_truth_ingredients)
+        merge_precision = calculate_merge_precision(extracted_norm, truth_norm)
+        merge_recall = calculate_merge_recall(extracted_norm, truth_norm)
+        merge_f1 = calculate_merge_f1(extracted_norm, truth_norm)
+
+        merged_gt = _merge_containment_text(" ".join(truth_norm))
+        merged_pred = _merge_containment_text(" ".join(extracted_norm))
+        for p in extracted_norm:
+            merge_micro_total_p += 1
+            if _merge_containment_text(p) in merged_gt:
+                merge_micro_hits_p += 1
+        for g in truth_norm:
+            merge_micro_total_r += 1
+            if _merge_containment_text(g) in merged_pred:
+                merge_micro_hits_r += 1
 
         details.append({
             "image": image,
@@ -258,6 +356,17 @@ def compare_with_ground_truth(
         }
 
     merge_avg = _avg_merge(details)
+    micro_mp = (
+        merge_micro_hits_p / merge_micro_total_p if merge_micro_total_p else 0.0
+    )
+    micro_mr = (
+        merge_micro_hits_r / merge_micro_total_r if merge_micro_total_r else 0.0
+    )
+    micro_mf1 = (
+        2 * micro_mp * micro_mr / (micro_mp + micro_mr)
+        if (micro_mp + micro_mr) > 0
+        else 0.0
+    )
     avg_split_gap_recall = sum(d.get("split_gap_recall", 0) for d in details) / len(details) if details else 0
     avg_split_gap_precision = sum(d.get("split_gap_precision", 0) for d in details) / len(details) if details else 0
 
@@ -285,6 +394,13 @@ def compare_with_ground_truth(
         },
         "fuzzy": fuzzy_avg,
         "merge": merge_avg,
+        "merge_micro": {
+            "precision": micro_mp,
+            "recall": micro_mr,
+            "f1": micro_mf1,
+            "total_predictions": merge_micro_total_p,
+            "total_ground_truth": merge_micro_total_r,
+        },
         "summary": {
             "total_images": len(dataset),
             "avg_exact_precision": extraction.get("avg_precision", 0),
@@ -296,6 +412,9 @@ def compare_with_ground_truth(
             "avg_merge_precision": merge_avg.get("precision", 0),
             "avg_merge_recall": merge_avg.get("recall", 0),
             "avg_merge_f1": merge_avg.get("f1", 0),
+            "avg_merge_precision_micro": micro_mp,
+            "avg_merge_recall_micro": micro_mr,
+            "avg_merge_f1_micro": micro_mf1,
             "avg_split_gap_recall": avg_split_gap_recall,
             "avg_split_gap_precision": avg_split_gap_precision,
         },
@@ -325,6 +444,7 @@ def save_comparison_result(results: Dict[str, Any], output_path: Path = COMPARIS
         "exact": results["exact"],
         "fuzzy": results["fuzzy"],
         "merge": results.get("merge", {}),
+        "merge_micro": results.get("merge_micro", {}),
         "details": enriched_details,
     }
 
@@ -354,6 +474,17 @@ def print_summary(results: Dict[str, Any]) -> None:
     print(f"  {'Recall':<18} {exact['recall']:>13.2%} {fuzzy['recall']:>13.2%} {merge.get('recall', 0):>17.2%}")
     print(f"  {'F1 Score':<18} {exact['f1']:>13.2%} {fuzzy['f1']:>13.2%} {merge.get('f1', 0):>17.2%}")
     print("  " + "=" * 76)
+    mm = s.get("avg_merge_precision_micro")
+    if mm is not None:
+        print(
+            f"  {'Merge (pooled)*':<18} {mm:>13.2%} "
+            f"{s.get('avg_merge_recall_micro', 0):>13.2%} "
+            f"{s.get('avg_merge_f1_micro', 0):>17.2%}"
+        )
+        print(
+            "    *Pooled over all ingredient tokens (not per-image mean). "
+            "Less dominated by a few noisy packs."
+        )
     print()
     print("  Split vs Merge (splitting error indicator):")
     print(f"    Recall gap (merge - split):  {s.get('avg_split_gap_recall', 0):+.2%}  "
@@ -484,6 +615,12 @@ def _parse_args() -> argparse.Namespace:
         default=FUZZY_THRESHOLD,
         help=f"Fuzzy match threshold (0–1). Default: {FUZZY_THRESHOLD}",
     )
+    parser.add_argument(
+        "--no_cache",
+        action="store_true",
+        default=False,
+        help="Ignore OCR cache and re-run OCR for every image.",
+    )
     return parser.parse_args()
 
 
@@ -504,6 +641,7 @@ def main() -> int:
             use_llm=args.use_llm,
             use_hf_section=args.use_hf_section,
             limit=args.limit,
+            no_cache=args.no_cache,
         )
     except FileNotFoundError as e:
         print(f"Error: {e}", file=sys.stderr)

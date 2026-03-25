@@ -8,6 +8,7 @@ for evaluating the system's performance.
 from typing import List, Set, Dict, Any, Optional
 from dataclasses import dataclass, field
 import difflib
+import re
 
 
 def calculate_precision(predicted: List[str], ground_truth: List[str]) -> float:
@@ -72,6 +73,14 @@ def calculate_f1_score(predicted: List[str], ground_truth: List[str]) -> float:
     return 2 * (precision * recall) / (precision + recall)
 
 
+def _merge_containment_text(s: str) -> str:
+    """Normalise text for merge substring checks (slash oils, spacing)."""
+    t = s.lower().strip()
+    t = re.sub(r"\s*/\s*", " ", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
+
+
 def calculate_merge_precision(predicted: List[str], ground_truth: List[str]) -> float:
     """
     Merge-based precision: join ground truth into one string, check how many
@@ -80,8 +89,8 @@ def calculate_merge_precision(predicted: List[str], ground_truth: List[str]) -> 
     """
     if not predicted:
         return 0.0
-    merged_gt = " ".join(g.lower().strip() for g in ground_truth)
-    count = sum(1 for p in predicted if p.lower().strip() in merged_gt)
+    merged_gt = _merge_containment_text(" ".join(g.lower().strip() for g in ground_truth))
+    count = sum(1 for p in predicted if _merge_containment_text(p) in merged_gt)
     return count / len(predicted)
 
 
@@ -93,8 +102,8 @@ def calculate_merge_recall(predicted: List[str], ground_truth: List[str]) -> flo
     """
     if not ground_truth:
         return 1.0 if not predicted else 0.0
-    merged_pred = " ".join(p.lower().strip() for p in predicted)
-    count = sum(1 for g in ground_truth if g.lower().strip() in merged_pred)
+    merged_pred = _merge_containment_text(" ".join(p.lower().strip() for p in predicted))
+    count = sum(1 for g in ground_truth if _merge_containment_text(g) in merged_pred)
     return count / len(ground_truth)
 
 

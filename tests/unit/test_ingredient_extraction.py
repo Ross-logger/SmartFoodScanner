@@ -308,6 +308,49 @@ class TestNonIngredientFilter:
         assert "water" in section.lower() or "sugar" in section.lower()
         # Stop patterns should be excluded
         assert "made in" not in section.lower()
+
+    def test_extract_ingredients_section_markdown_headers(self):
+        """Mistral-style Markdown headings should start the ingredients section."""
+        from backend.services.ingredients_extraction.non_ingredient_filter import (
+            extract_ingredients_section,
+        )
+
+        text = "## INGREDIENTS\n\nWater, Sugar, Salt.\n\nStore in a cool place."
+        section = extract_ingredients_section(text)
+        assert "water" in section.lower()
+        assert "store in" not in section.lower()
+
+        text2 = "**Ingredients:**\nRoasted peanuts, salt.\n\nNet weight 100g"
+        section2 = extract_ingredients_section(text2)
+        assert "peanuts" in section2.lower()
+        assert "net weight" not in section2.lower()
+
+    def test_extract_ingredients_section_insredients_typo(self):
+        """Header typo INSREDIENTS (missing G) should still open the section."""
+        from backend.services.ingredients_extraction.non_ingredient_filter import (
+            extract_ingredients_section,
+        )
+
+        text = "# INSREDIENTS:\n\nPotato, Salt.\n\nSTORE IN A COOL PLACE"
+        section = extract_ingredients_section(text)
+        assert "potato" in section.lower()
+        assert "store" not in section.lower()
+
+    def test_extract_ingredients_section_truncates_same_line_allergen(self):
+        """Allergen footer on the same line as the list must not pollute the section."""
+        from backend.services.ingredients_extraction.non_ingredient_filter import (
+            extract_ingredients_section,
+        )
+
+        text = (
+            "## INGREDIENTS\n\n"
+            "Sugar · Salt. For allergens see ingredients in bold. Not suitable for peanut allergy.\n"
+        )
+        section = extract_ingredients_section(text)
+        assert "sugar" in section.lower()
+        assert "salt" in section.lower()
+        assert "allergen" not in section.lower()
+        assert "peanut" not in section.lower()
     
     def test_is_stop_pattern(self):
         """Test detection of stop patterns."""

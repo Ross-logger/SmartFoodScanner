@@ -29,6 +29,7 @@ from backend.services.ingredients_extraction import extract_ingredients_with_llm
 
 IMAGES_DIR = PROJECT_ROOT / "tests" / "data" / "new_images"
 OUTPUT_PATH = PROJECT_ROOT / "tests" / "data" / "new_images_result.json"
+OCR_CACHE_PATH = PROJECT_ROOT / "tests" / "data" / "cached_mistral_ocr_results.json"
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff"}
 
@@ -77,6 +78,12 @@ def _parse_args() -> argparse.Namespace:
         default=OUTPUT_PATH,
         help=f"Output JSON path. Default: {OUTPUT_PATH}",
     )
+    parser.add_argument(
+        "--no_cache",
+        action="store_true",
+        default=False,
+        help="Ignore OCR cache and re-run OCR for every image.",
+    )
     return parser.parse_args()
 
 
@@ -110,18 +117,34 @@ def main() -> int:
     else:
         engine_label = "EasyOCR"
 
+    # Load OCR cache
+    ocr_cache = {}
+    if not args.no_cache and OCR_CACHE_PATH.exists():
+        with open(OCR_CACHE_PATH, encoding="utf-8") as f:
+            ocr_cache = json.load(f)
+
     total = len(image_files)
     print(f"\nOCR engine : {engine_label}")
+    if not args.no_cache and ocr_cache:
+        print(f"OCR cache  : {len(ocr_cache)} entries loaded from {OCR_CACHE_PATH.name}")
     print(f"Processing {total} images from {images_dir} ...")
     print()
 
     details = []
     errors = 0
+    cache_hits = 0
 
     for i, img_path in enumerate(image_files, 1):
         try:
-            image_data = img_path.read_bytes()
-            ocr_text = extract_text_from_image(image_data, use_mistral_ocr=args.use_mistral_ocr)
+            if img_path.name in ocr_cache:
+                ocr_text = ocr_cache[img_path.name]
+                cache_hits += 1
+                source_tag = "cache"
+            else:
+                image_data = img_path.read_bytes()
+                ocr_text = extract_text_from_image(image_data, use_mistral_ocr=args.use_mistral_ocr)
+                ocr_cache[img_path.name] = ocr_text
+                source_tag = "live"
 
             if args.use_llm:
                 llm_result = extract_ingredients_with_llm(ocr_text)
@@ -137,7 +160,7 @@ def main() -> int:
                 "extracted_ingredients": extracted,
                 "true_ingredients": [],
             })
-            print(f"  [{i}/{total}] {img_path.name} -> {len(extracted)} ingredients extracted")
+            print(f"  [{i}/{total}] {img_path.name} [{source_tag}] -> {len(extracted)} ingredients extracted")
 
         except Exception as e:
             errors += 1
@@ -151,6 +174,15 @@ def main() -> int:
                 "true_ingredients": [],
                 "error": str(e),
             })
+
+    if cache_hits:
+        print(f"\n  OCR cache: {cache_hits}/{total} hits, {total - cache_hits} live calls")
+
+    # Persist cache with any newly-added entries
+    if not args.no_cache:
+        OCR_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(OCR_CACHE_PATH, "w", encoding="utf-8") as f:
+            json.dump(ocr_cache, f, indent=2, ensure_ascii=False)
 
     payload = {
         "summary": {

@@ -14,6 +14,19 @@ import re
 from typing import List, Tuple, Optional
 
 
+def _normalize_header_line(line: str) -> str:
+    """
+    Strip Markdown heading / bold wrappers so START_PATTERNS match Mistral-style OCR.
+
+    Examples: \"## INGREDIENTS\" -> \"INGREDIENTS\", \"**Ingredients:**\" -> \"Ingredients:\".
+    """
+    s = line.strip()
+    s = re.sub(r"^#{1,6}\s*", "", s)
+    s = re.sub(r"^\*{1,4}\s*", "", s)
+    s = re.sub(r"\s*\*{1,4}$", "", s)
+    return s.strip()
+
+
 # =============================================================================
 # SECTION BOUNDARY PATTERNS
 # =============================================================================
@@ -22,6 +35,8 @@ from typing import List, Tuple, Optional
 START_PATTERNS: List[str] = [
     r'\bingredients?\s*[:]',
     r'\bingredients?\s*$',
+    # OCR / Mistral: "INSREDIENTS" (missing G), "INSREDIENTS:"
+    r'\binsredients?\s*[:]?',
     r'\binoredients?\s*[:]?',  # OCR: "inoredients" (i→o)
     r'\bingred\w*\s*[:]?',  # OCR: "ingred", "ingredents", "ingredlents", etc.
     r'\bingredicnt\s*[:]?',  # OCR: "Ingredicnt"
@@ -68,7 +83,19 @@ STOP_PATTERNS: List[str] = [
     r'\bsunlight',
     r'\bopened',
     r'\bcontainer',
+    r'\bfor\s+allergens?\b',
+    r'\bnot\s+suitable\s+for\b',
+    r'\bsuitable\s+for\s+(?:vegetarians?|vegans?)\b',
     r'\bcontains?\s+naturally\s+occurring',  # "Contains naturally occurring sugars"
+    # Marketing / nutrition claims after the ingredient list (common on M&S smoothies, etc.)
+    r'\bcitric acid is naturally occurring\b',
+    r'\bcitric acid is added to this product\b',
+    r'\bdeliciously healthy\b',
+    r'\bbest enjoyed as part of a healthy lifestyle\b',
+    r'\bvitamin c contributes to normal\b',
+    r'\bcollagen formation for the normal function\b',
+    r'\bimmune system\.',
+    r'\beat a healthy variety of differently coloured\b',
 ]
 
 
@@ -106,6 +133,7 @@ GARBAGE_PATTERNS: List[str] = [
 SECTION_HEADER_PATTERNS: List[str] = [
     r'^ingredients?\s*[:.]?\s*',
     r'^ingred\w*\s*[:.]?\s*',  # Catches ingredlents, ingredienes, ingrediants, etc.
+    r'^insredients?\s*[:.]?\s*',  # INSREDIENTS (missing G)
     r'^ingrodlonts?\s*[:.]?\s*',
     r'^ingnedienes?\s*[:.]?\s*',
     r'^ingnedienes\s+',  # "Ingnedienes " at start (no colon)
@@ -205,9 +233,10 @@ def is_start_of_ingredients(text: str) -> bool:
         True if text matches a start pattern
     """
     patterns = _get_compiled_patterns(START_PATTERNS, 'start')
-    text_lower = text.lower().strip()
-    
-    return any(p.search(text_lower) for p in patterns)
+    normalized = _normalize_header_line(text).lower().strip()
+
+    # match (line start), not search: "see ingredients in bold" must not re-open the section.
+    return any(p.match(normalized) for p in patterns)
 
 
 def is_stop_pattern(text: str) -> bool:
@@ -224,6 +253,26 @@ def is_stop_pattern(text: str) -> bool:
     text_lower = text.lower().strip()
     
     return any(p.search(text_lower) for p in patterns)
+
+
+def _truncate_before_first_stop(line: str) -> Tuple[str, bool]:
+    """
+    Return text before the earliest STOP pattern match in *line*.
+
+    OCR often appends \"For allergens…\" on the same line as the list; we must
+    keep the ingredient prefix and end the section. If no stop matches, returns
+    the full stripped line and False.
+    """
+    patterns = _get_compiled_patterns(STOP_PATTERNS, "stop")
+    text_lower = line.lower()
+    first: Optional[int] = None
+    for p in patterns:
+        m = p.search(text_lower)
+        if m and (first is None or m.start() < first):
+            first = m.start()
+    if first is None:
+        return line.strip(), False
+    return line[:first].strip(), True
 
 
 def strip_section_header(text: str) -> str:
@@ -294,8 +343,31 @@ def is_valid_ingredient(text: str) -> bool:
     # Exclude allergen warning segments
     if is_allergen_warning_segment(text):
         return False
-    
+
+    # Long OCR-merged marketing blurbs (not single ingredients)
+    if len(text) > 85:
+        tl = text.lower()
+        if any(
+            p in tl
+            for p in (
+                "lifestyle",
+                "immune system",
+                "contributes to normal",
+                "deliciously",
+                "healthy variety",
+                "differently coloured",
+                "flavour and texture",
+            )
+        ):
+            return False
+
     return True
+
+
+def _is_markdown_image_only_line(line: str) -> bool:
+    """True if the line is only a Markdown image reference (Mistral OCR noise between blocks)."""
+    s = line.strip()
+    return bool(re.match(r"^!\[[^\]]*]\([^)]*\)\s*$", s))
 
 
 def extract_ingredients_section(text: str) -> str:
@@ -320,27 +392,32 @@ def extract_ingredients_section(text: str) -> str:
         
         if not line_stripped:
             continue
+
+        header_probe = _normalize_header_line(line_stripped)
         
         # Check for start of ingredients
         if is_start_of_ingredients(line_stripped):
             in_ingredients_section = True
-            # Remove the "Ingredients:" prefix if present
+            # Remove the "Ingredients:" prefix if present (match on Markdown-stripped text)
+            remainder = header_probe
             for pattern in START_PATTERNS:
-                cleaned = re.sub(pattern, '', line_stripped, flags=re.IGNORECASE).strip()
-                if cleaned != line_stripped:
-                    line_stripped = cleaned
+                cleaned = re.sub(pattern, '', remainder, flags=re.IGNORECASE).strip()
+                if cleaned != remainder:
+                    remainder = cleaned
                     break
-            if line_stripped:
-                ingredients_lines.append(line_stripped)
+            if remainder:
+                ingredients_lines.append(remainder)
             continue
-        
-        # Check for end of ingredients
-        if in_ingredients_section and is_stop_pattern(line_stripped):
-            break
         
         # Add line if we're in ingredients section
         if in_ingredients_section:
-            ingredients_lines.append(line_stripped)
+            if _is_markdown_image_only_line(line_stripped):
+                continue
+            kept, end_section = _truncate_before_first_stop(line_stripped)
+            if kept:
+                ingredients_lines.append(kept)
+            if end_section:
+                break
     
     # If no explicit section found, return original (might be just ingredients)
     if not ingredients_lines:

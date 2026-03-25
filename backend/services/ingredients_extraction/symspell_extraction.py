@@ -6,6 +6,7 @@ Uses symspellpy with a custom food ingredients dictionary for
 domain-specific corrections. Prioritizes food terms over general English.
 """
 
+import difflib
 import logging
 import re
 from typing import List, Optional
@@ -22,12 +23,16 @@ from backend.services.ingredients_extraction.non_ingredient_filter import (
     filter_ingredients,
     is_valid_ingredient,
 )
+from backend.services.ingredients_extraction.utils import post_process_ingredients
 
 
 def _split_ingredients_text(text: str) -> List[str]:
     """
-    Split ingredients text by delimiters: comma, semicolon, &, " and ", " or ".
-    Respects parentheses so "Emulsifier (E322 and E476)" stays as one segment.
+    Split ingredients text by delimiters: comma, semicolon, middot/bullet (·•),
+    &, " and ", " or ". Respects parentheses so "Emulsifier (E322 and E476)" stays as one segment.
+
+    Notes:
+    - EU-style separators such as middot/bullet are normalized to comma boundaries.
     """
     if not text or not text.strip():
         return []
@@ -61,8 +66,9 @@ def _split_ingredients_text(text: str) -> List[str]:
             while i < n and text[i] == " ":
                 i += 1
             continue
-        # Comma and semicolon
-        if text[i] in ",;" and paren_depth == 0:
+        # Comma, semicolon, EU-style middot / bullet separators.
+        # Treat middot/bullet as comma-equivalent boundaries.
+        if paren_depth == 0 and (text[i] in ",;" or text[i] in "\u00b7\u2022"):
             flush_current()
             i += 1
             while i < n and text[i] == " ":
@@ -121,6 +127,25 @@ def _get_spell_checker() -> SymSpell:
     return _sym_spell
 
 
+def _is_false_yam_correction(original: str, candidate: str) -> bool:
+    return candidate == "yam" and "yam" not in original.replace(" ", "")
+
+
+def _reject_word_spell_suggestion(word: str, suggestion: str, segment_lower: str) -> bool:
+    """
+    Reject SymSpell word correction when it is a known false friend on labels.
+
+    segment_lower is the full ingredient segment (lowercase) for context.
+    """
+    wl, sl = word.lower(), suggestion.lower()
+    if sl in ("raisin", "raisins") and "agent" in segment_lower and wl not in ("raisin", "raisins"):
+        if difflib.SequenceMatcher(None, wl, "raising").ratio() >= 0.72:
+            return True
+    if sl == "mace" and wl in ("made", "mada", "mad"):
+        return True
+    return False
+
+
 def _correct_text(text: str, sym_spell: SymSpell) -> str:
     """
     Correct text using food-specific dictionary.
@@ -148,12 +173,20 @@ def _correct_text(text: str, sym_spell: SymSpell) -> str:
     )
     
     if suggestions and suggestions[0].distance <= 2:
-        return suggestions[0].term
+        t = suggestions[0].term
+        if t == "yam" and "yam" not in text_lower.replace(" ", ""):
+            pass
+        else:
+            t = re.sub(r"\braisin\s+agents\b", "raising agents", t, flags=re.IGNORECASE)
+            t = re.sub(r"\braisin\s+agent\b", "raising agent", t, flags=re.IGNORECASE)
+            return t
     
     # Try word segmentation for compound terms
     segmented = sym_spell.word_segmentation(text_lower)
     if segmented and segmented.corrected_string:
         corrected = segmented.corrected_string
+        corrected = re.sub(r"\braisin\s+agents\b", "raising agents", corrected, flags=re.IGNORECASE)
+        corrected = re.sub(r"\braisin\s+agent\b", "raising agent", corrected, flags=re.IGNORECASE)
         input_len = len(text_lower.replace(" ", ""))
         
         # Only accept if error rate is <= 15% (1 edit per ~7 chars)
@@ -163,11 +196,13 @@ def _correct_text(text: str, sym_spell: SymSpell) -> str:
         if error_rate <= 0.15:
             # Only use if it's a known food term or combination
             if corrected in FOOD_INGREDIENTS:
-                return corrected
+                if not (corrected == "yam" and "yam" not in text_lower.replace(" ", "")):
+                    return corrected
             # Check if each word is a food term
             words = corrected.split()
             if all(w in FOOD_INGREDIENTS or len(w) <= 2 for w in words):
-                return corrected
+                if not (corrected == "yam" and "yam" not in text_lower.replace(" ", "")):
+                    return corrected
     
     # Fall back to word-by-word correction
     words = text_lower.split()
@@ -188,17 +223,27 @@ def _correct_text(text: str, sym_spell: SymSpell) -> str:
             max_edit_distance=max_dist
         )
         if word_suggestions and word_suggestions[0].distance <= max_dist:
-            corrected_words.append(word_suggestions[0].term)
+            sug = word_suggestions[0].term
+            if _reject_word_spell_suggestion(word, sug, text_lower):
+                corrected_words.append(word)
+            else:
+                corrected_words.append(sug)
         else:
             # Keep original if no good match
             corrected_words.append(word)
     
     result = " ".join(corrected_words)
-    
+    result = re.sub(r"\braisin\s+agents\b", "raising agents", result, flags=re.IGNORECASE)
+    result = re.sub(r"\braisin\s+agent\b", "raising agent", result, flags=re.IGNORECASE)
+
     # Final check: if result is a known compound, use it
     if result in FOOD_INGREDIENTS:
         return result
-    
+
+    # "yam" is a frequent false correction for short garbage tokens; keep OCR if it never said yam.
+    if result == "yam" and "yam" not in text_lower.replace(" ", ""):
+        return text_lower
+
     return result
 
 
@@ -218,6 +263,9 @@ def spellcheck_ingredients(ocr_text: str) -> str:
     """
     if not ocr_text or not ocr_text.strip():
         return ""
+
+    # Normalize EU-style separators to comma for consistent downstream formatting.
+    ocr_text = ocr_text.replace("\u00b7", ",").replace("\u2022", ",")
     
     sym_spell = _get_spell_checker()
     
@@ -251,6 +299,9 @@ def extract_ingredients(ocr_text: str, *, use_hf_section_detection: bool = False
     """
     if not ocr_text or not ocr_text.strip():
         return []
+
+    # Normalize EU-style separators to comma before section extraction/splitting.
+    ocr_text = ocr_text.replace("\u00b7", ",").replace("\u2022", ",")
     
     # Step 1: Extract only the ingredients section (filter headers, footers, etc.)
     if use_hf_section_detection:
@@ -287,21 +338,11 @@ def extract_ingredients(ocr_text: str, *, use_hf_section_detection: bool = False
     # Step 4: Final filter on corrected ingredients
     filtered = filter_ingredients(corrected_list)
     
-    # Step 6: Remove percentages from ingredient names (e.g. "(65%)" -> "")
-    filtered = [_strip_percentages(ing) for ing in filtered]
-    filtered = [ing for ing in filtered if ing and len(ing.strip()) > 1]
+    # Step 5: Shared post-processing (percentages, brackets, accents, etc.)
+    filtered = post_process_ingredients(filtered)
     
     return filtered
 
-
-
-def _strip_percentages(text: str) -> str:
-    """Remove percentage patterns like (65%), (38%), 30% from ingredient names."""
-    # Remove (XX%), (X.X%), (XXX%) patterns
-    text = re.sub(r'\s*\(\d+(?:\.\d+)?\s*%\)\s*', ' ', text, flags=re.IGNORECASE)
-    # Remove trailing % and digits like "30%" at end
-    text = re.sub(r'\s*\d+(?:\.\d+)?\s*%\s*$', '', text, flags=re.IGNORECASE)
-    return text.strip()
 
 
 def get_e_number_name(e_number: str) -> Optional[str]:
