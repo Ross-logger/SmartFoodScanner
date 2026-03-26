@@ -192,7 +192,13 @@
     <!-- Loading State -->
     <div v-if="isProcessing" class="processing-overlay">
       <div class="processing-content">
-        <LoadingSpinner size="lg" color="white" :message="processingMessage" />
+        <LoadingSpinner
+          size="lg"
+          color="white"
+          indicator="ring"
+          :message="processingMessage"
+          :message-class="processingMessageClass"
+        />
         <div v-if="uploadProgress > 0" class="progress-bar">
           <div class="progress-fill" :style="{ width: uploadProgress + '%' }"></div>
         </div>
@@ -237,6 +243,8 @@ const scanHistory = computed(() => scanStore.scanHistory)
 // Computed
 const isProcessing = computed(() => scanStore.loading)
 const uploadProgress = computed(() => scanStore.uploadProgress)
+const ANALYZING_INGREDIENTS_MSG = 'Analyzing ingredients...'
+
 const processingMessage = computed(() => {
   if (uploadProgress.value > 0 && uploadProgress.value < 100) {
     return `Uploading... ${uploadProgress.value}%`
@@ -244,8 +252,14 @@ const processingMessage = computed(() => {
   if (scanMode.value === 'barcode') {
     return 'Looking up product and analyzing ingredients...'
   }
-  return 'Analyzing ingredients...'
+  return ANALYZING_INGREDIENTS_MSG
 })
+
+const processingMessageClass = computed(() =>
+  processingMessage.value === ANALYZING_INGREDIENTS_MSG
+    ? 'text-green-400'
+    : 'text-white'
+)
 
 onMounted(async () => {
   await loadHistory()

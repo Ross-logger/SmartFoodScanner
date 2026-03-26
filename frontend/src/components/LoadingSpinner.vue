@@ -11,7 +11,7 @@
         </div>
         
         <!-- Main text -->
-        <p class="loading-text">{{ message || 'Processing your request...' }}</p>
+        <p class="loading-text" :class="overlayMessageColorClass">{{ message || 'Processing your request...' }}</p>
         
         <!-- Subtext -->
         <p v-if="showSubtext" class="loading-subtext">
@@ -23,10 +23,19 @@
 
   <!-- Inline spinner mode (original behavior) -->
   <div v-if="!overlay" class="loading-spinner" :class="sizeClass">
-    <div class="circle-loader" :class="colorClass">
+    <div
+      v-if="indicator === 'ring'"
+      class="ring-indicator"
+      :class="colorClass"
+    />
+    <div v-else class="circle-loader" :class="colorClass">
       <div class="circle-dot" v-for="n in 12" :key="n" :style="getDotStyle(n)"></div>
     </div>
-    <p v-if="message" class="loading-message" :class="textSizeClass">
+    <p
+      v-if="message"
+      class="loading-message"
+      :class="[textSizeClass, inlineMessageColorClass]"
+    >
       {{ message }}
     </p>
   </div>
@@ -65,6 +74,17 @@ const props = defineProps({
     type: String,
     default: 'primary',
     validator: (value) => ['primary', 'white', 'gray'].includes(value)
+  },
+  /** Inline mode: `dots` (default) or a single animated circle (`ring`). */
+  indicator: {
+    type: String,
+    default: 'dots',
+    validator: (value) => ['dots', 'ring'].includes(value)
+  },
+  /** Extra classes for the message line (e.g. text color on dark overlays). */
+  messageClass: {
+    type: String,
+    default: ''
   }
 })
 
@@ -96,6 +116,15 @@ const textSizeClass = computed(() => {
   }
   return sizes[props.size]
 })
+
+/** Scoped `.loading-message` must not set color — it beat Tailwind utilities. */
+const inlineMessageColorClass = computed(() =>
+  props.messageClass?.trim() ? props.messageClass : 'text-gray-700'
+)
+
+const overlayMessageColorClass = computed(() =>
+  props.messageClass?.trim() ? props.messageClass : 'text-white'
+)
 
 const getDotStyle = (index) => {
   const angle = (index - 1) * 30 - 90
@@ -176,7 +205,7 @@ const getDotStyle = (index) => {
 
 /* Text styles */
 .loading-text {
-  @apply text-xl font-semibold text-white tracking-wide;
+  @apply text-xl font-semibold tracking-wide;
   animation: fade-in-up 0.5s ease-out 0.2s both;
 }
 
@@ -214,6 +243,57 @@ const getDotStyle = (index) => {
 .loading-spinner.size-xl {
   width: 5rem;
   height: 5rem;
+}
+
+/* Single circle / ring loader (inline) */
+.ring-indicator {
+  flex-shrink: 0;
+  border-radius: 50%;
+  box-sizing: border-box;
+  animation: spin 0.75s linear infinite;
+}
+
+.loading-spinner.size-sm .ring-indicator {
+  width: 2rem;
+  height: 2rem;
+  border-width: 2px;
+  border-style: solid;
+}
+
+.loading-spinner.size-md .ring-indicator {
+  width: 3rem;
+  height: 3rem;
+  border-width: 3px;
+  border-style: solid;
+}
+
+.loading-spinner.size-lg .ring-indicator {
+  width: 4rem;
+  height: 4rem;
+  border-width: 3px;
+  border-style: solid;
+}
+
+.loading-spinner.size-xl .ring-indicator {
+  width: 5rem;
+  height: 5rem;
+  border-width: 4px;
+  border-style: solid;
+}
+
+.ring-indicator.color-primary {
+  border-color: rgba(59, 130, 246, 0.22);
+  border-top-color: rgb(59, 130, 246);
+}
+
+.ring-indicator.color-white {
+  border-color: rgba(255, 255, 255, 0.28);
+  border-top-color: white;
+}
+
+.ring-indicator.color-gray {
+  border-color: rgba(75, 85, 99, 0.25);
+  border-top-color: rgb(75, 85, 99);
 }
 
 .circle-dot {
@@ -255,7 +335,7 @@ const getDotStyle = (index) => {
 }
 
 .loading-message {
-  @apply text-gray-700 font-medium text-center;
+  @apply font-medium text-center;
 }
 
 /* ===== ANIMATIONS ===== */
