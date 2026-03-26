@@ -46,7 +46,21 @@ class ApiService {
       const data = error.response.data
 
       if (status === 401) {
-        // Unauthorized - clear auth and redirect to login
+        const reqUrl = (error.config?.url || '').split('?')[0]
+        const base = error.config?.baseURL || ''
+        const joined = `${base.replace(/\/$/, '')}/${reqUrl.replace(/^\//, '')}`
+        const path = joined.split('?')[0]
+        const isCredentialRequest =
+          path.endsWith('/auth/login') ||
+          path.endsWith('/auth/register') ||
+          reqUrl.includes('/auth/login') ||
+          reqUrl.includes('/auth/register')
+
+        if (isCredentialRequest) {
+          return data.detail || data.message || 'Invalid credentials'
+        }
+
+        // Session expired or invalid token on a protected route
         localStorage.removeItem('auth_token')
         localStorage.removeItem('user')
         window.location.href = '/login'
