@@ -12,7 +12,8 @@ import numpy as np
 import easyocr
 import requests
 from strip_markdown import strip_markdown
-from typing import List, Tuple
+from dataclasses import dataclass
+from typing import List, Optional, Tuple
 
 from backend import settings
 from backend.services.ocr.preprocess import preprocess_image_for_ocr
@@ -21,6 +22,15 @@ from pillow_heif import register_heif_opener
 logger = logging.getLogger(__name__)
 
 register_heif_opener()
+
+
+@dataclass(frozen=True)
+class OCRResult:
+    """Plain OCR output plus optional per-line EasyOCR confidences."""
+
+    text: str
+    easyocr_lines: Optional[List[Tuple[str, float]]] = None
+    """``(line_text, confidence)`` in the same order as lines joined into ``text``; ``None`` for Mistral OCR."""
 
 # ---------------------------------------------------------------------------
 # EasyOCR singleton
@@ -32,53 +42,82 @@ def get_ocr_reader():
     """
     Get or create EasyOCR reader instance.
     Uses singleton pattern to avoid reloading models on every request.
-    
+
+    On macOS, ``settings.EASYOCR_USE_GPU`` defaults False (see ``EASYOCR_USE_GPU`` env)
+    to avoid Metal/MPS Errno 5 (EIO) when the display/GPU is active.
+
     Returns:
         EasyOCR Reader instance
     """
     global _ocr_reader
-    
+
     if _ocr_reader is None:
-        try:
-            # Use GPU if available, fallback to CPU
-            _ocr_reader = easyocr.Reader(['en'], gpu=True)
-            print("✅ EasyOCR reader initialized (GPU mode)")
-        except Exception as e:
-            # Fallback to CPU if GPU fails
+        if settings.EASYOCR_USE_GPU:
             try:
-                _ocr_reader = easyocr.Reader(['en'], gpu=False)
-                print("✅ EasyOCR reader initialized (CPU mode)")
+                _ocr_reader = easyocr.Reader(["en"], gpu=True)
+                logger.info("EasyOCR reader initialized (GPU mode)")
+            except Exception as e:
+                logger.warning("EasyOCR GPU init failed (%s), falling back to CPU.", e)
+                try:
+                    _ocr_reader = easyocr.Reader(["en"], gpu=False)
+                    logger.info("EasyOCR reader initialized (CPU mode, after GPU failure)")
+                except Exception as cpu_error:
+                    raise Exception(f"Failed to initialize EasyOCR: {cpu_error}") from cpu_error
+        else:
+            try:
+                _ocr_reader = easyocr.Reader(["en"], gpu=False)
+                logger.info("EasyOCR reader initialized (CPU mode)")
             except Exception as cpu_error:
-                raise Exception(f"Failed to initialize EasyOCR: {str(cpu_error)}")
-    
+                raise Exception(f"Failed to initialize EasyOCR: {cpu_error}") from cpu_error
+
     return _ocr_reader
 
 
 def filter_ocr_results_by_confidence(
     results: List[Tuple],
-    confidence_threshold: float = 0.3
+    confidence_threshold: float = None,
 ) -> List[str]:
     """
     Filter OCR results by confidence threshold.
-    
+
     Args:
         results: List of tuples from EasyOCR (bbox, text, confidence)
-        confidence_threshold: Minimum confidence value (0.0 to 1.0)
-        
+        confidence_threshold: Minimum confidence (defaults to ``settings.OCR_CONFIDENCE_FILTER_THRESHOLD``)
+
     Returns:
         List of filtered text strings
     """
-    text_lines = []
+    if confidence_threshold is None:
+        confidence_threshold = settings.OCR_CONFIDENCE_FILTER_THRESHOLD
+    return [t for t, _ in collect_filtered_easyocr_lines(results, confidence_threshold)]
+
+
+def collect_filtered_easyocr_lines(
+    results: List[Tuple],
+    confidence_threshold: float = None,
+) -> List[Tuple[str, float]]:
+    """
+    Same filtering as ``filter_ocr_results_by_confidence``, but keep confidences
+    aligned with the lines that make up the joined OCR text.
+    """
+    if confidence_threshold is None:
+        confidence_threshold = settings.OCR_CONFIDENCE_FILTER_THRESHOLD
+    lines: List[Tuple[str, float]] = []
     for result in results:
-        if len(result) >= 2:
-            text = result[1]
-            confidence = result[2] if len(result) >= 3 else 1.0
-            
-            # Only include text with confidence above threshold
-            if confidence >= confidence_threshold and text.strip():
-                text_lines.append(text.strip())
-    
-    return text_lines
+        if len(result) < 2:
+            continue
+        text = result[1].strip()
+        if not text:
+            continue
+        # EasyOCR normally returns (bbox, text, conf); some callers/tests use 2-tuple.
+        if len(result) >= 3:
+            confidence = float(result[2])
+        else:
+            confidence = 1.0
+        if settings.IS_OCR_CONFIDENCE_FILTER and confidence < confidence_threshold:
+            continue
+        lines.append((text, confidence))
+    return lines
 
 
 def _run_readtext(reader, image_array: np.ndarray):
@@ -146,28 +185,21 @@ def extract_text_with_mistral_ocr(image_data: bytes) -> str:
     return text.strip()
 
 
-def extract_text_from_image(image_data: bytes, use_mistral_ocr: bool = False) -> str:
+def extract_ocr_from_image(
+    image_data: bytes, use_mistral_ocr: bool = False
+) -> OCRResult:
     """
-    Extract text from image using EasyOCR (default) or Mistral OCR.
+    Extract text and, for EasyOCR, per-line confidences (same lines as in ``text``).
 
-    Supported image formats: JPEG/JPG, PNG, GIF, BMP, TIFF, WebP, HEIC/HEIF.
-
-    Args:
-        image_data:       Raw image bytes.
-        use_mistral_ocr:  When True, image is sent to the Mistral OCR cloud
-                          API instead of running EasyOCR locally.
-
-    Returns:
-        Extracted text as string.
-
-    Raises:
-        Exception: If OCR extraction fails.
+    Mistral OCR does not provide per-line scores compatible with EasyOCR;
+    ``easyocr_lines`` is ``None`` and SymSpell runs on all segments as before.
     """
     global _ocr_reader
 
     if use_mistral_ocr:
         logger.info("Using Mistral OCR for text extraction.")
-        return extract_text_with_mistral_ocr(image_data)
+        text = extract_text_with_mistral_ocr(image_data)
+        return OCRResult(text=text, easyocr_lines=None)
 
     try:
         image = Image.open(io.BytesIO(image_data))
@@ -221,17 +253,32 @@ def extract_text_from_image(image_data: bytes, use_mistral_ocr: bool = False) ->
             except Exception as cpu_err:
                 raise Exception(f"OCR extraction failed (CPU fallback): {cpu_err}") from cpu_err
 
-        # Filter by confidence if enabled
-        if settings.IS_OCR_CONFIDENCE_FILTER:
-            text_lines = filter_ocr_results_by_confidence(results)
-        else:
-            text_lines = [result[1].strip() for result in results if len(result) >= 2 and result[1].strip()]
-
-        text = '\n'.join(text_lines)
-        return text.strip()
+        lines = collect_filtered_easyocr_lines(results)
+        text = "\n".join(t for t, _ in lines).strip()
+        return OCRResult(text=text, easyocr_lines=lines)
 
     except Exception as e:
         raise Exception(f"OCR extraction failed: {str(e)}") from e
+
+
+def extract_text_from_image(image_data: bytes, use_mistral_ocr: bool = False) -> str:
+    """
+    Extract text from image using EasyOCR (default) or Mistral OCR.
+
+    Supported image formats: JPEG/JPG, PNG, GIF, BMP, TIFF, WebP, HEIC/HEIF.
+
+    Args:
+        image_data:       Raw image bytes.
+        use_mistral_ocr:  When True, image is sent to the Mistral OCR cloud
+                          API instead of running EasyOCR locally.
+
+    Returns:
+        Extracted text as string.
+
+    Raises:
+        Exception: If OCR extraction fails.
+    """
+    return extract_ocr_from_image(image_data, use_mistral_ocr=use_mistral_ocr).text
 
 
 def extract_ingredients(text: str) -> list:

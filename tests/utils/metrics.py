@@ -250,16 +250,14 @@ class EvaluationMetrics:
         ground_truth_ingredients: List[str],
         metadata: Optional[Dict] = None
     ):
-        """Add an ingredient extraction test result."""
+        """Add an ingredient extraction test result (fuzzy token metrics only)."""
+        fuzzy = calculate_fuzzy_match_accuracy(predicted_ingredients, ground_truth_ingredients)
         self.test_cases.append({
             "test_id": test_id,
             "type": "extraction",
             "predicted": predicted_ingredients,
             "ground_truth": ground_truth_ingredients,
-            "precision": calculate_precision(predicted_ingredients, ground_truth_ingredients),
-            "recall": calculate_recall(predicted_ingredients, ground_truth_ingredients),
-            "f1": calculate_f1_score(predicted_ingredients, ground_truth_ingredients),
-            "fuzzy_metrics": calculate_fuzzy_match_accuracy(predicted_ingredients, ground_truth_ingredients),
+            "fuzzy_metrics": fuzzy,
             "metadata": metadata or {}
         })
     
@@ -307,11 +305,12 @@ class EvaluationMetrics:
             }
         
         if extraction_cases:
+            fm = [c["fuzzy_metrics"] for c in extraction_cases]
             summary["extraction"] = {
                 "count": len(extraction_cases),
-                "avg_precision": sum(c["precision"] for c in extraction_cases) / len(extraction_cases),
-                "avg_recall": sum(c["recall"] for c in extraction_cases) / len(extraction_cases),
-                "avg_f1": sum(c["f1"] for c in extraction_cases) / len(extraction_cases),
+                "avg_fuzzy_precision": sum(f.get("precision", 0) for f in fm) / len(fm),
+                "avg_fuzzy_recall": sum(f.get("recall", 0) for f in fm) / len(fm),
+                "avg_fuzzy_f1": sum(f.get("f1", 0) for f in fm) / len(fm),
             }
         
         if compliance_cases:

@@ -83,12 +83,18 @@ def analyze_with_rules(
                 warnings.append(f"Not vegan: Contains {item}")
                 is_safe = False
     
-    # Check custom allergens
+    # Check custom allergens (one warning line, comma-separated names)
     if dietary_profile.allergens:
-        for allergen in dietary_profile.allergens:
-            if any(allergen.lower() in ing for ing in ingredients_lower):
-                warnings.append(f"Contains your allergen: {allergen}")
-                is_safe = False
+        matched_custom = [
+            allergen
+            for allergen in dietary_profile.allergens
+            if any(allergen.lower() in ing for ing in ingredients_lower)
+        ]
+        if matched_custom:
+            warnings.append(
+                "Contains your allergens: " + ", ".join(matched_custom)
+            )
+            is_safe = False
     
     # Generate analysis result
     if is_safe:

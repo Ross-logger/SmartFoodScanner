@@ -48,26 +48,27 @@ Output: a raw multi-line string of all text found on the label (not yet split in
 
 ### Stage 3 — Ingredient Extraction (OCR text → ingredient list)
 
-Two paths, selectable per-user via `DietaryProfile.use_llm_ingredient_extractor`. If LLM extraction is enabled but the LLM call fails, it automatically falls back to SymSpell.
+Two paths, selectable per-user via `DietaryProfile.use_llm_ingredient_extractor`. If LLM extraction is enabled but the LLM call fails, it automatically falls back to HF section + SymSpell.
 
-#### Path A — SymSpell (default)
+#### Path A — HF section + SymSpell (default when LLM is off)
 
 **File:** `backend/services/ingredients_extraction/symspell_extraction.py` → `extract_ingredients()`
 
-A purely local, offline pipeline. Four sequential steps:
+The scan API always uses **HF NER for section detection**, then SymSpell **only inside** the extraction step (segments are not returned separately). Steps:
 
-1. **Section detection** — two methods, selectable per-user via `DietaryProfile.use_hf_section_detection`:
+1. **Section detection (HF NER)** — `hf_section_detection.extract_ingredients_list_hf` runs the `openfoodfacts/ingredient-detection` NER model. It **splices character ranges** from the original OCR so commas and other gaps between `ING` spans are preserved (not only tokenizer `word` joins). On failure or no `ING` entities, the full OCR string is used.
 
-   | Method | How it works |
-   |---|---|
-   | **Regex** (default) | `non_ingredient_filter.extract_ingredients_section` — scans the raw OCR text for an `INGREDIENTS:` header (with ~15 OCR-error variants handled) and discards everything outside that section (storage instructions, allergen warnings, website URLs, etc.) |
-   | **HF NER model** | `hf_section_detection.extract_ingredients_list_hf` (alias `extract_ingredients_section_hf`) — runs the `openfoodfacts/ingredient-detection` NER model (XLM-RoBERTa-large, 0.6B params, token classification) to locate ingredient list spans. Handles missing headers, corrupted text, and multilingual labels. Model is loaded lazily on first use. |
+   The **regex** helper `non_ingredient_filter.extract_ingredients_section` remains for tests/scripts: `extract_ingredients(..., use_hf_section_detection=False)`.
 
-2. **Delimiter splitting** (`_split_ingredients_text`) — splits the ingredients block on commas, semicolons, `&`, ` and `, ` or `. Respects parentheses, so `"Emulsifier (E322 and E476)"` stays as one token.
+2. **Delimiter splitting** (`_split_ingredients_text`) — internal only: splits the section text for per-segment processing.
 
-3. **Per-token spell correction** (`_correct_text`) — each token is looked up against a food-specific SymSpell dictionary (~1 199 food terms + E-numbers). Corrections within edit-distance 2 are accepted; word segmentation handles run-together OCR output. Unknown tokens are kept as-is.
+3. **Per-segment validation and SymSpell** (`is_valid_ingredient`, `_correct_text`) — invalid segments (addresses, footers, etc.) are dropped before correction.
 
-4. **Validity filter** (`filter_ingredients`) — removes tokens that are clearly not ingredients: pure numbers, single characters, addresses, marketing phrases, etc. Percentage annotations (e.g. `(35%)`) are stripped from ingredient names.
+4. **Final filter and post-process** (`filter_ingredients`, `post_process_ingredients`) — per-segment cleanup.
+
+5. **API shape** — segments are joined with `", "` and returned as **one** string: `INGREDIENTS: item1, item2, ...` inside a **one-element JSON array** (`ingredients` on the scan response). The app does not return a separate list item per ingredient for this path.
+
+**LLM path:** the model still returns a JSON array of strings; `POST /scan/ocr` **joins** them with the same `INGREDIENTS: ...` single-block format for a consistent stored shape.
 
 #### Path B — LLM extraction
 
@@ -82,7 +83,7 @@ The raw OCR string is sent as-is to the configured LLM (Groq / Gemini / OpenAI /
 
 **The LLM implicitly corrects OCR errors** as a side-effect of understanding context — it can infer that `"Whet Fleur"` means `"Wheat Flour"`. This is not a dedicated OCR correction stage; it is the extraction stage doing double duty.
 
-No local dictionary or filtering is applied afterwards; the LLM output is used directly.
+No local dictionary or filtering is applied afterwards. For **stored scans**, `POST /scan/ocr` joins the LLM array into the same single `INGREDIENTS: ...` block as Path A.
 
 ---
 
@@ -115,8 +116,8 @@ No OCR or extraction is performed. Ingredients come pre-parsed from the Open Foo
 | Field | Controls |
 |---|---|
 | `use_mistral_ocr` | Stage 2: local EasyOCR vs Mistral OCR cloud API |
-| `use_hf_section_detection` | Stage 3 step 1: Regex section detection vs HF NER model (`openfoodfacts/ingredient-detection`) |
-| `use_llm_ingredient_extractor` | Stage 3: SymSpell (offline) vs LLM (online, falls back to SymSpell on failure) |
+| `use_hf_section_detection` | Stored on profile (default true); **not** toggled in the app — scans always use HF NER for section detection when using Path A |
+| `use_llm_ingredient_extractor` | Stage 3: LLM vs HF section + SymSpell (falls back to HF + SymSpell on LLM failure) |
 
 ---
 

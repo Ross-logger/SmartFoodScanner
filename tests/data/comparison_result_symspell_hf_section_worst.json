@@ -231,7 +231,7 @@
       "split_gap_recall": 0.21052631578947367,
       "split_gap_precision": 0.3125,
       "extracted_ingredients": [
-        "wwhipeinecteou cream milk wheat flour contains gluten (with calcium carbonated nut iron niacin thiamine pasteurized eggmusilec dark chocolate cocoa mass sugar cocoa butter soya lecithin vanilla flavourings sugar sweetened condensed w skimmed milk skimmed milk sugar lactose (milk)) whole milk butter (milk) milk chocolate cocoa butter dried whole gi milk cocoa mass emulsifiers lecithin vanilla flavourings, duck, golden syrup (invert sugar syrup), palm oil, fat reduced cocoa, acid, powder, humectant glycerol, rapeseed oil, raising agent, pork, e450, e501, emulsifiers e471, salt, cornflour"
+        "wwhipeinecteou cream milk wheat flour contains gluten (with calcium carbonated nut iron niacin thiamine pasteurized eggmusilec dark chocolate cocoa mass sugar cocoa butter soya lecithin vanilla flavouring sugar sweetened condensed w skimmed milk skimmed milk sugar lactose (milk)) whole milk butter (milk) milk chocolate cocoa butter dried whole gi milk cocoa mass emulsifiers lecithin vanilla flavouring, duck, golden syrup (invert sugar syrup), palm oil, fat reduced cocoa, acid, powder, humectant glycerol, rapeseed oil, raising agent, pork, e450, e501, emulsifiers e471, salt, cornflour"
       ],
       "true_ingredients": [
         "Whipping Cream (Milk)",
@@ -347,7 +347,7 @@
       "split_gap_recall": 0.0,
       "split_gap_precision": 0.25,
       "extracted_ingredients": [
-        "greek yogurt pasteurized double toned milk milk solids, permitted starter cultured, processed blueberry pulp (sugar;blueberry puree;water; (ins lemon rice concentrate total fruit content: 3% 440)), pectin"
+        "greek yogurt pasteurized double toned milk milk solids, permitted starter cultured, processed blueberry pulp (sugar;blueberry puree;water; (ins lemon rice concentrated total fruit content: 3% 440)), pectin"
       ],
       "true_ingredients": [
         "Greek yogurt (pasteurized double toned milk, milk solids, permitted starter cultures)",
@@ -485,7 +485,7 @@
       "split_gap_recall": 0.39999999999999997,
       "split_gap_precision": 0.44999999999999996,
       "extracted_ingredients": [
-        "almonds (2696), dark compound (2596), sugar, edible vegetable fat, hydrogenated, cocoa solids, emulsifiers (ins 491,322)), peanuts (2296), rice crisp, rice flour wheat flour sugar malt salt milk powder honey, oligofructose, sugar sunflower, oil, liquid glucose, cocoa powder, antioxidant (ins 300), edible, common salt, cocoa butter"
+        "almonds (2696), dark compound (2596), sugar, edible vegetable fat, hydrogenated, cocoa solids, emulsifiers (ins 491,322)), peanuts (2296), rice crisp, rice flour wheat flour sugar malt salt milk powder honey, oligofructose, sugar sunflower, oil, liquid glucose, cocoa powder, antioxidant (ins 319), edible, common salt, cocoa butter"
       ],
       "true_ingredients": [
         "Almonds",

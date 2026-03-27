@@ -8,7 +8,7 @@ we run:
   A) Our regex pipeline:  extract_ingredients_section → split → spellcheck
   B) HF NER model:        token classification → extract ING spans → split → spellcheck
 
-Then compare both against ground truth using exact/fuzzy/merge metrics.
+Then compare both against ground truth using fuzzy/merge metrics.
 No OCR is re-run — we use the stored ocr_text from true_ingredients.json.
 
 Usage:
@@ -50,20 +50,6 @@ def normalize(ingredients: List[str]) -> List[str]:
 
 
 # ─── Metrics ────────────────────────────────────────────────────────────────
-
-def exact_precision(extracted: List[str], truth: List[str]) -> float:
-    if not extracted:
-        return 1.0 if not truth else 0.0
-    matched = sum(1 for e in extracted if e in truth)
-    return matched / len(extracted)
-
-
-def exact_recall(extracted: List[str], truth: List[str]) -> float:
-    if not truth:
-        return 1.0
-    matched = sum(1 for t in truth if t in extracted)
-    return matched / len(truth)
-
 
 def f1(p: float, r: float) -> float:
     return 2 * p * r / (p + r) if (p + r) > 0 else 0.0
@@ -185,8 +171,8 @@ def evaluate(limit: Optional[int] = None) -> Dict[str, Any]:
 
     results = []
     totals = {
-        "regex": {"ep": 0, "er": 0, "ef": 0, "fp": 0, "fr": 0, "ff": 0, "mp": 0, "mr": 0, "mf": 0},
-        "hf":    {"ep": 0, "er": 0, "ef": 0, "fp": 0, "fr": 0, "ff": 0, "mp": 0, "mr": 0, "mf": 0},
+        "regex": {"fp": 0, "fr": 0, "ff": 0, "mp": 0, "mr": 0, "mf": 0},
+        "hf": {"fp": 0, "fr": 0, "ff": 0, "mp": 0, "mr": 0, "mf": 0},
     }
     n = len(samples)
 
@@ -205,9 +191,6 @@ def evaluate(limit: Optional[int] = None) -> Dict[str, Any]:
 
         # --- Compute metrics for both ---
         def metrics_for(extracted):
-            ep = exact_precision(extracted, truth)
-            er = exact_recall(extracted, truth)
-            ef = f1(ep, er)
             fp = fuzzy_precision(extracted, truth)
             fr_ = fuzzy_recall(extracted, truth)
             ff = f1(fp, fr_)
@@ -215,20 +198,24 @@ def evaluate(limit: Optional[int] = None) -> Dict[str, Any]:
             mr = merge_recall(extracted, truth)
             mf = f1(mp, mr)
             return {
-                "exact":  {"precision": round(ep, 4), "recall": round(er, 4), "f1": round(ef, 4)},
-                "fuzzy":  {"precision": round(fp, 4), "recall": round(fr_, 4), "f1": round(ff, 4)},
-                "merge":  {"precision": round(mp, 4), "recall": round(mr, 4), "f1": round(mf, 4)},
+                "fuzzy": {"precision": round(fp, 4), "recall": round(fr_, 4), "f1": round(ff, 4)},
+                "merge": {"precision": round(mp, 4), "recall": round(mr, 4), "f1": round(mf, 4)},
             }
 
         r_metrics = metrics_for(regex_ingredients)
         h_metrics = metrics_for(hf_ingredients)
 
-        for key in ("ep", "er", "ef", "fp", "fr", "ff", "mp", "mr", "mf"):
-            full_key = {"ep": ("exact","precision"), "er": ("exact","recall"), "ef": ("exact","f1"),
-                        "fp": ("fuzzy","precision"), "fr": ("fuzzy","recall"), "ff": ("fuzzy","f1"),
-                        "mp": ("merge","precision"), "mr": ("merge","recall"), "mf": ("merge","f1")}[key]
+        for key in ("fp", "fr", "ff", "mp", "mr", "mf"):
+            full_key = {
+                "fp": ("fuzzy", "precision"),
+                "fr": ("fuzzy", "recall"),
+                "ff": ("fuzzy", "f1"),
+                "mp": ("merge", "precision"),
+                "mr": ("merge", "recall"),
+                "mf": ("merge", "f1"),
+            }[key]
             totals["regex"][key] += r_metrics[full_key[0]][full_key[1]]
-            totals["hf"][key]    += h_metrics[full_key[0]][full_key[1]]
+            totals["hf"][key] += h_metrics[full_key[0]][full_key[1]]
 
         entry = {
             "image": image,
@@ -251,15 +238,15 @@ def evaluate(limit: Optional[int] = None) -> Dict[str, Any]:
         results.append(entry)
 
         tag = ""
-        if h_metrics["exact"]["f1"] > r_metrics["exact"]["f1"] + 0.05:
+        if h_metrics["fuzzy"]["f1"] > r_metrics["fuzzy"]["f1"] + 0.05:
             tag = " << HF WINS"
-        elif r_metrics["exact"]["f1"] > h_metrics["exact"]["f1"] + 0.05:
+        elif r_metrics["fuzzy"]["f1"] > h_metrics["fuzzy"]["f1"] + 0.05:
             tag = " << REGEX WINS"
 
         print(
             f"  [{i+1}/{n}] {image:<12}  "
-            f"Regex F1={r_metrics['exact']['f1']:.2f}  "
-            f"HF F1={h_metrics['exact']['f1']:.2f}"
+            f"Regex fuzzy F1={r_metrics['fuzzy']['f1']:.2f}  "
+            f"HF fuzzy F1={h_metrics['fuzzy']['f1']:.2f}"
             f"{tag}"
         )
 
@@ -270,20 +257,18 @@ def evaluate(limit: Optional[int] = None) -> Dict[str, Any]:
     summary = {
         "total_samples": n,
         "regex_pipeline": {
-            "exact":  {"precision": avg("regex","ep"), "recall": avg("regex","er"), "f1": avg("regex","ef")},
-            "fuzzy":  {"precision": avg("regex","fp"), "recall": avg("regex","fr"), "f1": avg("regex","ff")},
-            "merge":  {"precision": avg("regex","mp"), "recall": avg("regex","mr"), "f1": avg("regex","mf")},
+            "fuzzy": {"precision": avg("regex", "fp"), "recall": avg("regex", "fr"), "f1": avg("regex", "ff")},
+            "merge": {"precision": avg("regex", "mp"), "recall": avg("regex", "mr"), "f1": avg("regex", "mf")},
         },
         "hf_model": {
-            "exact":  {"precision": avg("hf","ep"), "recall": avg("hf","er"), "f1": avg("hf","ef")},
-            "fuzzy":  {"precision": avg("hf","fp"), "recall": avg("hf","fr"), "f1": avg("hf","ff")},
-            "merge":  {"precision": avg("hf","mp"), "recall": avg("hf","mr"), "f1": avg("hf","mf")},
+            "fuzzy": {"precision": avg("hf", "fp"), "recall": avg("hf", "fr"), "f1": avg("hf", "ff")},
+            "merge": {"precision": avg("hf", "mp"), "recall": avg("hf", "mr"), "f1": avg("hf", "mf")},
         },
     }
 
-    # Count wins
-    regex_wins = sum(1 for r in results if r["regex"]["exact"]["f1"] > r["hf_model"]["exact"]["f1"])
-    hf_wins    = sum(1 for r in results if r["hf_model"]["exact"]["f1"] > r["regex"]["exact"]["f1"])
+    # Count wins (by fuzzy F1)
+    regex_wins = sum(1 for r in results if r["regex"]["fuzzy"]["f1"] > r["hf_model"]["fuzzy"]["f1"])
+    hf_wins = sum(1 for r in results if r["hf_model"]["fuzzy"]["f1"] > r["regex"]["fuzzy"]["f1"])
     ties       = n - regex_wins - hf_wins
     summary["wins"] = {"regex": regex_wins, "hf_model": hf_wins, "ties": ties}
 
@@ -299,7 +284,7 @@ def print_summary(data: Dict[str, Any]):
     print(f"  Samples: {n}")
     print("=" * 90)
 
-    for metric_type in ("exact", "fuzzy", "merge"):
+    for metric_type in ("fuzzy", "merge"):
         r = s["regex_pipeline"][metric_type]
         h = s["hf_model"][metric_type]
         label = metric_type.upper()
@@ -312,7 +297,7 @@ def print_summary(data: Dict[str, Any]):
             print(f"    {k:<12} {r[k]:>9.2%} {h[k]:>9.2%} {sign}{delta:>8.2%}")
 
     w = s["wins"]
-    print(f"\n  Head-to-head (exact F1): Regex wins {w['regex']}, HF wins {w['hf_model']}, Ties {w['ties']}")
+    print(f"\n  Head-to-head (fuzzy F1): Regex wins {w['regex']}, HF wins {w['hf_model']}, Ties {w['ties']}")
     print("=" * 90)
 
 

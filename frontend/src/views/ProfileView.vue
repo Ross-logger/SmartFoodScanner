@@ -309,21 +309,6 @@
             </div>
           </label>
 
-          <!-- HF Section Detection -->
-          <label class="llm-toggle-item">
-            <input 
-              type="checkbox" 
-              v-model="dietaryProfile.use_hf_section_detection" 
-              @change="handleOptionsToggleChange"
-              class="preference-checkbox" 
-              :disabled="isSavingOptions"
-            />
-            <div class="toggle-content">
-              <span class="toggle-label">Enable HF Ingredient Detection</span>
-              <span class="toggle-description">Use a NER model to detect ingredient sections instead of regex patterns</span>
-            </div>
-          </label>
-
           <div v-if="isSavingOptions" class="saving-indicator">
             <svg class="animate-spin h-4 w-4 text-primary-600" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -380,8 +365,7 @@ const dietaryProfile = ref({
   allergens: [],
   custom_restrictions: [],
   use_llm_ingredient_extractor: false,
-  use_mistral_ocr: false,
-  use_hf_section_detection: false
+  use_mistral_ocr: false
 })
 
 const newAllergen = ref('')
@@ -426,8 +410,7 @@ async function loadDietaryProfile() {
       allergens: profile.allergens || [],
       custom_restrictions: profile.custom_restrictions || [],
       use_llm_ingredient_extractor: profile.use_llm_ingredient_extractor || false,
-      use_mistral_ocr: profile.use_mistral_ocr || false,
-      use_hf_section_detection: profile.use_hf_section_detection || false
+      use_mistral_ocr: profile.use_mistral_ocr || false
     }
   } catch (err) {
     dietaryUpdateError.value = err.message || 'Failed to load dietary profile'
@@ -475,8 +458,7 @@ async function handleUpdateDietaryProfile() {
       allergens: dietaryProfile.value.allergens,
       custom_restrictions: dietaryProfile.value.custom_restrictions,
       use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor,
-      use_mistral_ocr: dietaryProfile.value.use_mistral_ocr,
-      use_hf_section_detection: dietaryProfile.value.use_hf_section_detection
+      use_mistral_ocr: dietaryProfile.value.use_mistral_ocr
     }
 
     await api.post('/dietary-profiles/custom', profileData)
@@ -529,8 +511,7 @@ async function saveDietaryProfile() {
       allergens: dietaryProfile.value.allergens,
       custom_restrictions: dietaryProfile.value.custom_restrictions,
       use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor,
-      use_mistral_ocr: dietaryProfile.value.use_mistral_ocr,
-      use_hf_section_detection: dietaryProfile.value.use_hf_section_detection
+      use_mistral_ocr: dietaryProfile.value.use_mistral_ocr
     }
 
     await api.post('/dietary-profiles/custom', profileData)
@@ -546,7 +527,6 @@ async function handleOptionsToggleChange() {
   // Snapshot current toggle values so we can revert on failure
   const prevLlm = dietaryProfile.value.use_llm_ingredient_extractor
   const prevMistralOcr = dietaryProfile.value.use_mistral_ocr
-  const prevHfSection = dietaryProfile.value.use_hf_section_detection
 
   try {
     const profileData = {
@@ -559,8 +539,7 @@ async function handleOptionsToggleChange() {
       allergens: dietaryProfile.value.allergens,
       custom_restrictions: dietaryProfile.value.custom_restrictions,
       use_llm_ingredient_extractor: dietaryProfile.value.use_llm_ingredient_extractor,
-      use_mistral_ocr: dietaryProfile.value.use_mistral_ocr,
-      use_hf_section_detection: dietaryProfile.value.use_hf_section_detection
+      use_mistral_ocr: dietaryProfile.value.use_mistral_ocr
     }
 
     await api.post('/dietary-profiles/custom', profileData)
@@ -568,7 +547,6 @@ async function handleOptionsToggleChange() {
   } catch (err) {
     dietaryProfile.value.use_llm_ingredient_extractor = prevLlm
     dietaryProfile.value.use_mistral_ocr = prevMistralOcr
-    dietaryProfile.value.use_hf_section_detection = prevHfSection
     notification.error('Failed to save changes')
   } finally {
     isSavingOptions.value = false

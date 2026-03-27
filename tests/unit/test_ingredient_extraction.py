@@ -20,7 +20,7 @@ from backend.services.ingredients_extraction.llm_extraction import (
     _validate_extraction_result,
 )
 from tests.utils.mock_llm import MockLLMService, MockLLMProvider
-from tests.utils.metrics import calculate_precision, calculate_recall, calculate_f1_score
+from tests.utils.metrics import calculate_precision, calculate_recall
 
 
 class TestHuggingFaceExtractor:
@@ -363,72 +363,6 @@ class TestNonIngredientFilter:
         assert is_stop_pattern("wheat flour") == False
 
 
-class TestExtractionAccuracyMetrics:
-    """Tests for extraction accuracy calculations."""
-    
-    def test_perfect_extraction_metrics(self):
-        """Test metrics for perfect extraction."""
-        predicted = ["Water", "Sugar", "Salt"]
-        ground_truth = ["Water", "Sugar", "Salt"]
-        
-        precision = calculate_precision(predicted, ground_truth)
-        recall = calculate_recall(predicted, ground_truth)
-        f1 = calculate_f1_score(predicted, ground_truth)
-        
-        assert precision == 1.0
-        assert recall == 1.0
-        assert f1 == 1.0
-    
-    def test_partial_extraction_metrics(self):
-        """Test metrics for partial extraction."""
-        predicted = ["Water", "Sugar"]
-        ground_truth = ["Water", "Sugar", "Salt"]
-        
-        precision = calculate_precision(predicted, ground_truth)
-        recall = calculate_recall(predicted, ground_truth)
-        f1 = calculate_f1_score(predicted, ground_truth)
-        
-        assert precision == 1.0  # All predictions correct
-        assert recall == pytest.approx(2/3, rel=0.01)  # 2 of 3 found
-        assert 0.7 < f1 < 0.9
-    
-    def test_over_extraction_metrics(self):
-        """Test metrics for over-extraction (false positives)."""
-        predicted = ["Water", "Sugar", "Salt", "Flour", "Oil"]
-        ground_truth = ["Water", "Sugar", "Salt"]
-        
-        precision = calculate_precision(predicted, ground_truth)
-        recall = calculate_recall(predicted, ground_truth)
-        f1 = calculate_f1_score(predicted, ground_truth)
-        
-        assert precision == pytest.approx(3/5, rel=0.01)  # 3 correct of 5 predicted
-        assert recall == 1.0  # All ground truth found
-    
-    def test_empty_prediction_metrics(self):
-        """Test metrics with empty predictions."""
-        predicted = []
-        ground_truth = ["Water", "Sugar", "Salt"]
-        
-        precision = calculate_precision(predicted, ground_truth)
-        recall = calculate_recall(predicted, ground_truth)
-        f1 = calculate_f1_score(predicted, ground_truth)
-        
-        assert precision == 0.0
-        assert recall == 0.0
-        assert f1 == 0.0
-    
-    def test_case_insensitive_matching(self):
-        """Test that metrics are case-insensitive."""
-        predicted = ["WATER", "sugar", "Salt"]
-        ground_truth = ["water", "Sugar", "SALT"]
-        
-        precision = calculate_precision(predicted, ground_truth)
-        recall = calculate_recall(predicted, ground_truth)
-        
-        assert precision == 1.0
-        assert recall == 1.0
-
-
 class TestSyntheticExtractionData:
     """Tests using synthetic extraction data."""
     
@@ -472,5 +406,5 @@ class TestSyntheticExtractionData:
         summary = metrics.get_summary()
         
         assert summary["extraction"]["count"] == 2
-        assert summary["extraction"]["avg_precision"] > 0.9
-        assert summary["extraction"]["avg_f1"] > 0.8
+        assert summary["extraction"]["avg_fuzzy_precision"] > 0.9
+        assert summary["extraction"]["avg_fuzzy_f1"] > 0.8

@@ -58,7 +58,7 @@ class DietaryProfileCreate(BaseModel):
     custom_restrictions: List[str] = []
     use_llm_ingredient_extractor: bool = False
     use_mistral_ocr: bool = False
-    use_hf_section_detection: bool = False
+    use_hf_section_detection: bool = True
     
     class Config:
         json_schema_extra = {
@@ -73,7 +73,7 @@ class DietaryProfileCreate(BaseModel):
                 "custom_restrictions": [],
                 "use_llm_ingredient_extractor": False,
                 "use_mistral_ocr": False,
-                "use_hf_section_detection": False
+                "use_hf_section_detection": True
             }
         }
 
@@ -104,7 +104,7 @@ class DietaryProfileUpdate(BaseModel):
                 "custom_restrictions": [],
                 "use_llm_ingredient_extractor": False,
                 "use_mistral_ocr": False,
-                "use_hf_section_detection": False
+                "use_hf_section_detection": True
             }
         }
 

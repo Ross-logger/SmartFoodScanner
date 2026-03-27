@@ -3,14 +3,20 @@
 Compare extracted ingredients with ground truth.
 
 Runs the full pipeline (OCR + ingredient extraction) on each image in
-tests/data/images, loads ground truth from tests/data/true_ingredients.json,
-and reports precision, recall, and F1 (exact and fuzzy matching).
+tests/data/images, loads ground truth from tests/data/true_ingredients.json
+(by default). For SymSpell-style evaluation against atomic sub-ingredients, use
+``tests/data/true_ingredients_symspell.json`` (regenerate with
+``python scripts/build_true_ingredients_symspell.py``).
+and reports fuzzy and merge (containment) metrics.
 
 Usage:
   python scripts/compare_ingredients_accuracy.py
   python scripts/compare_ingredients_accuracy.py --use_mistral_ocr
   python scripts/compare_ingredients_accuracy.py --use_llm
   python scripts/compare_ingredients_accuracy.py --limit 5
+  python scripts/compare_ingredients_accuracy.py --use_hf_section --output tests/data/comparison_result_symspell_hf_section.json
+  python scripts/compare_ingredients_accuracy.py --only IMG_0050.png in11.jpg --use_hf_section
+  python scripts/compare_ingredients_accuracy.py --ground_truth tests/data/true_ingredients_symspell.json
 """
 
 import argparse
@@ -28,9 +34,6 @@ from backend.services.ocr import extract_text_from_image
 from backend.services.ingredients_extraction.symspell_extraction import extract_ingredients
 from backend.services.ingredients_extraction import extract_ingredients_with_llm
 from tests.utils.metrics import (
-    calculate_precision,
-    calculate_recall,
-    calculate_f1_score,
     calculate_fuzzy_match_accuracy,
     calculate_merge_precision,
     calculate_merge_recall,
@@ -42,7 +45,11 @@ from tests.utils.metrics import (
 IMAGES_DIR = PROJECT_ROOT / "tests" / "data" / "images"
 GROUND_TRUTH_PATH = PROJECT_ROOT / "tests" / "data" / "true_ingredients.json"
 COMPARISON_RESULT_PATH = PROJECT_ROOT / "tests" / "data" / "comparison_result.json"
-OCR_CACHE_PATH = PROJECT_ROOT / "tests" / "data" / "cached_mistral_ocr_results.json"
+COMPARISON_RESULT_SUBSET_PATH = (
+    PROJECT_ROOT / "tests" / "data" / "comparison_result_only_subset.json"
+)
+MISTRAL_OCR_CACHE_PATH = PROJECT_ROOT / "tests" / "data" / "cached_mistral_ocr_results.json"
+EASYOCR_CACHE_PATH = PROJECT_ROOT / "tests" / "data" / "cached_easyocr_results.json"
 FUZZY_THRESHOLD = 0.8
 
 # Strip percentages before comparison (we don't evaluate percentages)
@@ -51,7 +58,7 @@ _COLON_SPACE = re.compile(r"\s*:\s*")
 
 
 def _normalize_for_comparison(ingredients: list[str]) -> list[str]:
-    """Strip percentages and normalize for symmetric exact/fuzzy comparison."""
+    """Strip percentages and normalize for symmetric fuzzy/merge comparison."""
     out = []
     for s in ingredients:
         s = _PCT_RE.sub("", s.lower().strip()).strip().rstrip(",")
@@ -64,7 +71,7 @@ def _normalize_for_comparison(ingredients: list[str]) -> list[str]:
         s = _COLON_SPACE.sub(" ", s)
         s = re.sub(r"\s+", " ", s).strip()
         s = s.rstrip(".")
-        # Label / OCR variants that should count as the same token in exact match
+        # Label / OCR variants aligned with ground truth for fair comparison
         s = re.sub(r"\bwheat\s+flour\b", "wheatflour", s)
         s = re.sub(r"\bsun\s+flower\b", "sunflower", s)
         s = re.sub(r"\bpectin\b", "pectins", s)
@@ -86,6 +93,21 @@ def _normalize_for_comparison(ingredients: list[str]) -> list[str]:
     return out
 
 
+def _expand_single_ingredients_block(extracted: List[str]) -> List[str]:
+    """Expand one-element ``INGREDIENTS: a, b, c`` API output for benchmark metrics."""
+    if not extracted or len(extracted) != 1:
+        return list(extracted)
+    s = extracted[0]
+    if not isinstance(s, str):
+        return list(extracted)
+    body = s.strip()
+    if re.match(r"^ingredients\s*:", body, re.I):
+        body = re.sub(r"^ingredients\s*:\s*", "", body, count=1, flags=re.I).strip()
+    parts = [p.strip() for p in body.split(",") if p.strip()]
+    return parts if parts else list(extracted)
+
+
+
 def _natural_sort_key(path: Path):
     """Sort by natural numeric order (in0, in1, in2, in10, not in0, in1, in10, in2)."""
     parts = re.split(r"(\d+)", path.name)
@@ -102,18 +124,21 @@ def _load_ground_truth(path: Optional[Path] = None) -> Dict[str, List[str]]:
     return {e["image"]: e.get("true_ingredients", []) for e in data}
 
 
-def _load_ocr_cache(path: Optional[Path] = None) -> Dict[str, str]:
+def _ocr_cache_path(use_mistral_ocr: bool = False) -> Path:
+    """Return the cache file path for the given OCR engine."""
+    return MISTRAL_OCR_CACHE_PATH if use_mistral_ocr else EASYOCR_CACHE_PATH
+
+
+def _load_ocr_cache(path: Path) -> Dict[str, str]:
     """Load cached OCR results: image -> ocr_text."""
-    path = path or OCR_CACHE_PATH
     if not path.exists():
         return {}
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
-def _save_ocr_cache(cache: Dict[str, str], path: Optional[Path] = None) -> None:
+def _save_ocr_cache(cache: Dict[str, str], path: Path) -> None:
     """Persist the OCR cache back to disk (includes any newly-added entries)."""
-    path = path or OCR_CACHE_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(cache, f, indent=2, ensure_ascii=False)
@@ -127,6 +152,7 @@ def _run_pipeline(
     use_hf_section: bool = False,
     limit: Optional[int] = None,
     ocr_cache: Optional[Dict[str, str]] = None,
+    only_images: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
     """
     Run OCR + extraction on each image that has ground truth.
@@ -151,6 +177,19 @@ def _run_pipeline(
         )
 
     ordered_names = sorted(valid_images, key=lambda n: _natural_sort_key(Path(n)))
+    if only_images:
+        want = {n.strip() for n in only_images if n.strip()}
+        missing_gt = want - valid_images
+        if missing_gt:
+            print(
+                f"  Warning: --only names not in images+ground-truth (skipped): "
+                f"{sorted(missing_gt)}"
+            )
+        ordered_names = [n for n in ordered_names if n in want]
+        if not ordered_names:
+            raise FileNotFoundError(
+                f"No --only images left after filtering. Requested: {sorted(want)}"
+            )
     if limit is not None:
         ordered_names = ordered_names[:limit]
 
@@ -199,7 +238,7 @@ def _run_pipeline(
             })
             print(
                 f"  [{len(dataset)}/{total}] {img_path.name} "
-                f"[{engine_label}|{source_tag}] -> {len(extracted)} extracted, "
+                f"[{engine_label}|{source_tag}] -> {len(_expand_single_ingredients_block(extracted))} segments ({len(extracted)} stored), "
                 f"{len(true_ingredients)} ground truth"
             )
 
@@ -228,11 +267,12 @@ def compare_with_ground_truth(
     use_hf_section: bool = False,
     limit: Optional[int] = None,
     no_cache: bool = False,
+    only_images: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """
     Run full pipeline on images, compare with ground truth.
 
-    Returns dict with exact, fuzzy, summary, details.
+    Returns dict with fuzzy, merge, summary, details.
     """
     images_dir = images_dir or IMAGES_DIR
     ground_truth_path = ground_truth_path or GROUND_TRUTH_PATH
@@ -243,7 +283,8 @@ def compare_with_ground_truth(
     ground_truth = _load_ground_truth(ground_truth_path)
 
     # Load OCR cache (skip when --no_cache is set)
-    ocr_cache: Dict[str, str] = {} if no_cache else _load_ocr_cache()
+    cache_path = _ocr_cache_path(use_mistral_ocr)
+    ocr_cache: Dict[str, str] = {} if no_cache else _load_ocr_cache(cache_path)
 
     if use_mistral_ocr:
         engine_label = "Mistral OCR"
@@ -255,8 +296,10 @@ def compare_with_ground_truth(
         engine_label += "+HF-section"
     print(f"\nOCR engine : {engine_label}")
     if not no_cache and ocr_cache:
-        print(f"OCR cache  : {len(ocr_cache)} entries loaded from {OCR_CACHE_PATH.name}")
-    if limit is not None:
+        print(f"OCR cache  : {len(ocr_cache)} entries loaded from {cache_path.name}")
+    if only_images:
+        print(f"Processing images from {images_dir} (--only: {len(only_images)} names)...")
+    elif limit is not None:
         print(f"Processing images from {images_dir} (limit: first {limit} with ground truth)...")
     else:
         print(f"Processing images from {images_dir} (ground truth: {len(ground_truth)} images)...")
@@ -264,11 +307,12 @@ def compare_with_ground_truth(
         images_dir, ground_truth, use_mistral_ocr=use_mistral_ocr,
         use_llm=use_llm, use_hf_section=use_hf_section, limit=limit,
         ocr_cache=ocr_cache,
+        only_images=only_images,
     )
 
     # Persist cache with any newly-added entries
     if not no_cache:
-        _save_ocr_cache(ocr_cache)
+        _save_ocr_cache(ocr_cache, cache_path)
 
     metrics = EvaluationMetrics()
     details: List[Dict[str, Any]] = []
@@ -280,10 +324,11 @@ def compare_with_ground_truth(
     for entry in dataset:
         image = entry.get("image", "unknown")
         extracted = entry.get("extracted_ingredients", [])
+        expanded = _expand_single_ingredients_block(extracted)
         ground_truth_ingredients = entry.get("true_ingredients", [])
 
-        # Symmetric normalization (predictions + ground truth) for fair exact/fuzzy/merge scores
-        extracted_norm = _normalize_for_comparison(extracted)
+        # Symmetric normalization (predictions + ground truth) for fair fuzzy/merge scores
+        extracted_norm = _normalize_for_comparison(expanded)
         truth_norm = _normalize_for_comparison(ground_truth_ingredients)
 
         metrics.add_extraction_result(
@@ -293,18 +338,15 @@ def compare_with_ground_truth(
             metadata={"ocr_text_preview": (entry.get("ocr_text") or "")[:80]},
         )
 
-        exact_precision = calculate_precision(extracted_norm, truth_norm)
-        exact_recall = calculate_recall(extracted_norm, truth_norm)
-        exact_f1 = calculate_f1_score(extracted_norm, truth_norm)
-
-        fuzzy = calculate_fuzzy_match_accuracy(
+        raw_fuzzy = calculate_fuzzy_match_accuracy(
             extracted_norm, truth_norm, threshold=fuzzy_threshold
         )
+        fuzzy = {k: round(v, 2) for k, v in raw_fuzzy.items()}
 
         # Merge-based: check containment in joined text (quantifies splitting error)
-        merge_precision = calculate_merge_precision(extracted_norm, truth_norm)
-        merge_recall = calculate_merge_recall(extracted_norm, truth_norm)
-        merge_f1 = calculate_merge_f1(extracted_norm, truth_norm)
+        merge_precision = round(calculate_merge_precision(extracted_norm, truth_norm), 2)
+        merge_recall = round(calculate_merge_recall(extracted_norm, truth_norm), 2)
+        merge_f1 = round(calculate_merge_f1(extracted_norm, truth_norm), 2)
 
         merged_gt = _merge_containment_text(" ".join(truth_norm))
         merged_pred = _merge_containment_text(" ".join(extracted_norm))
@@ -319,18 +361,15 @@ def compare_with_ground_truth(
 
         details.append({
             "image": image,
-            "extracted_count": len(extracted),
+            "extracted_count": len(expanded),
             "ground_truth_count": len(ground_truth_ingredients),
-            "exact": {"precision": exact_precision, "recall": exact_recall, "f1": exact_f1},
             "fuzzy": fuzzy,
             "merge": {"precision": merge_precision, "recall": merge_recall, "f1": merge_f1},
-            # Gap: merge - split indicates splitting error (text found but wrong boundaries)
-            "split_gap_recall": merge_recall - exact_recall,
-            "split_gap_precision": merge_precision - exact_precision,
+            # Gap: merge vs fuzzy token match (splitting / boundary effects)
+            "split_gap_recall": round(merge_recall - fuzzy["recall"], 2),
+            "split_gap_precision": round(merge_precision - fuzzy["precision"], 2),
         })
 
-    summary = metrics.get_summary()
-    extraction = summary.get("extraction", {})
     extraction_cases = [c for c in metrics.test_cases if c["type"] == "extraction"]
 
     def _avg_fuzzy(cases: List[Dict]) -> Dict[str, float]:
@@ -338,26 +377,26 @@ def compare_with_ground_truth(
             return {"precision": 0.0, "recall": 0.0, "f1": 0.0}
         fuzzy = [c.get("fuzzy_metrics", {}) for c in cases]
         return {
-            "precision": sum(f.get("precision", 0) for f in fuzzy) / len(fuzzy),
-            "recall": sum(f.get("recall", 0) for f in fuzzy) / len(fuzzy),
-            "f1": sum(f.get("f1", 0) for f in fuzzy) / len(fuzzy),
+            "precision": round(sum(f.get("precision", 0) for f in fuzzy) / len(fuzzy), 2),
+            "recall": round(sum(f.get("recall", 0) for f in fuzzy) / len(fuzzy), 2),
+            "f1": round(sum(f.get("f1", 0) for f in fuzzy) / len(fuzzy), 2),
         }
 
     fuzzy_avg = _avg_fuzzy(extraction_cases)
 
-    merge_pooled_precision = (
-        merge_micro_hits_p / merge_micro_total_p if merge_micro_total_p else 0.0
+    merge_pooled_precision = round(
+        merge_micro_hits_p / merge_micro_total_p if merge_micro_total_p else 0.0, 2
     )
-    merge_pooled_recall = (
-        merge_micro_hits_r / merge_micro_total_r if merge_micro_total_r else 0.0
+    merge_pooled_recall = round(
+        merge_micro_hits_r / merge_micro_total_r if merge_micro_total_r else 0.0, 2
     )
-    merge_pooled_f1 = (
+    merge_pooled_f1 = round(
         2
         * merge_pooled_precision
         * merge_pooled_recall
         / (merge_pooled_precision + merge_pooled_recall)
         if (merge_pooled_precision + merge_pooled_recall) > 0
-        else 0.0
+        else 0.0, 2
     )
     merge_summary = {
         "precision": merge_pooled_precision,
@@ -366,8 +405,8 @@ def compare_with_ground_truth(
         "total_predictions": merge_micro_total_p,
         "total_ground_truth": merge_micro_total_r,
     }
-    avg_split_gap_recall = sum(d.get("split_gap_recall", 0) for d in details) / len(details) if details else 0
-    avg_split_gap_precision = sum(d.get("split_gap_precision", 0) for d in details) / len(details) if details else 0
+    avg_split_gap_recall = round(sum(d.get("split_gap_recall", 0) for d in details) / len(details), 2) if details else 0
+    avg_split_gap_precision = round(sum(d.get("split_gap_precision", 0) for d in details) / len(details), 2) if details else 0
 
     # Build dataset for export: merge pipeline output with metrics
     details_by_image = {d["image"]: d for d in details}
@@ -380,24 +419,15 @@ def compare_with_ground_truth(
             "ocr_text": entry.get("ocr_text", ""),
             "extracted_ingredients": entry.get("extracted_ingredients", []),
             "true_ingredients": entry.get("true_ingredients", []),
-            "exact": d.get("exact", {}),
             "fuzzy": d.get("fuzzy", {}),
         })
 
     return {
         "engine": engine_label,
-        "exact": {
-            "precision": extraction.get("avg_precision", 0),
-            "recall": extraction.get("avg_recall", 0),
-            "f1": extraction.get("avg_f1", 0),
-        },
         "fuzzy": fuzzy_avg,
         "merge": merge_summary,
         "summary": {
             "total_images": len(dataset),
-            "avg_exact_precision": extraction.get("avg_precision", 0),
-            "avg_exact_recall": extraction.get("avg_recall", 0),
-            "avg_exact_f1": extraction.get("avg_f1", 0),
             "avg_fuzzy_precision": fuzzy_avg.get("precision", 0),
             "avg_fuzzy_recall": fuzzy_avg.get("recall", 0),
             "avg_fuzzy_f1": fuzzy_avg.get("f1", 0),
@@ -430,7 +460,6 @@ def save_comparison_result(results: Dict[str, Any], output_path: Path = COMPARIS
 
     payload = {
         "summary": results["summary"],
-        "exact": results["exact"],
         "fuzzy": results["fuzzy"],
         "merge": results.get("merge", {}),
         "details": enriched_details,
@@ -444,7 +473,6 @@ def save_comparison_result(results: Dict[str, Any], output_path: Path = COMPARIS
 def print_summary(results: Dict[str, Any]) -> None:
     """Print a formatted summary of the comparison results."""
     s = results["summary"]
-    exact = results["exact"]
     fuzzy = results["fuzzy"]
     merge = results.get("merge", {})
 
@@ -456,47 +484,47 @@ def print_summary(results: Dict[str, Any]) -> None:
     print(f"  Total images: {s['total_images']}")
     print()
     print("  " + "-" * 76)
-    print("  " + f"{'Metric':<18} {'Split (exact)':>14} {'Fuzzy (0.8)':>14} {'Merge (pooled)':>18}")
+    print("  " + f"{'Metric':<18} {'Fuzzy (token)':>18} {'Merge (pooled)':>18}")
     print("  " + "-" * 76)
-    print(f"  {'Precision':<18} {exact['precision']:>13.2%} {fuzzy['precision']:>13.2%} {merge.get('precision', 0):>17.2%}")
-    print(f"  {'Recall':<18} {exact['recall']:>13.2%} {fuzzy['recall']:>13.2%} {merge.get('recall', 0):>17.2%}")
-    print(f"  {'F1 Score':<18} {exact['f1']:>13.2%} {fuzzy['f1']:>13.2%} {merge.get('f1', 0):>17.2%}")
+    print(f"  {'Precision':<18} {fuzzy['precision']:>17.2%} {merge.get('precision', 0):>17.2%}")
+    print(f"  {'Recall':<18} {fuzzy['recall']:>17.2%} {merge.get('recall', 0):>17.2%}")
+    print(f"  {'F1 Score':<18} {fuzzy['f1']:>17.2%} {merge.get('f1', 0):>17.2%}")
     print("  " + "=" * 76)
     print(
-        "    Merge = containment over all predictions/GT tokens (micro / pooled), "
-        "not a per-image mean."
+        "    Fuzzy = per-image SequenceMatcher @ threshold, averaged across images. "
+        "Merge = micro containment over all tokens."
     )
     print()
-    print("  Split vs Merge (splitting error indicator):")
-    print(f"    Recall gap (merge - split):  {s.get('avg_split_gap_recall', 0):+.2%}  "
-          f"(positive = text found but wrong boundaries)")
-    print(f"    Precision gap (merge - split): {s.get('avg_split_gap_precision', 0):+.2%}  "
-          f"(positive = extracted text exists in GT but split wrong)")
+    print("  Merge vs fuzzy (boundary / splitting indicator):")
+    print(f"    Recall gap (merge - fuzzy):  {s.get('avg_split_gap_recall', 0):+.2%}  "
+          f"(positive = text found in merge sense but token match differs)")
+    print(f"    Precision gap (merge - fuzzy): {s.get('avg_split_gap_precision', 0):+.2%}")
     print()
 
 
 def print_worst_cases(results: Dict[str, Any], n: int = 10) -> None:
-    """Print the N images with lowest F1 scores."""
+    """Print the N images with lowest fuzzy F1."""
     details = sorted(
         results["details"],
-        key=lambda d: d["exact"]["f1"],
+        key=lambda d: d["fuzzy"]["f1"],
     )
     worst = details[:n]
 
-    print("\n  Worst performing images (by exact F1):")
+    print("\n  Worst performing images (by fuzzy F1):")
     print("  " + "-" * 66)
     print(f"  {'Image':<15} {'Extracted':>10} {'Truth':>8} {'Prec':>8} {'Recall':>8} {'F1':>8}")
     print("  " + "-" * 66)
     for d in worst:
+        fz = d["fuzzy"]
         print(
             f"  {d['image']:<15} {d['extracted_count']:>10} {d['ground_truth_count']:>8} "
-            f"{d['exact']['precision']:>7.2%} {d['exact']['recall']:>7.2%} {d['exact']['f1']:>7.2%}"
+            f"{fz['precision']:>7.2%} {fz['recall']:>7.2%} {fz['f1']:>7.2%}"
         )
     print()
 
 
 def print_splitting_gap(results: Dict[str, Any], n: int = 10) -> None:
-    """Print images with largest recall gap (merge - split), indicating splitting error."""
+    """Print images with largest recall gap (merge - fuzzy), indicating splitting error."""
     details = sorted(
         results["details"],
         key=lambda d: d.get("split_gap_recall", 0),
@@ -504,38 +532,39 @@ def print_splitting_gap(results: Dict[str, Any], n: int = 10) -> None:
     )
     top = details[:n]
 
-    print("\n  Highest splitting error (merge recall >> split recall):")
+    print("\n  Highest merge–fuzzy recall gap (merge recall >> fuzzy recall):")
     print("  " + "-" * 78)
-    print(f"  {'Image':<12} {'Split Rec':>10} {'Merge Rec':>10} {'Gap':>10} {'Split Prec':>10} {'Merge Prec':>10}")
+    print(f"  {'Image':<12} {'Fuzzy Rec':>10} {'Merge Rec':>10} {'Gap':>10} {'Fuzzy Prec':>10} {'Merge Prec':>10}")
     print("  " + "-" * 78)
     for d in top:
-        ex, m = d.get("exact", {}), d.get("merge", {})
+        fz, m = d.get("fuzzy", {}), d.get("merge", {})
         gap = d.get("split_gap_recall", 0)
         if gap <= 0:
             break
         print(
-            f"  {d['image']:<12} {ex.get('recall', 0):>9.2%} {m.get('recall', 0):>9.2%} "
-            f"{gap:>+9.2%} {ex.get('precision', 0):>9.2%} {m.get('precision', 0):>9.2%}"
+            f"  {d['image']:<12} {fz.get('recall', 0):>9.2%} {m.get('recall', 0):>9.2%} "
+            f"{gap:>+9.2%} {fz.get('precision', 0):>9.2%} {m.get('precision', 0):>9.2%}"
         )
     print()
 
 
 def print_worst_precision(results: Dict[str, Any], n: int = 15) -> None:
-    """Print the N images with lowest precision (most false positives)."""
+    """Print the N images with lowest fuzzy precision (most false positives)."""
     details = sorted(
         results["details"],
-        key=lambda d: d["exact"]["precision"],
+        key=lambda d: d["fuzzy"]["precision"],
     )
     worst = details[:n]
 
-    print("\n  Worst precision images (most false positives):")
+    print("\n  Worst fuzzy precision images (most false positives):")
     print("  " + "-" * 66)
     print(f"  {'Image':<15} {'Extracted':>10} {'Truth':>8} {'Prec':>8} {'Recall':>8} {'F1':>8}")
     print("  " + "-" * 66)
     for d in worst:
+        fz = d["fuzzy"]
         print(
             f"  {d['image']:<15} {d['extracted_count']:>10} {d['ground_truth_count']:>8} "
-            f"{d['exact']['precision']:>7.2%} {d['exact']['recall']:>7.2%} {d['exact']['f1']:>7.2%}"
+            f"{fz['precision']:>7.2%} {fz['recall']:>7.2%} {fz['f1']:>7.2%}"
         )
     print()
 
@@ -603,6 +632,13 @@ def _parse_args() -> argparse.Namespace:
         default=False,
         help="Ignore OCR cache and re-run OCR for every image.",
     )
+    parser.add_argument(
+        "--only",
+        nargs="+",
+        metavar="IMAGE",
+        default=None,
+        help="Process only these image basenames (must exist under --images_dir with ground truth).",
+    )
     return parser.parse_args()
 
 
@@ -624,6 +660,7 @@ def main() -> int:
             use_hf_section=args.use_hf_section,
             limit=args.limit,
             no_cache=args.no_cache,
+            only_images=args.only,
         )
     except FileNotFoundError as e:
         print(f"Error: {e}", file=sys.stderr)
@@ -633,7 +670,13 @@ def main() -> int:
     print_worst_cases(results, n=10)
     print_splitting_gap(results, n=10)
     print_worst_precision(results, n=15)
-    save_comparison_result(results, output_path=args.output or COMPARISON_RESULT_PATH)
+    if args.output is not None:
+        out = args.output
+    elif args.only:
+        out = COMPARISON_RESULT_SUBSET_PATH
+    else:
+        out = COMPARISON_RESULT_PATH
+    save_comparison_result(results, output_path=out)
     return 0
 
 

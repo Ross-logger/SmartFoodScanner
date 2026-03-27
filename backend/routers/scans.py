@@ -1,4 +1,5 @@
 import base64
+import re
 import os
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
@@ -14,7 +15,8 @@ from backend.schemas import (
     BarcodeProductResponse
 )
 from backend.security import get_current_user
-from backend.services.ocr import extract_text_from_image
+from backend.services.ocr import extract_ocr_from_image
+from backend.services.ocr.easyocr_confidence import build_easyocr_skip_symspell_normalized_keys
 from backend.services.ingredients_extraction.symspell_extraction import extract_ingredients
 from backend.services.ingredients_analysis import analyze_ingredients
 from backend.services.ingredients_extraction import extract_ingredients_with_llm
@@ -22,6 +24,24 @@ from backend.services.barcode import get_product_by_barcode
 from backend import settings
 
 router = APIRouter(prefix="/scan", tags=["scan"])
+
+
+def _normalize_llm_ingredients(ingredients: list) -> list:
+    """Strip optional ``Ingredients:`` prefix from LLM strings; return a flat list."""
+    if not ingredients:
+        return []
+    out = []
+    for raw in ingredients:
+        s = str(raw).strip()
+        if not s:
+            continue
+        m = re.match(r"^\s*ingredients\s*:\s*(.*)$", s, re.I | re.DOTALL)
+        if m:
+            s = m.group(1).strip()
+        if s:
+            out.append(s)
+    return out
+
 
 # Ensure upload directory exists
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
@@ -57,11 +77,11 @@ def scan_ocr(
     ).first()
 
     use_mistral_ocr = bool(dietary_profile and dietary_profile.use_mistral_ocr)
-    use_hf_section = bool(dietary_profile and dietary_profile.use_hf_section_detection)
 
-    # Extract text using OCR
+    # Extract text using OCR (EasyOCR yields per-line confidences for SymSpell skip)
     try:
-        ocr_text = extract_text_from_image(image_data, use_mistral_ocr=use_mistral_ocr)
+        ocr_result = extract_ocr_from_image(image_data, use_mistral_ocr=use_mistral_ocr)
+        ocr_text = ocr_result.text
         ocr_engine = "Mistral OCR" if use_mistral_ocr else "EasyOCR"
         print(f"OCR Text ({ocr_engine}): ", ocr_text)
     except Exception as e:
@@ -69,21 +89,33 @@ def scan_ocr(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"OCR failed: {str(e)}"
         )
-    
+
+    easyocr_skip_symspell_normalized = None
+    if ocr_result.easyocr_lines:
+        easyocr_skip_symspell_normalized = build_easyocr_skip_symspell_normalized_keys(
+            ocr_result.easyocr_lines,
+            min_confidence=settings.EASYOCR_SKIP_SYMSPELL_MIN_CONFIDENCE,
+        )
+
     # Extract ingredients — use LLM if enabled, otherwise fall back to SymSpell
     if dietary_profile and dietary_profile.use_llm_ingredient_extractor:
         # Use LLM-based extraction
         llm_result = extract_ingredients_with_llm(ocr_text)
         if llm_result["success"] and llm_result["ingredients"]:
-            ingredients = llm_result["ingredients"]
-            print(f"LLM Extracted Ingredients: {ingredients}")
+            ingredients = _normalize_llm_ingredients(llm_result["ingredients"])
+            print(f"LLM Extracted Ingredients (single block): {ingredients}")
         else:
-            ingredients = extract_ingredients(ocr_text, use_hf_section_detection=use_hf_section)
-            print(f"Fallback to SymSpell - Extracted Ingredients: {ingredients}")
+            ingredients = extract_ingredients(
+                ocr_text,
+                easyocr_skip_symspell_normalized=easyocr_skip_symspell_normalized,
+            )
+            print(f"Fallback to HF section + SymSpell - Extracted Ingredients: {ingredients}")
     else:
-        ingredients = extract_ingredients(ocr_text, use_hf_section_detection=use_hf_section)
-        section_method = "HF NER" if use_hf_section else "regex"
-        print(f"SymSpell Extracted Ingredients ({section_method} section): {ingredients}")
+        ingredients = extract_ingredients(
+            ocr_text,
+            easyocr_skip_symspell_normalized=easyocr_skip_symspell_normalized,
+        )
+        print(f"Extracted Ingredients (HF NER section + SymSpell): {ingredients}")
     
     # Analyze ingredients
     analysis = analyze_ingredients(ingredients, dietary_profile)

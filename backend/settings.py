@@ -3,8 +3,10 @@ Application Settings
 """
 
 import os
+import platform
 from pathlib import Path
 from dotenv import load_dotenv
+from numpy._core.numeric import True_
 
 load_dotenv()
 
@@ -59,18 +61,29 @@ UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
 
 IS_OCR_CONFIDENCE_FILTER = os.getenv("IS_OCR_CONFIDENCE_FILTER", "true").lower() in ("true", "1", "yes")
 
+# Minimum EasyOCR line confidence to keep when ``IS_OCR_CONFIDENCE_FILTER`` is on.
+OCR_CONFIDENCE_FILTER_THRESHOLD = float(os.getenv("OCR_CONFIDENCE_FILTER_THRESHOLD", "0.3"))
+
+# Skip SymSpell on ingredient segments tied to EasyOCR lines at or above this confidence.
+EASYOCR_SKIP_SYMSPELL_MIN_CONFIDENCE = float(os.getenv("EASYOCR_SKIP_SYMSPELL_MIN_CONFIDENCE", "0.9"))
+
 # Automatic preprocessing before EasyOCR (contrast + resize); no user action required
 OCR_PREPROCESS_ENABLED = os.getenv("OCR_PREPROCESS_ENABLED", "true").lower() in ("true", "1", "yes")
 OCR_PREPROCESS_TARGET_SHORT_EDGE = int(os.getenv("OCR_PREPROCESS_TARGET_SHORT_EDGE", "1000"))
 OCR_PREPROCESS_MAX_LONG_EDGE = int(os.getenv("OCR_PREPROCESS_MAX_LONG_EDGE", "2400"))
+
+# EasyOCR: PyTorch + Apple Metal (MPS) can raise OSError errno 5 (EIO) during init or
+# inference when the GPU/display stack is in certain states. Default macOS to CPU;
+# set EASYOCR_USE_GPU=true to opt into GPU after verifying it is stable on your machine.
+EASYOCR_USE_GPU = True
 
 # Mistral OCR — cloud-based OCR via the Mistral AI API (mistral-ocr-latest).
 # Per-user toggle lives in DietaryProfile.use_mistral_ocr.
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY") or None
 MISTRAL_OCR_MODEL = os.getenv("MISTRAL_OCR_MODEL", "mistral-ocr-latest")
 
-# HuggingFace ingredient section detection model (NER-based, replaces regex
-# section detection).  Toggle lives in DietaryProfile.use_hf_section_detection.
+# HuggingFace ingredient section detection model (NER-based). Scan OCR uses this
+# by default; regex section helper is optional (tests/scripts only).
 HF_INGREDIENT_DETECTION_MODEL = os.getenv(
     "HF_INGREDIENT_DETECTION_MODEL", "openfoodfacts/ingredient-detection"
 )

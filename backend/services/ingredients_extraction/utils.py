@@ -9,6 +9,71 @@ import re
 import unicodedata
 from typing import List
 
+
+def split_ingredients_text(text: str) -> List[str]:
+    """
+    Split ingredients text by delimiters: comma, semicolon, middot/bullet (·•),
+    newlines (HF/OCR often uses one ingredient per line), &, " and ", " or ".
+    Respects parentheses so "Emulsifier (E322 and E476)" stays as one segment.
+
+    Notes:
+    - EU-style separators such as middot/bullet are normalized to comma boundaries
+      upstream before calling this (see SymSpell / spellcheck entry points).
+    """
+    if not text or not text.strip():
+        return []
+    text = text.strip()
+    segments: List[str] = []
+    current: List[str] = []
+    paren_depth = 0
+    i = 0
+    n = len(text)
+
+    def flush_current() -> None:
+        if current:
+            s = "".join(current).strip()
+            if s:
+                segments.append(s)
+            current.clear()
+
+    while i < n:
+        if paren_depth == 0:
+            for sep in (" and ", " or ", " . "):
+                if i + len(sep) <= n and text[i : i + len(sep)].lower() == sep:
+                    flush_current()
+                    i += len(sep)
+                    continue
+        if paren_depth == 0 and text[i] == "&":
+            flush_current()
+            i += 1
+            while i < n and text[i] == " ":
+                i += 1
+            continue
+        if paren_depth == 0 and (text[i] in ",;" or text[i] in "\u00b7\u2022"):
+            flush_current()
+            i += 1
+            while i < n and text[i] == " ":
+                i += 1
+            continue
+        if paren_depth == 0 and text[i] in "\n\r\v\f\u0085\u2028\u2029":
+            flush_current()
+            i += 1
+            while i < n and text[i] in " \t\n\r\v\f\u0085\u2028\u2029":
+                i += 1
+            continue
+        if text[i] == "(":
+            paren_depth += 1
+            current.append(text[i])
+        elif text[i] == ")":
+            paren_depth = max(0, paren_depth - 1)
+            current.append(text[i])
+        else:
+            current.append(text[i])
+        i += 1
+
+    flush_current()
+    return segments
+
 _RE_PERCENTAGE = re.compile(r"\s*\(\s*\d+(?:\.\d+)?\s*%\s*\*?\s*\)")
 _RE_WARNING = re.compile(
     r"^\s*(?:contains?|added|allergen|not suitable|may contain)\b", re.IGNORECASE

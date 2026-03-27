@@ -173,6 +173,14 @@ function truncateText(text, maxLength) {
 
 function getIngredientCount(scan) {
   const ingredients = scan.ingredients || scan.corrected_ingredients || []
+  if (!ingredients?.length) return 0
+  if (ingredients.length === 1 && typeof ingredients[0] === 'string') {
+    const raw = ingredients[0]
+    const m = raw.match(/^INGREDIENTS:\s*(.*)$/i)
+    const body = (m ? m[1] : raw).trim()
+    const parts = body.split(',').map((s) => s.trim()).filter(Boolean)
+    return parts.length || 1
+  }
   return ingredients.length
 }
 </script>

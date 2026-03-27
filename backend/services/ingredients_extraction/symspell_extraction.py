@@ -9,10 +9,11 @@ domain-specific corrections. Prioritizes food terms over general English.
 import difflib
 import logging
 import re
-from typing import List, Optional
+from typing import AbstractSet, List, Optional
 
 from symspellpy import SymSpell, Verbosity
 
+from backend.services.ocr.easyocr_confidence import should_skip_symspell_for_segment
 from backend.services.ingredients_extraction.data import (
     FOOD_INGREDIENTS,
     E_NUMBERS,
@@ -23,70 +24,26 @@ from backend.services.ingredients_extraction.non_ingredient_filter import (
     filter_ingredients,
     is_valid_ingredient,
 )
-from backend.services.ingredients_extraction.utils import post_process_ingredients
+from backend.services.ingredients_extraction.utils import (
+    post_process_ingredients,
+    split_ingredients_text,
+)
 
 
-def _split_ingredients_text(text: str) -> List[str]:
-    """
-    Split ingredients text by delimiters: comma, semicolon, middot/bullet (·•),
-    &, " and ", " or ". Respects parentheses so "Emulsifier (E322 and E476)" stays as one segment.
-
-    Notes:
-    - EU-style separators such as middot/bullet are normalized to comma boundaries.
-    """
+def _strip_leading_ingredients_label(text: str) -> str:
+    """Remove a leading ``Ingredients`` heading (optional colon); case-insensitive."""
     if not text or not text.strip():
-        return []
-    text = text.strip()
-    segments = []
-    current = []
-    paren_depth = 0
-    i = 0
-    n = len(text)
+        return (text or "").strip()
+    s = text.strip()
+    s = re.sub(
+        r"^\s*ingredients\b\s*[:：]?\s*",
+        "",
+        s,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+    return s.strip()
 
-    def flush_current() -> None:
-        if current:
-            s = "".join(current).strip()
-            if s:
-                segments.append(s)
-            current.clear()
-
-    while i < n:
-        # Check for " and ", " or ", or " . " (sentence boundary, outside parentheses)
-        if paren_depth == 0:
-            for sep in (" and ", " or ", " . "):
-                if i + len(sep) <= n and text[i : i + len(sep)].lower() == sep:
-                    flush_current()
-                    i += len(sep)
-                    continue
-        # Check for & (only when outside parentheses)
-        if paren_depth == 0 and text[i] == "&":
-            flush_current()
-            i += 1
-            # Skip optional spaces after &
-            while i < n and text[i] == " ":
-                i += 1
-            continue
-        # Comma, semicolon, EU-style middot / bullet separators.
-        # Treat middot/bullet as comma-equivalent boundaries.
-        if paren_depth == 0 and (text[i] in ",;" or text[i] in "\u00b7\u2022"):
-            flush_current()
-            i += 1
-            while i < n and text[i] == " ":
-                i += 1
-            continue
-        # Parentheses
-        if text[i] == "(":
-            paren_depth += 1
-            current.append(text[i])
-        elif text[i] == ")":
-            paren_depth = max(0, paren_depth - 1)
-            current.append(text[i])
-        else:
-            current.append(text[i])
-        i += 1
-
-    flush_current()
-    return segments
 
 logger = logging.getLogger(__name__)
 
@@ -107,14 +64,10 @@ def _get_spell_checker() -> SymSpell:
         _sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
         
         # Load food ingredients with frequency based on commonality
+        for term in VERY_COMMON_INGREDIENTS:
+            _sym_spell.create_dictionary_entry(term.lower(), 10000000)
         for term in FOOD_INGREDIENTS:
-            # Check if any word in the term is very common
-            words = term.lower().split()
-            if any(w in VERY_COMMON_INGREDIENTS for w in words) or term.lower() in VERY_COMMON_INGREDIENTS:
-                freq = 10000000  # Very high for common terms
-            else:
-                freq = 1000000
-            _sym_spell.create_dictionary_entry(term.lower(), freq)
+            _sym_spell.create_dictionary_entry(term.lower(), 1000000)
         
         # Add E-numbers with their names
         for e_num, name in E_NUMBERS.items():
@@ -131,6 +84,16 @@ def _is_false_yam_correction(original: str, candidate: str) -> bool:
     return candidate == "yam" and "yam" not in original.replace(" ", "")
 
 
+def _is_false_tea_for_sea(original: str, candidate: str) -> bool:
+    """SymSpell often maps ``sea`` → ``tea`` (e.g. ``sea salt`` → ``tea salt``)."""
+    ol, cl = original.lower(), candidate.lower()
+    if not re.search(r"\bsea\b", ol):
+        return False
+    if not re.search(r"\btea\b", cl):
+        return False
+    return not re.search(r"\bsea\b", cl)
+
+
 def _reject_word_spell_suggestion(word: str, suggestion: str, segment_lower: str) -> bool:
     """
     Reject SymSpell word correction when it is a known false friend on labels.
@@ -142,6 +105,8 @@ def _reject_word_spell_suggestion(word: str, suggestion: str, segment_lower: str
         if difflib.SequenceMatcher(None, wl, "raising").ratio() >= 0.72:
             return True
     if sl == "mace" and wl in ("made", "mada", "mad"):
+        return True
+    if sl == "tea" and wl == "sea":
         return True
     return False
 
@@ -176,6 +141,8 @@ def _correct_text(text: str, sym_spell: SymSpell) -> str:
         t = suggestions[0].term
         if t == "yam" and "yam" not in text_lower.replace(" ", ""):
             pass
+        elif _is_false_tea_for_sea(text_lower, t):
+            pass
         else:
             t = re.sub(r"\braisin\s+agents\b", "raising agents", t, flags=re.IGNORECASE)
             t = re.sub(r"\braisin\s+agent\b", "raising agent", t, flags=re.IGNORECASE)
@@ -197,12 +164,14 @@ def _correct_text(text: str, sym_spell: SymSpell) -> str:
             # Only use if it's a known food term or combination
             if corrected in FOOD_INGREDIENTS:
                 if not (corrected == "yam" and "yam" not in text_lower.replace(" ", "")):
-                    return corrected
+                    if not _is_false_tea_for_sea(text_lower, corrected):
+                        return corrected
             # Check if each word is a food term
             words = corrected.split()
             if all(w in FOOD_INGREDIENTS or len(w) <= 2 for w in words):
                 if not (corrected == "yam" and "yam" not in text_lower.replace(" ", "")):
-                    return corrected
+                    if not _is_false_tea_for_sea(text_lower, corrected):
+                        return corrected
     
     # Fall back to word-by-word correction
     words = text_lower.split()
@@ -240,10 +209,6 @@ def _correct_text(text: str, sym_spell: SymSpell) -> str:
     if result in FOOD_INGREDIENTS:
         return result
 
-    # "yam" is a frequent false correction for short garbage tokens; keep OCR if it never said yam.
-    if result == "yam" and "yam" not in text_lower.replace(" ", ""):
-        return text_lower
-
     return result
 
 
@@ -251,58 +216,73 @@ def _correct_text(text: str, sym_spell: SymSpell) -> str:
 # Public API
 # =============================================================================
 
-def spellcheck_ingredients(ocr_text: str) -> str:
+def spellcheck_ingredients(
+    ocr_text: str,
+    *,
+    easyocr_skip_symspell_normalized: Optional[AbstractSet[str]] = None,
+) -> str:
     """
     Correct OCR errors in ingredient list text.
-    
+
     Args:
         ocr_text: Raw OCR text from food label
-        
+        easyocr_skip_symspell_normalized: Optional set of normalized segment
+            strings (see ``build_easyocr_skip_symspell_normalized_keys``) for
+            which SymSpell is skipped (EasyOCR confidence was high).
+
     Returns:
-        Corrected ingredient list text
+        Corrected ingredients as one comma-separated string (no leading
+        ``Ingredients`` label).
     """
     if not ocr_text or not ocr_text.strip():
         return ""
 
-    # Normalize EU-style separators to comma for consistent downstream formatting.
+    # Normalize EU-style separators to comma before splitting.
     ocr_text = ocr_text.replace("\u00b7", ",").replace("\u2022", ",")
-    
+    ocr_text = _strip_leading_ingredients_label(ocr_text)
+
     sym_spell = _get_spell_checker()
-    
+
     # Split by delimiters: comma, semicolon, &, " and ", " or "
-    ingredients = _split_ingredients_text(ocr_text)
-    
+    ingredients = split_ingredients_text(ocr_text)
+
     corrected = []
     for ing in ingredients:
         ing = ing.strip()
         if ing:
-            corrected_ing = _correct_text(ing, sym_spell)
+            if should_skip_symspell_for_segment(ing, easyocr_skip_symspell_normalized):
+                corrected_ing = ing.lower().strip()
+            else:
+                corrected_ing = _correct_text(ing, sym_spell)
             corrected.append(corrected_ing)
-    
-    return ", ".join(corrected)
+
+    joined = ", ".join(corrected).strip()
+    return _strip_leading_ingredients_label(joined)
 
 
-def extract_ingredients(ocr_text: str, *, use_hf_section_detection: bool = False) -> List[str]:
+def extract_ingredient_segments(
+    ocr_text: str,
+    *,
+    use_hf_section_detection: bool = True,
+    easyocr_skip_symspell_normalized: Optional[AbstractSet[str]] = None,
+) -> List[str]:
     """
-    Extract and correct ingredients from OCR text.
-    
-    Filters out non-ingredient text (addresses, instructions, etc.) and
-    extracts only the ingredients section when possible.
-    
+    Extract and correct each ingredient as its own string (splitting, SymSpell,
+    filters). Use this for metrics, tests, or analysis that need per-item lists.
+
+    For API responses that should be one comma-separated block without an
+    ``Ingredients`` prefix, use ``extract_ingredients`` instead.
+
     Args:
-        ocr_text: Raw OCR text from food label
-        use_hf_section_detection: Use the HuggingFace NER model for section
-            detection instead of the default regex approach.
-        
-    Returns:
-        List of corrected ingredient names (non-ingredients filtered out)
+        easyocr_skip_symspell_normalized: When set, segments whose normalized
+            form appears here are not spell-corrected (high EasyOCR confidence).
     """
     if not ocr_text or not ocr_text.strip():
         return []
 
     # Normalize EU-style separators to comma before section extraction/splitting.
     ocr_text = ocr_text.replace("\u00b7", ",").replace("\u2022", ",")
-    
+
     # Step 1: Extract only the ingredients section (filter headers, footers, etc.)
     if use_hf_section_detection:
         from backend.services.ingredients_extraction.hf_section_detection import (
@@ -311,37 +291,79 @@ def extract_ingredients(ocr_text: str, *, use_hf_section_detection: bool = False
         ingredients_text = extract_ingredients_list_hf(ocr_text) or ocr_text
     else:
         ingredients_text = extract_ingredients_section(ocr_text)
-    
+
+    ingredients_text = _strip_leading_ingredients_label(ingredients_text)
+
     sym_spell = _get_spell_checker()
-    
+
     # Step 2: Split by delimiters (comma, semicolon, &, " and ", " or ")
-    ingredients = _split_ingredients_text(ingredients_text)
-    
+    ingredients = split_ingredients_text(ingredients_text)
+
     # Step 3: Pre-filter and spell-correct each segment
     # Check validity BEFORE spell correction to avoid false positives
     # (e.g., "Made in USA" -> "mace in usa" would bypass filter)
     corrected_list = []
-    for ing in ingredients:
-        ing = ing.strip()
-        # Strip "Contains:" or "Contains " prefix (allergen list header)
-        if re.match(r'^contains?\s*[:.]?\s*', ing, re.IGNORECASE):
-            ing = re.sub(r'^contains?\s*[:.]?\s*', '', ing, flags=re.IGNORECASE).strip()
-        if ing and len(ing) > 1:
+    for ingredient in ingredients:
+        ingredient = ingredient.strip()
+        if ingredient and len(ingredient) > 1:
             # Check if original text is valid BEFORE spell correction
-            if not is_valid_ingredient(ing):
+            if not is_valid_ingredient(ingredient):
                 continue
 
-            corrected = _correct_text(ing, sym_spell)
+            if should_skip_symspell_for_segment(
+                ingredient, easyocr_skip_symspell_normalized
+            ):
+                corrected = ingredient.lower().strip()
+            else:
+                corrected = _correct_text(ingredient, sym_spell)
             if corrected:
                 corrected_list.append(corrected)
-    
+
     # Step 4: Final filter on corrected ingredients
     filtered = filter_ingredients(corrected_list)
-    
+
     # Step 5: Shared post-processing (percentages, brackets, accents, etc.)
     filtered = post_process_ingredients(filtered)
-    
     return filtered
+
+
+def extract_ingredients(
+    ocr_text: str,
+    *,
+    use_hf_section_detection: bool = True,
+    easyocr_skip_symspell_normalized: Optional[AbstractSet[str]] = None,
+) -> List[str]:
+    """
+    Extract and correct the ingredients section from OCR text.
+
+    Returns a list of **one** element: all ingredients joined with comma + space,
+    with no leading ``Ingredients`` label. The API still uses ``List[str]`` so
+    the client can treat it as one block (see also ``extract_ingredient_segments``).
+
+    By default uses the HuggingFace NER model for section detection, then
+    SymSpell per-segment correction. Pass ``use_hf_section_detection=False`` to
+    use the legacy regex section helper (tests/scripts).
+
+    Args:
+        ocr_text: Raw OCR text from food label
+        use_hf_section_detection: Use HF NER for section detection (default).
+            If False, uses ``extract_ingredients_section`` (regex).
+        easyocr_skip_symspell_normalized: Optional normalized segment keys to
+            skip SymSpell for (from EasyOCR line confidence ≥ threshold).
+
+    Returns:
+        ``[comma_separated_ingredients]`` or ``[]`` if nothing valid remains
+    """
+    segments = extract_ingredient_segments(
+        ocr_text,
+        use_hf_section_detection=use_hf_section_detection,
+        easyocr_skip_symspell_normalized=easyocr_skip_symspell_normalized,
+    )
+    if not segments:
+        return []
+    joined = ", ".join(segments).strip()
+    joined = _strip_leading_ingredients_label(joined)
+    return [joined] if joined else []
 
 
 

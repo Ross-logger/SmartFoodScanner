@@ -36,7 +36,7 @@ def get_dietary_profile(
             dairy_free=False,
             use_llm_ingredient_extractor=False,
             use_mistral_ocr=False,
-            use_hf_section_detection=False,
+            use_hf_section_detection=True,
         )
         db.add(profile)
         db.commit()
@@ -47,7 +47,7 @@ def get_dietary_profile(
     if profile.use_mistral_ocr is None:
         profile.use_mistral_ocr = False
     if profile.use_hf_section_detection is None:
-        profile.use_hf_section_detection = False
+        profile.use_hf_section_detection = True
 
     return profile
 

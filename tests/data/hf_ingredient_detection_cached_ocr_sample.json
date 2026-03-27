@@ -1,0 +1,318 @@
+{
+  "model_analysis": {
+    "model_id": "openfoodfacts/ingredient-detection",
+    "task": "token-classification (BIO)",
+    "labels": {
+      "O": "Outside any ingredient mention",
+      "B-ING": "Start of an ingredient span",
+      "I-ING": "Continuation of the same ingredient span"
+    },
+    "ingredient_unit_meaning": "Each contiguous ING span (after aggregation) is one 'ingredient unit' in the sense of one named chunk the model groups together. The model does **not** emit a distinct label for pack units (e.g. g, ml) or for list separators; percentages and units usually sit inside an ING span or in non-ING (O) gaps, depending on tokenization and training."
+  },
+  "source_file": "tests/data/cached_mistral_ocr_results.json",
+  "sample_count": 10,
+  "image_keys": [
+    "in1.jpg",
+    "in2.jpg",
+    "in5.jpg",
+    "in9.jpg",
+    "in10.jpg",
+    "in11.jpg",
+    "in22.jpg",
+    "in24.jpg",
+    "in27.jpg",
+    "in28.jpg"
+  ],
+  "samples": [
+    {
+      "image_key": "in1.jpg",
+      "ocr_char_len": 389,
+      "ocr_preview_200_chars": "Ingredients:\\nRoasted peanuts, sugar, fully hydrogenated palm oil, salt. Contain peanuts.\\nStore in a cool, dry place and avoid direct sunlight.\\nSole Distributor:\\nCiao International Limited\\nAddress: 11/",
+      "entity_groups_present": [
+        "ING"
+      ],
+      "ing_span_count": 1,
+      "ing_spans": [
+        {
+          "start": 13,
+          "end": 70,
+          "text": "Roasted peanuts, sugar, fully hydrogenated palm oil, salt",
+          "gap_before": null,
+          "gap_before_repr": null
+        }
+      ],
+      "merged_ingredient_text": "Roasted peanuts, sugar, fully hydrogenated palm oil, salt",
+      "raw_entity_count": 1,
+      "raw_entities": [
+        {
+          "entity_group": "ING",
+          "word": "Roasted peanuts , sugar , fully hydrogenated palm oil , salt",
+          "start": 13,
+          "end": 70,
+          "score": 0.9999985694885254
+        }
+      ]
+    },
+    {
+      "image_key": "in2.jpg",
+      "ocr_char_len": 138,
+      "ocr_preview_200_chars": "Ingredients\\nMilk Solids, Common Salt, Spices & Condiments (1%), Permitted Stabilizer (E 460(i)).\\nFor identification of Manufacturing Unit,",
+      "entity_groups_present": [
+        "ING"
+      ],
+      "ing_span_count": 1,
+      "ing_spans": [
+        {
+          "start": 12,
+          "end": 95,
+          "text": "Milk Solids, Common Salt, Spices & Condiments (1%), Permitted Stabilizer (E 460(i))",
+          "gap_before": null,
+          "gap_before_repr": null
+        }
+      ],
+      "merged_ingredient_text": "Milk Solids, Common Salt, Spices & Condiments (1%), Permitted Stabilizer (E 460(i))",
+      "raw_entity_count": 1,
+      "raw_entities": [
+        {
+          "entity_group": "ING",
+          "word": "Milk Solids , Common Salt , Spices & Condiments ( 1 % ) , Permitted Stabilizer ( E 460 ( i ) )",
+          "start": 12,
+          "end": 95,
+          "score": 0.9999998807907104
+        }
+      ]
+    },
+    {
+      "image_key": "in5.jpg",
+      "ocr_char_len": 368,
+      "ocr_preview_200_chars": "INSREDIENTS:\\nPotato, Refined Palmolein Oil, Bengal Gram Flour (Besan), Potato Flakes, Potato Starch, Tapioca Starch, Tapary Beans (Moth Dal) Flour, Iodised Salt, Red Chilli Powder, Black Salt, Acidity",
+      "entity_groups_present": [
+        "ING"
+      ],
+      "ing_span_count": 1,
+      "ing_spans": [
+        {
+          "start": 13,
+          "end": 368,
+          "text": "Potato, Refined Palmolein Oil, Bengal Gram Flour (Besan), Potato Flakes, Potato Starch, Tapioca Starch, Tapary Beans (Moth Dal) Flour, Iodised Salt, Red Chilli Powder, Black Salt, Acidity Regulator (INS 330), Black Pepper, Clove, Cardamom, Dried Ginger Powder, Dried Garlic Powder, Refined Sugar, Cumin Powder, Bay Leaves, Nutmeg, Cinnamon and Mint Leaves",
+          "gap_before": null,
+          "gap_before_repr": null
+        }
+      ],
+      "merged_ingredient_text": "Potato, Refined Palmolein Oil, Bengal Gram Flour (Besan), Potato Flakes, Potato Starch, Tapioca Starch, Tapary Beans (Moth Dal) Flour, Iodised Salt, Red Chilli Powder, Black Salt, Acidity Regulator (INS 330), Black Pepper, Clove, Cardamom, Dried Ginger Powder, Dried Garlic Powder, Refined Sugar, Cumin Powder, Bay Leaves, Nutmeg, Cinnamon and Mint Leaves",
+      "raw_entity_count": 1,
+      "raw_entities": [
+        {
+          "entity_group": "ING",
+          "word": "Potato , Refined Palmolein Oil , Bengal Gram Flour ( Besan ) , Potato Flakes , Potato Starch , Tapioca Starch , Tapary Beans ( Moth Dal ) Flour , Iodised Salt , Red Chilli Powder , Black Salt , Acidity Regulator ( INS 330 ) , Black Pepper , Clove , Cardamom , Dried Ginger Powder , Dried Garlic Powder , Refined Sugar , Cumin Powder , Bay Leaves , Nutmeg , Cinnamon and Mint Leaves",
+          "start": 13,
+          "end": 368,
+          "score": 0.9999998807907104
+        }
+      ]
+    },
+    {
+      "image_key": "in9.jpg",
+      "ocr_char_len": 157,
+      "ocr_preview_200_chars": "INGREDIENTS: Mango Pieces (65%), Edible Common Salt, Water, Cottonseed Oil, Chilli Powder, Spices and Condiments, Acidity Regulator (INS 260) and Asafoetida.",
+      "entity_groups_present": [
+        "ING"
+      ],
+      "ing_span_count": 1,
+      "ing_spans": [
+        {
+          "start": 13,
+          "end": 156,
+          "text": "Mango Pieces (65%), Edible Common Salt, Water, Cottonseed Oil, Chilli Powder, Spices and Condiments, Acidity Regulator (INS 260) and Asafoetida",
+          "gap_before": null,
+          "gap_before_repr": null
+        }
+      ],
+      "merged_ingredient_text": "Mango Pieces (65%), Edible Common Salt, Water, Cottonseed Oil, Chilli Powder, Spices and Condiments, Acidity Regulator (INS 260) and Asafoetida",
+      "raw_entity_count": 1,
+      "raw_entities": [
+        {
+          "entity_group": "ING",
+          "word": "Mango Pieces ( 65 % ) , Edible Common Salt , Water , Cottonseed Oil , Chilli Powder , Spices and Condiments , Acidity Regulator ( INS 260 ) and Asafoetida",
+          "start": 13,
+          "end": 156,
+          "score": 0.9999999403953552
+        }
+      ]
+    },
+    {
+      "image_key": "in10.jpg",
+      "ocr_char_len": 309,
+      "ocr_preview_200_chars": "INGREDIENTS: Tomato puree (38%), Salt, Tamarind concentrate, Edible vegetable oil, Red chilli powder (9%), Mustard, Acetic acid, Blackgram dal, Garlic, Fenugreek powder, Curry leaves, Coriander powder",
+      "entity_groups_present": [
+        "ING"
+      ],
+      "ing_span_count": 1,
+      "ing_spans": [
+        {
+          "start": 13,
+          "end": 259,
+          "text": "Tomato puree (38%), Salt, Tamarind concentrate, Edible vegetable oil, Red chilli powder (9%), Mustard, Acetic acid, Blackgram dal, Garlic, Fenugreek powder, Curry leaves, Coriander powder, Cumin powder, Bengalgram dal, Asafoetida, Turmeric powder",
+          "gap_before": null,
+          "gap_before_repr": null
+        }
+      ],
+      "merged_ingredient_text": "Tomato puree (38%), Salt, Tamarind concentrate, Edible vegetable oil, Red chilli powder (9%), Mustard, Acetic acid, Blackgram dal, Garlic, Fenugreek powder, Curry leaves, Coriander powder, Cumin powder, Bengalgram dal, Asafoetida, Turmeric powder",
+      "raw_entity_count": 1,
+      "raw_entities": [
+        {
+          "entity_group": "ING",
+          "word": "Tomato puree ( 38 % ) , Salt , Tamarind concentrate , Edible vegetable oil , Red chilli powder ( 9 % ) , Mustard , Acetic acid , Blackgram dal , Garlic , Fenugreek powder , Curry leaves , Coriander powder , Cumin powder , Bengalgram dal , Asafoetida , Turmeric powder",
+          "start": 13,
+          "end": 259,
+          "score": 0.9999999403953552
+        }
+      ]
+    },
+    {
+      "image_key": "in11.jpg",
+      "ocr_char_len": 223,
+      "ocr_preview_200_chars": "Ingredients: Greek yogurt (pasteurized double toned milk, milk solids, permitted starter cultures), processed blueberry pulp (sugar, blueberry puree, water, pectin (INS 440), lemon juice concentrate)\\n",
+      "entity_groups_present": [
+        "ING"
+      ],
+      "ing_span_count": 1,
+      "ing_spans": [
+        {
+          "start": 13,
+          "end": 199,
+          "text": "Greek yogurt (pasteurized double toned milk, milk solids, permitted starter cultures), processed blueberry pulp (sugar, blueberry puree, water, pectin (INS 440), lemon juice concentrate)",
+          "gap_before": null,
+          "gap_before_repr": null
+        }
+      ],
+      "merged_ingredient_text": "Greek yogurt (pasteurized double toned milk, milk solids, permitted starter cultures), processed blueberry pulp (sugar, blueberry puree, water, pectin (INS 440), lemon juice concentrate)",
+      "raw_entity_count": 1,
+      "raw_entities": [
+        {
+          "entity_group": "ING",
+          "word": "Greek yogurt ( pasteurized double toned milk , milk solids , permitted starter cultures ) , processed blueberry pulp ( sugar , blueberry puree , water , pectin ( INS 440 ) , lemon juice concentrate )",
+          "start": 13,
+          "end": 199,
+          "score": 0.9999999403953552
+        }
+      ]
+    },
+    {
+      "image_key": "in22.jpg",
+      "ocr_char_len": 253,
+      "ocr_preview_200_chars": "Ingredients: Tomato Paste (32%), Sugar, Water, Onions, Refined Soyabean Oil, Iodised Salt, Mixed Spices, Garlic, Herbs, Acidity Regulators (INS 260, INS 330), Emulsifiers and Stabilizers (INS 322, INS",
+      "entity_groups_present": [
+        "ING"
+      ],
+      "ing_span_count": 1,
+      "ing_spans": [
+        {
+          "start": 13,
+          "end": 252,
+          "text": "Tomato Paste (32%), Sugar, Water, Onions, Refined Soyabean Oil, Iodised Salt, Mixed Spices, Garlic, Herbs, Acidity Regulators (INS 260, INS 330), Emulsifiers and Stabilizers (INS 322, INS 415), Preservative (INS 211), Antioxidant (INS 319)",
+          "gap_before": null,
+          "gap_before_repr": null
+        }
+      ],
+      "merged_ingredient_text": "Tomato Paste (32%), Sugar, Water, Onions, Refined Soyabean Oil, Iodised Salt, Mixed Spices, Garlic, Herbs, Acidity Regulators (INS 260, INS 330), Emulsifiers and Stabilizers (INS 322, INS 415), Preservative (INS 211), Antioxidant (INS 319)",
+      "raw_entity_count": 1,
+      "raw_entities": [
+        {
+          "entity_group": "ING",
+          "word": "Tomato Paste ( 32 % ) , Sugar , Water , Onions , Refined Soyabean Oil , Iodised Salt , Mixed Spices , Garlic , Herbs , Acidity Regulators ( INS 260 , INS 330 ) , Emulsifiers and Stabilizers ( INS 322 , INS 415 ) , Preservative ( INS 211 ) , Antioxidant ( INS 319 )",
+          "start": 13,
+          "end": 252,
+          "score": 0.9999999403953552
+        }
+      ]
+    },
+    {
+      "image_key": "in24.jpg",
+      "ocr_char_len": 46,
+      "ocr_preview_200_chars": "Ingredient : Californian Almonds, 100% Natural",
+      "entity_groups_present": [
+        "ING"
+      ],
+      "ing_span_count": 1,
+      "ing_spans": [
+        {
+          "start": 13,
+          "end": 46,
+          "text": "Californian Almonds, 100% Natural",
+          "gap_before": null,
+          "gap_before_repr": null
+        }
+      ],
+      "merged_ingredient_text": "Californian Almonds, 100% Natural",
+      "raw_entity_count": 1,
+      "raw_entities": [
+        {
+          "entity_group": "ING",
+          "word": "Californian Almonds , 100 % Natural",
+          "start": 13,
+          "end": 46,
+          "score": 0.999998927116394
+        }
+      ]
+    },
+    {
+      "image_key": "in27.jpg",
+      "ocr_char_len": 48,
+      "ocr_preview_200_chars": "Ingredients : Natural Walnut Kernels. (No shell)",
+      "entity_groups_present": [
+        "ING"
+      ],
+      "ing_span_count": 1,
+      "ing_spans": [
+        {
+          "start": 14,
+          "end": 36,
+          "text": "Natural Walnut Kernels",
+          "gap_before": null,
+          "gap_before_repr": null
+        }
+      ],
+      "merged_ingredient_text": "Natural Walnut Kernels",
+      "raw_entity_count": 1,
+      "raw_entities": [
+        {
+          "entity_group": "ING",
+          "word": "Natural Walnut Kernels",
+          "start": 14,
+          "end": 36,
+          "score": 0.9999979734420776
+        }
+      ]
+    },
+    {
+      "image_key": "in28.jpg",
+      "ocr_char_len": 150,
+      "ocr_preview_200_chars": "INGREDIENTS:\\nSugar, Cocoa Powder (30%*).\\nCONTAINS ADDED FLAVOUR (ARTIFICIAL [VANILLA] FLAVOURING SUBSTANCES).\\nAllergen Information: Contains Sulphites",
+      "entity_groups_present": [
+        "ING"
+      ],
+      "ing_span_count": 1,
+      "ing_spans": [
+        {
+          "start": 13,
+          "end": 39,
+          "text": "Sugar, Cocoa Powder (30%*)",
+          "gap_before": null,
+          "gap_before_repr": null
+        }
+      ],
+      "merged_ingredient_text": "Sugar, Cocoa Powder (30%*)",
+      "raw_entity_count": 1,
+      "raw_entities": [
+        {
+          "entity_group": "ING",
+          "word": "Sugar , Cocoa Powder ( 30 % * )",
+          "start": 13,
+          "end": 39,
+          "score": 0.9999998211860657
+        }
+      ]
+    }
+  ]
+}

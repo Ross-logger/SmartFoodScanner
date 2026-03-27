@@ -14,7 +14,7 @@
       "Milk Solids",
       "Common Salt",
       "Spices & Condiments",
-      "Permitted Stabilizer (E 460(i))"
+      "460(i)"
     ]
   },
   {
@@ -30,7 +30,7 @@
       "Iodised Salt",
       "Red Chilli Powder",
       "Black Salt",
-      "Acidity Regulator (INS 330)",
+      "330",
       "Black Pepper",
       "Clove",
       "Cardamom",
@@ -52,7 +52,7 @@
       "Cottonseed Oil",
       "Chilli Powder",
       "Spices and Condiments",
-      "Acidity Regulator (INS 260)",
+      "260",
       "Asafoetida"
     ]
   },
@@ -80,8 +80,14 @@
   {
     "image": "in11.jpg",
     "true_ingredients": [
-      "Greek yogurt (pasteurized double toned milk, milk solids, permitted starter cultures)",
-      "processed blueberry pulp (sugar, blueberry puree, water, pectin (INS 440), lemon juice concentrate)"
+      "pasteurized double toned milk",
+      "milk solids",
+      "permitted starter cultures",
+      "sugar",
+      "blueberry puree",
+      "water",
+      "440",
+      "lemon juice concentrate"
     ]
   },
   {
@@ -96,10 +102,12 @@
       "Mixed Spices",
       "Garlic",
       "Herbs",
-      "Acidity Regulators (INS 260, INS 330)",
-      "Emulsifiers and Stabilizers (INS 322, INS 415)",
-      "Preservative (INS 211)",
-      "Antioxidant (INS 319)"
+      "260",
+      "330",
+      "322",
+      "415",
+      "211",
+      "319"
     ]
   },
   {
@@ -133,12 +141,12 @@
       "Pineapple Pulp",
       "Watermelon Pulp",
       "Polydextrose (Dietary Fiber)",
-      "Acidity Regulator (INS 330)",
+      "330",
       "Bael Pulp",
       "Jamun Pulp",
       "Litchi Pulp",
-      "Stabilizer (INS 440)",
-      "Antioxidant (INS 300)",
+      "440",
+      "300",
       "Pomegranate Juice"
     ]
   },
@@ -147,27 +155,41 @@
     "true_ingredients": [
       "Chicken Meat",
       "Water",
-      "Breadcrumbs (Wheat Flour, Yeast, Salt, Permitted Bread Improvers, Preservative (INS 282), Acidity Regulator (INS260))",
+      "Wheat Flour",
+      "Yeast",
+      "Salt",
+      "Permitted Bread Improvers",
+      "282",
+      "260",
       "Edible Vegetable Oil (RBD Palmolein)",
-      "Batter (Wheat Flour, Corn Flour, Corn Starch, Salt, Emulsifier (INS 466))",
+      "Corn Flour",
+      "Corn Starch",
+      "466",
       "Soy",
       "Isolated Soy Protein",
       "Iodized Salt",
       "Spices & Condiments",
-      "Texturizer (INS 451(i))"
+      "451(i)"
     ]
   },
   {
     "image": "in32.jpg",
     "true_ingredients": [
       "Chicken Meat",
-      "Breadcrumbs (Wheat Flour, Yeast, Salt, Permitted Bread Improvers, Preservative (INS 282), Acidity Regulator (INS 260))",
+      "Wheat Flour",
+      "Yeast",
+      "Salt",
+      "Permitted Bread Improvers",
+      "282",
+      "260",
       "Water",
       "Edible Vegetable Oil (Refined Palmolein Oil)",
-      "Batter (Wheat Flour, Corn Flour, Corn Starch, Salt, Emulsifier (INS 466))",
+      "Corn Flour",
+      "Corn Starch",
+      "466",
       "Soy Protein",
       "Spices & Condiments",
-      "Iodized Salt And Texturizer (INS 451(i))"
+      "451(i)"
     ]
   },
   {
@@ -175,22 +197,23 @@
     "true_ingredients": [
       "Carbonated Water",
       "sugar",
-      "acidity regulator (338)",
+      "338",
       "caffeine",
-      "permitted natural colour (150d)"
+      "150d"
     ]
   },
   {
     "image": "in35.jpg",
     "true_ingredients": [
       "Coconut Water",
-      "BIO-PRESERVATIVE (INS 234)"
+      "234"
     ]
   },
   {
     "image": "in39.jpg",
     "true_ingredients": [
-      "wheat solids (wheat flour (atta), refined wheat flour (maida))",
+      "wheat flour (atta)",
+      "refined wheat flour (maida)",
       "sugar",
       "corn flour",
       "cocoa solids",
@@ -198,9 +221,9 @@
       "cereal extract",
       "edible vegetable oil (palmolein)",
       "iodized salt",
-      "colour (INS 150d)",
+      "150d",
       "vitamins",
-      "antioxidant (INS 320)"
+      "320"
     ]
   },
   {
@@ -215,7 +238,7 @@
       "Milk solids",
       "water",
       "sugar",
-      "stabilizer (440)",
+      "440",
       "nature identical and artificial flavoring substances (rose)",
       "active culture"
     ]
@@ -228,8 +251,8 @@
       "Sugar",
       "Butter",
       "Apple Cider Vinegar",
-      "Raising Agent (INS500(ii))",
-      "Vanilla Essence"
+      "Vanilla Essence",
+      "500(ii)"
     ]
   },
   {
@@ -242,9 +265,10 @@
       "Sugar",
       "Fat-reduced cocoa",
       "Soy Flour",
-      "Chocolate (Sugar, Cocoa mass)",
+      "Cocoa mass",
       "Skimmed milk powder",
-      "Raising agents (Sodium hydrogen carbonate, Disodium diphosphate)",
+      "Sodium hydrogen carbonate",
+      "Disodium diphosphate",
       "Hazelnuts",
       "Emulsifier soy lecithins",
       "Salt",
@@ -257,15 +281,17 @@
   {
     "image": "in52.jpg",
     "true_ingredients": [
-      "Choco Cream (Sugar, Vegetable Fat, Cocoa Solids, Emulsifiers (E322 from Soya))",
-      "Refined Wheat Flour (Maida)",
       "Sugar",
+      "Vegetable Fat",
+      "Cocoa Solids",
+      "E322",
+      "Refined Wheat Flour (Maida)",
       "Edible Vegetable Oil (Palm)",
       "Milk Solids",
       "Golden Syrup",
       "Cocoa Powder",
-      "Emulsifier (E322 from Soya)",
-      "Leavening Agents (E503 ii, E500 ii)",
+      "E503(ii)",
+      "E500(ii)",
       "Salt"
     ]
   },
@@ -277,7 +303,7 @@
       "Cashew",
       "Sugar",
       "Milk Solids",
-      "Raising agent (E500)",
+      "E500",
       "Flavour vanilla",
       "butterscotch"
     ]
@@ -304,15 +330,17 @@
       "Edible Vegetable Oil (PALM)",
       "Sugar",
       "Liquid Glucose",
-      "Raising Agents (503(ii), 500(ii), 450(i))",
+      "503(ii)",
+      "500(ii)",
+      "450(i)",
       "Butter",
       "Black Salt",
       "Milk Solids",
       "Edible Vegetable Product",
       "Iodised Salt",
-      "Acidity Regulator (341(ii))",
-      "Dough Conditioner (223)",
-      "Improver (1101(i))"
+      "341(ii)",
+      "223",
+      "1101(i)"
     ]
   },
   {
@@ -368,11 +396,12 @@
       "Refined Palm Oil",
       "Invert Sugar Syrup",
       "Milk Solids",
-      "Raising Agents (503(ii), 500 (ii))",
+      "503(ii)",
+      "500(ii)",
       "Iodized Salt",
-      "Emulsifier(472e)",
+      "472e",
       "Calcium Salt",
-      "Dough Conditioner(223)",
+      "223",
       "Vitamins",
       "Ferrous Salt",
       "Potassium Iodate"
@@ -408,7 +437,7 @@
       "Oats Flakes",
       "Wheat Bran",
       "Soya Protein Isolate",
-      "CHoco Chips",
+      "Choco Chips",
       "Salt",
       "Baking Powder",
       "Vanilla"
@@ -433,13 +462,20 @@
     "image": "in73.jpg",
     "true_ingredients": [
       "Almonds",
-      "Dark Compound (Sugar, Edible Vegetable Fat (Hydrogenated), Cocoa Solids, Emulsifiers (INS 491, 322))",
+      "Sugar",
+      "Edible Vegetable Fat (Hydrogenated)",
+      "Cocoa Solids",
+      "491",
+      "322",
       "Peanuts",
-      "Rice Crispy (Rice Flour, Wheat Flour, Sugar, Malt, Salt, Milk Powder)",
+      "Rice Flour",
+      "Wheat Flour",
+      "Malt",
+      "Salt",
+      "Milk Powder",
       "Honey",
       "Oligofructose",
       "Cocoa Powder",
-      "Antioxidant (INS 322)",
       "Edible Common Salt",
       "Cocoa Butter"
     ]
@@ -448,13 +484,16 @@
     "image": "in74.jpg",
     "true_ingredients": [
       "Wheat Flour",
-      "Chocolate Chips (sugar, cocoa solids, cocoa butter, permitted emulsifiers (322,476))",
-      "Sugar",
+      "sugar",
+      "cocoa solids",
+      "cocoa butter",
+      "322",
+      "476",
       "Demerara Sugar",
       "Edible Hydrogenated Vegetable Shortening",
       "Eggs",
       "Cocoa Powder",
-      "Raising Agent (500(ii))",
+      "500(ii)",
       "Salt"
     ]
   },
@@ -468,16 +507,18 @@
       "Liquid Glucose",
       "Sprinkled Sugar",
       "Milk Solids",
-      "Raising Agents (503(ii), 500(ii))",
+      "503(ii)",
+      "500(ii)",
       "Iodized Salt",
-      "Emulsifier(322(i))"
+      "322(i)"
     ]
   },
   {
     "image": "in76.jpg",
     "true_ingredients": [
       "organic amaranth",
-      "organic dry fruits(cashew, raisin)",
+      "cashew",
+      "raisin",
       "organic sunflower seeds",
       "organic honey",
       "almond",
@@ -486,7 +527,7 @@
       "figs",
       "organic brown sugar",
       "vanilla",
-      "raising agent (INS 500(ii))"
+      "500(ii)"
     ]
   },
   {
@@ -519,7 +560,7 @@
       "dehydrated apple",
       "rice bran oil",
       "organic brown sugar",
-      "raising agent(INS 500(ii))",
+      "500(ii)",
       "cinnamon",
       "vanilla"
     ]
@@ -545,18 +586,21 @@
     "image": "in82.jpg",
     "true_ingredients": [
       "Refined Wheat Flour",
-      "CHOCO CHIPS (SUGAR, COCOA SOLIDS, COCOA BUTTER, MALTO DEXTRIN, DEXTROSE, ANTIOXIDANT (322))",
-      "Sugar",
+      "SUGAR",
+      "COCOA SOLIDS",
+      "COCOA BUTTER",
+      "MALTO DEXTRIN",
+      "DEXTROSE",
+      "322",
       "INTERESTERIFIED VEGETABLE FAT",
       "Milk Solids",
       "Butter",
       "Oats",
       "LIQUID GLUCOSE",
       "SUGAR SOLUTION",
-      "RAISING AGENT (503 (ii))",
+      "503(ii)",
       "EDIBLE COMMON SALT",
-      "EMULSIFIER (322)",
-      "RAISING AGENT (500 (ii))"
+      "500(ii)"
     ]
   },
   {
@@ -564,16 +608,19 @@
     "true_ingredients": [
       "Refined Wheat Flour (MAIDA)",
       "Sugar",
-      "Dark Chocolate Chips (Sugar, Cocoa Solids, Cocoa Butter, Dextrose, Emulsifier (INS 322(i)) and Artificial Flavouring Substances - Vanilla)",
-      "Refined Palm Oil",
-      "Milk Choco Chips (Sugar, Hydrogenated Vegetable Fat, Milk Solids, Cocoa Solids, Emulsifier (INS 322(i)) and Natural Flavours & Natural Flavouring Substances)",
-      "Invert Syrup",
-      "Milk Solids",
-      "Edible Desiccated Coconut",
-      "Raising Agents (INS 503(ii), INS 500(ii))",
       "Cocoa Solids",
-      "Iodized Salt",
-      "Emulsifier (INS 322(i))"
+      "Cocoa Butter",
+      "Dextrose",
+      "322(i)",
+      "Vanilla",
+      "Refined Palm Oil",
+      "Hydrogenated Vegetable Fat",
+      "Milk Solids",
+      "Invert Syrup",
+      "Edible Desiccated Coconut",
+      "503(ii)",
+      "500(ii)",
+      "Iodized Salt"
     ]
   },
   {
@@ -588,11 +635,12 @@
       "Butter",
       "Brown Sugar",
       "Liquid Glucose",
-      "Raising Agents (503(ii), 500(ii))",
+      "503(ii)",
+      "500(ii)",
       "Cinnamon Powder",
       "Iodized Salt",
-      "Acidity Regulator (341(i))",
-      "Emulsifier (472(e))"
+      "341(i)",
+      "472(e)"
     ]
   },
   {
@@ -603,7 +651,13 @@
       "Ragi Flour",
       "Amaranth Flour",
       "Organic Jaggery",
-      "Dry Fruits & Seeds (Sesame Seeds/Til, Almonds, Walnuts, Dates, Cashews, Pista, Watermelon Seeds)",
+      "Sesame Seeds/Til",
+      "Almonds",
+      "Walnuts",
+      "Dates",
+      "Cashews",
+      "Pista",
+      "Watermelon Seeds",
       "Milk",
       "Rock Salt"
     ]
@@ -657,15 +711,23 @@
   {
     "image": "in97.jpg",
     "true_ingredients": [
-      "Cake Concentrate (Milk Solids, Starch, Baking Powder, Refined Wheat Flour, Emulsifiers and Stabilizers (E417, E415), Salt, Colour (E171), Flavouring - Vanilla)",
+      "Milk Solids",
+      "Starch",
+      "Baking Powder",
       "Refined Wheat Flour",
+      "E417",
+      "E415",
+      "Salt",
+      "E171",
+      "Flavouring - Vanilla",
       "Sugar",
       "Vegetable Oil",
       "Water",
       "Coco Powder",
-      "Preservative (INS202, INS200)",
-      "Humectant (INS422)",
-      "Leaving Agents (INS500 (ii))"
+      "202",
+      "200",
+      "422",
+      "500(ii)"
     ]
   },
   {
@@ -678,7 +740,7 @@
       "Wholewheat Flour (Atta)",
       "Walnuts",
       "Banana Powder",
-      "Raising Agent (INS500(ii))"
+      "500(ii)"
     ]
   },
   {
@@ -727,7 +789,8 @@
       "Cocoa Solids",
       "Cocoa Butter",
       "Mango Flavour",
-      "Emulsifiers (322,476)",
+      "322",
+      "476",
       "Glazing Agents (Shellac)"
     ]
   },
@@ -738,7 +801,8 @@
       "Hydrogenated Vegetable Oil",
       "Milk Solids",
       "Cocoa Solids",
-      "Permitted Emulsifying And Stabilizing Agents (INS 322, INS 476)",
+      "322",
+      "476",
       "Salt"
     ]
   },
@@ -748,7 +812,8 @@
       "Sugar",
       "Edible Vegetable Fat",
       "Cocoa Solids",
-      "Emulsifiers (492, 322)"
+      "492",
+      "322"
     ]
   },
   {
@@ -759,7 +824,8 @@
       "Cocoa Butter",
       "Cocoa Solids",
       "Almond Bits",
-      "Emulsifiers (476,322 (i))"
+      "476",
+      "322(i)"
     ]
   },
   {
@@ -769,18 +835,20 @@
       "Milk Solids",
       "Cocoa Butter",
       "Cocoa Solids",
-      "Emulsifiers (476,322 (i))"
+      "476",
+      "322(i)"
     ]
   },
   {
     "image": "in112.jpg",
     "true_ingredients": [
-      "Maltitol (INS 965(i))",
+      "965(i)",
       "Cocoa Butter",
       "Cocoa Powder",
       "Almonds",
       "Fructo-oligosaccharides",
-      "Emulsifiers (INS 322, INS 476)",
+      "322",
+      "476",
       "Flavouring (Hazelnut)"
     ]
   },
@@ -790,7 +858,7 @@
       "Cocoa Solids",
       "Sugar",
       "Cocoa Butter",
-      "Emulsifier (INS 322)"
+      "322"
     ]
   },
   {
@@ -807,9 +875,10 @@
       "Wheat Starch",
       "Sunflowerseed Oil (High Oleic Acid)",
       "Whey Protein Concentrate",
-      "Emulsifier (Lecithin - INS 322)",
+      "322",
       "Powdered Barley Malt Extract",
-      "Raising Agents (INS 503ii, INS 500ii)",
+      "503(ii)",
+      "500(ii)",
       "Iodized Salt"
     ]
   },
@@ -823,10 +892,12 @@
       "Starch",
       "Cocoa Solids",
       "Palmolein Oil",
-      "Emulsifiers (442, 322, 476)",
+      "442",
+      "322",
+      "476",
       "Edible Salt",
       "Yeast",
-      "Raising Agent (500(ii))",
+      "500(ii)",
       "Improver (Enzyme)"
     ]
   },
@@ -855,11 +926,14 @@
       "Corn",
       "Edible Vegetable Oil (Palmolein Oil)",
       "Sugar",
-      "Spices & Condiments (Garlic Powder, Onion Powder, Chilli, Spice Extract)",
+      "Garlic Powder",
+      "Onion Powder",
+      "Chilli",
+      "Spice Extract",
       "Rice Flour",
       "Iodised Salt",
-      "Potassium Chloride (508)",
-      "Citric Acid (330)"
+      "508",
+      "330"
     ]
   },
   {
@@ -867,8 +941,8 @@
     "true_ingredients": [
       "Water",
       "Tomato Paste",
-      "Acidity Regulator (INS 330)",
-      "Antioxidant (INS 300)"
+      "330",
+      "300"
     ]
   },
   {
@@ -881,10 +955,11 @@
       "Corn Starch",
       "Onion",
       "Garlic",
-      "Emulsifying and stabilizing Agents (1422, 415)",
-      "Acidity Regulator (260)",
+      "1422",
+      "415",
+      "260",
       "Spices & Condiments",
-      "Preservative (211)"
+      "211"
     ]
   },
   {
@@ -901,13 +976,14 @@
     "image": "in176.jpg",
     "true_ingredients": [
       "Semolina",
-      "Edible vegetable fat-interesterified (Made from Palm Oil, Palm Kernel Oil)",
+      "Made from Palm Oil",
+      "Palm Kernel Oil",
       "Bengal Gram Dal",
       "Cashew Nut",
       "Salt",
       "Curry Leaves",
-      "Sodium Bicarbonate (INS 500 ii)",
-      "Silica (INS 551)",
+      "500(ii)",
+      "551",
       "Mustard",
       "Green Chilli",
       "Ginger"
@@ -921,11 +997,15 @@
       "Water",
       "Sugar",
       "Cream (From Milk)",
-      "Thickeners (1422 (From Maize), 1442 (From Maize))",
+      "1422",
+      "1442",
       "Milk Solids",
       "Gelatine",
       "Flavours",
-      "Acidity Regulators (331, 332, 270, 330)",
+      "331",
+      "332",
+      "270",
+      "330",
       "Enzyme (Lactase)",
       "Live Cultures"
     ]
@@ -949,8 +1029,10 @@
       "Water",
       "Milk Solids",
       "Sugar",
-      "Stabilizers (461, 412, 407)",
-      "Emulsifier (471)"
+      "461",
+      "412",
+      "407",
+      "471"
     ]
   },
   {
@@ -961,18 +1043,24 @@
       "Palm Oil",
       "Sugar",
       "Sunflower Oil",
-      "Concentrated Fruit Juice (Redcurrant, Blackcurrant, Cherry)",
+      "Redcurrant",
+      "Blackcurrant",
+      "Cherry",
       "Salt",
-      "Gelling Agent: Pectins (from Fruit)",
-      "Acidity Regulator: Citric Acid",
+      "Pectins (from Fruit)",
+      "Citric Acid",
       "Dried Whole Milk",
-      "Emulsifier: Sunflower Lecithin"
+      "Sunflower Lecithin"
     ]
   },
   {
     "image": "IMG_0029.png",
     "true_ingredients": [
-      "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+      "with Wheatflour",
+      "Calcium Carbonate",
+      "Iron",
+      "Niacin",
+      "Thiamin",
       "Unsalted Butter (Milk)",
       "Caster Sugar",
       "Cornflour",
@@ -982,7 +1070,11 @@
   {
     "image": "IMG_0030.png",
     "true_ingredients": [
-      "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+      "with Wheatflour",
+      "Calcium Carbonate",
+      "Iron",
+      "Niacin",
+      "Thiamin",
       "Butter (Milk)",
       "Sugar",
       "Cornflour",
@@ -993,7 +1085,7 @@
   {
     "image": "IMG_0031.png",
     "true_ingredients": [
-      "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+      "with Wheatflour",
       "Calcium Carbonate",
       "Iron",
       "Niacin",
@@ -1003,7 +1095,7 @@
       "Cornflour",
       "Rice Flour",
       "Salt",
-      "Raising Agent: Sodium Bicarbonate"
+      "Sodium Bicarbonate"
     ]
   },
   {
@@ -1014,9 +1106,9 @@
       "Coconut Oil",
       "Fat Reduced Cocoa Powder",
       "Dried Whey (Milk)",
-      "Emulsifier: Soya Lecithin",
+      "Soya Lecithin",
       "Salt",
-      "Raising Agent: Sodium Bicarbonate",
+      "Sodium Bicarbonate",
       "Vanilla Extract"
     ]
   },
@@ -1063,43 +1155,53 @@
       "Sugar",
       "Glucose Syrup",
       "Almond Halves",
-      "Crisped Rice (Rice Flour, Wheatflour, Sugar, Malted Barley, Salt)",
-      "Freeze-Dried Strawberry Slices (Freeze-Dried Strawberry Slices, Sunflower Oil)",
+      "Rice Flour",
+      "Wheatflour",
+      "Malted Barley",
+      "Salt",
+      "Freeze-Dried Strawberry Slices",
+      "Sunflower Oil",
       "Honey",
       "Oat Flour",
-      "Salt",
       "Natural Flavoring",
       "Caramelised Sugar",
-      "Antioxidant: Tocopherol-Rich Extract"
+      "Tocopherol-Rich Extract"
     ]
   },
   {
     "image": "IMG_0037.png",
     "true_ingredients": [
       "Oat Flakes",
-      "Vegetable Oil (Sunflower, Rapeseed)",
+      "Sunflower",
+      "Rapeseed",
       "Sugar",
       "Almond Halves",
-      "Rice Crisp (Rice Flour, Wheatflour (contains Gluten), Sugar, Malted Barley (contains Gluten), Salt)",
+      "Rice Flour",
+      "Wheatflour (contains Gluten)",
+      "Malted Barley (contains Gluten)",
+      "Salt",
       "Glucose Syrup",
-      "Cornflakes (Maize Flour, Salt)",
+      "Maize Flour",
       "Sliced Brazil Nuts",
       "Chopped Roasted Hazelnuts",
       "Chopped Pecan Nuts",
       "Oat Flour",
       "Flavourings",
       "Honey",
-      "Salt",
       "Caramelised Sugar",
-      "Antioxidant : Tocopherol-rich Extract"
+      "Tocopherol-rich Extract"
     ]
   },
   {
     "image": "IMG_0038.png",
     "true_ingredients": [
       "Oat Flakes",
-      "Maple Flavour Barley Flakes (Barley, Sugar, Water, Natural Flavouring)",
-      "Toasted Malted Wheatflakes (Wheat, Barley Malt Extract)",
+      "Barley",
+      "Sugar",
+      "Water",
+      "Natural Flavouring",
+      "Wheat",
+      "Barley Malt Extract",
       "Sunflower Seeds",
       "Barley Flakes",
       "Roasted Hazelnuts",
@@ -1114,17 +1216,21 @@
     "true_ingredients": [
       "Oat Flakes",
       "Sugar",
-      "Juice Infused Cranberries (Cranberries, Concentrated Apple Juice, Sunflower Oil)",
+      "Cranberries",
+      "Concentrated Apple Juice",
+      "Sunflower Oil",
       "Sultanas",
       "Rapeseed Oil",
       "Desiccated Coconut",
-      "Salted Caramelised Almonds (Almonds, Sugar, Dextrose, Honey, Salt)",
-      "Salted Caramelised Hazelnuts (Hazelnuts, Sugar, Dextrose, Honey, Salt)",
+      "Almonds",
+      "Dextrose",
+      "Honey",
+      "Salt",
+      "Hazelnuts",
       "Sunflower Seeds",
-      "Salted Caramelised Pistachios (Pistachio Nuts, Sugar, Dextrose, Honey, Salt)",
+      "Pistachio Nuts",
       "Black Treacle",
-      "Pumpkin Seeds",
-      "Honey"
+      "Pumpkin Seeds"
     ]
   },
   {
@@ -1201,7 +1307,7 @@
       "Dried Whole Milk",
       "Cocoa Mass",
       "Ground Hazelnuts",
-      "Emulsifier: Sunflower Lecithin",
+      "Sunflower Lecithin",
       "Natural Flavoring"
     ]
   },
@@ -1227,7 +1333,7 @@
       "Italian Nibbed Almonds",
       "Caramelised Sugar",
       "Dried Skimmed Milk",
-      "Emulsifier: Soya Lecithin",
+      "Soya Lecithin",
       "Sea Salt",
       "Natural Flavouring",
       "Vanilla Extract"
@@ -1238,7 +1344,8 @@
     "true_ingredients": [
       "Sugar",
       "Glucose Syrup",
-      "Sweetened Condensed Skimmed Milk (Skimmed Milk, Sugar, Lactose (Milk))",
+      "Skimmed Milk",
+      "Lactose (Milk)",
       "Palm Oil",
       "Butter Oil",
       "Cocoa Butter",
@@ -1246,7 +1353,7 @@
       "Cocoa Mass",
       "Invert Sugar Syrup",
       "Salt",
-      "Emulsifier: Lecithin (Soya)",
+      "Lecithin (Soya)",
       "Skimmed Milk Powder",
       "Natural Flavourings"
     ]
@@ -1257,7 +1364,8 @@
       "Sugar",
       "Glucose Syrup",
       "Cornflour",
-      "Acid: Citric Acid, Malic Acid",
+      "Citric Acid",
+      "Malic Acid",
       "Natural Flavourings",
       "Sunflower Oil",
       "Natural Colour: Anthocyanins (from Grape, Black Carrot, Radish, Sweet Potato)",
@@ -1265,19 +1373,24 @@
       "Beetroot Red",
       "Carotenes",
       "Plain Caramel",
-      "Stabiliser: Gum Arabic",
+      "Gum Arabic",
       "Safflower Concentrate",
-      "Glazing Agent: Carnauba Wax",
+      "Carnauba Wax",
       "Spirulina Concentrate"
     ]
   },
   {
     "image": "IMG_0054.png",
     "true_ingredients": [
-      "Sparkling Green Tea (Green Tea, Carbonated Water)",
+      "Green Tea",
+      "Carbonated Water",
       "Sugar",
-      "Natural Flavourings (Orange, Mango)",
-      "Fruit, Vegetable and Plant Concentrates (Safflower, Carrot, Blackcurrants, Lemon)",
+      "Orange",
+      "Mango",
+      "Safflower",
+      "Carrot",
+      "Blackcurrants",
+      "Lemon",
       "Kombucha Culture"
     ]
   },
@@ -1290,7 +1403,7 @@
       "Pineapple Puree",
       "Pineapple Juice",
       "Passion Fruit Juice",
-      "Acidity Regulator: Citric Acid"
+      "Citric Acid"
     ]
   },
   {
@@ -1301,7 +1414,8 @@
       "Sugar",
       "Sea Salt",
       "Dried Balsamic Vinegar",
-      "Acid: Citric Acid, Tartaric Acid",
+      "Citric Acid",
+      "Tartaric Acid",
       "Gluten Free Dried Barley Malt Vinegar",
       "Rice Flour",
       "Natural Flavouring"
@@ -1315,28 +1429,39 @@
       "Brown Sugar",
       "Cornflour",
       "Concentrated Lemon Juice",
-      "Cultures: Bifidobacterium, Lactobacillus bulgaricus, Streptococcus thermophilus"
+      "Bifidobacterium",
+      "Lactobacillus bulgaricus",
+      "Streptococcus thermophilus"
     ]
   },
   {
     "image": "IMG_0067.png",
     "true_ingredients": [
       "Whipping Cream (Milk)",
-      "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+      "with Wheatflour",
+      "Calcium Carbonate",
+      "Iron",
+      "Niacin",
+      "Thiamin",
       "Pasteurised Egg",
-      "Dark Chocolate (Cocoa Mass, Sugar, Cocoa Butter, Emulsifier: Soya Lecithin, Vanilla Flavouring)",
+      "Cocoa Mass",
       "Sugar",
-      "Sweetened Condensed Skimmed Milk (Skimmed Milk, Sugar, Lactose (Milk))",
+      "Cocoa Butter",
+      "Soya Lecithin",
+      "Vanilla Flavouring",
+      "Skimmed Milk",
+      "Lactose (Milk)",
       "Whole Milk",
       "Butter (Milk)",
-      "Milk Chocolate (Sugar, Cocoa Butter, Dried Whole Milk, Cocoa Mass, Emulsifier: Soya Lecithin, Vanilla Flavouring)",
+      "Dried Whole Milk",
       "Golden Syrup (Invert Sugar Syrup)",
       "Palm Oil",
       "Fat Reduced Cocoa Powder",
-      "Humectant: Glycerol",
+      "Glycerol",
       "Rapeseed Oil",
-      "Raising Agent: E450, E501",
-      "Emulsifier: E471",
+      "E450",
+      "E501",
+      "E471",
       "Salt",
       "Cornflour",
       "Flavouring"
@@ -1351,7 +1476,10 @@
       "Strawberry Puree",
       "Cornflour",
       "Natural Flavourings",
-      "Cultures: Bifidobacterium, Lactobacillus acidophilus, Lactobacillus bulgaricus, Streptococcus thermophilus",
+      "Bifidobacterium",
+      "Lactobacillus acidophilus",
+      "Lactobacillus bulgaricus",
+      "Streptococcus thermophilus",
       "Natural Colour: Anthocyanins (from Black Carrots)"
     ]
   },
@@ -1372,10 +1500,12 @@
     "image": "IMG_0072.png",
     "true_ingredients": [
       "British Pork (made with 105g of Raw Pork per 100g of Dry Cured Smoked Back Bacon)",
-      "Curing Salt (Salt, Preservative: Sodium Nitrite, Sodium Nitrate)",
+      "Salt",
+      "Sodium Nitrite",
+      "Sodium Nitrate",
       "Demerara Sugar",
       "Sugar",
-      "Antioxidant: E301"
+      "E301"
     ]
   },
   {
@@ -1394,17 +1524,28 @@
   {
     "image": "IMG_9030.png",
     "true_ingredients": [
-      "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
-      "Milk Chocolate (Sugar, Cocoa Mass, Cocoa Butter, Dried Whole Milk, Dried Whey (Milk), Butter Oil (Milk), Dried Skimmed Milk, Emulsifier: Soya Lecithin)",
+      "with Wheatflour",
+      "Calcium Carbonate",
+      "Iron",
+      "Niacin",
+      "Thiamin",
       "Sugar",
+      "Cocoa Mass",
+      "Cocoa Butter",
+      "Dried Whole Milk",
+      "Dried Whey (Milk)",
+      "Butter Oil (Milk)",
+      "Dried Skimmed Milk",
+      "Soya Lecithin",
       "Butter (Milk)",
       "Palm Oil",
       "Partially Inverted Sugar Syrup",
       "Pasteurised Egg",
       "Salt",
-      "Raising Agent: E450, Sodium Bicarbonate, E503",
-      "Vanilla Flavouring",
-      "Emulsifier: Soya Lecithin"
+      "E450",
+      "Sodium Bicarbonate",
+      "E503",
+      "Vanilla Flavouring"
     ]
   }
 ]

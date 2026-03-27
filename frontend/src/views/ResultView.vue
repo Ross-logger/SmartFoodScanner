@@ -77,7 +77,7 @@
 
         <!-- Edit Mode -->
         <div v-if="isEditing" class="edit-mode">
-          <p class="edit-hint">Fix misspellings, add or remove ingredients. Analysis will re-run on save.</p>
+          <p class="edit-hint">Edit the full ingredient list text. Analysis will re-run on save.</p>
           <div class="edit-ingredients-list">
             <div
               v-for="(ingredient, index) in editableIngredients"
@@ -128,7 +128,7 @@
             <p class="text-gray-600">No ingredients detected</p>
           </div>
 
-          <div v-else class="ingredients-list">
+          <div v-else class="ingredients-list" :class="{ 'single-ingredient-block': ingredients.length === 1 }">
             <div
               v-for="(ingredient, index) in ingredients"
               :key="index"
@@ -194,10 +194,6 @@
           <div class="info-row">
             <span class="info-label">Scan Date:</span>
             <span class="info-value">{{ formatDate(scanResult.created_at) }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Processing Time:</span>
-            <span class="info-value">{{ scanResult.processing_time || 'N/A' }}</span>
           </div>
         </div>
       </div>
@@ -307,19 +303,23 @@ onMounted(async () => {
 
 function isProhibited(ingredient) {
   if (!scanResult.value?.warnings) return false
-  
-  // Check if any warning mentions this ingredient
-  return scanResult.value.warnings.some(warning => 
-    warning.toLowerCase().includes(ingredient.toLowerCase())
-  )
+  const blob = ingredient.toLowerCase()
+  return scanResult.value.warnings.some((warning) => {
+    const w = warning.toLowerCase()
+    const tail = w.includes(':') ? w.split(':').pop().trim() : w
+    for (const chunk of tail.split(/,|\s+and\s+/i)) {
+      const c = chunk.trim()
+      if (c.length >= 3 && blob.includes(c)) return true
+    }
+    return false
+  })
 }
 
 function isAllergen(ingredient) {
   if (!scanResult.value?.analysis?.allergens) return false
-  
-  // Check if ingredient is in the allergens list (case-insensitive)
-  return scanResult.value.analysis.allergens.some(allergen =>
-    allergen.toLowerCase() === ingredient.toLowerCase()
+  const blob = ingredient.toLowerCase()
+  return scanResult.value.analysis.allergens.some((allergen) =>
+    blob.includes(allergen.toLowerCase())
   )
 }
 
@@ -386,7 +386,9 @@ async function shareScan() {
     try {
       await navigator.share({
         title: 'Food Scan Results',
-        text: `Scanned ${ingredients.value.length} ingredients`,
+        text: ingredients.value.length
+          ? `Ingredient list (${ingredients.value.length === 1 ? 'one block' : ingredients.value.length + ' items'})`
+          : 'Scan results',
         url: window.location.href
       })
     } catch (err) {
@@ -502,6 +504,15 @@ async function shareScan() {
 }
 
 .ingredients-list {
+.single-ingredient-block .ingredient-item {
+  @apply w-full;
+}
+
+.single-ingredient-block .ingredient-name {
+  @apply whitespace-pre-wrap break-words text-left;
+}
+
+
   @apply space-y-2;
 }
 
@@ -614,7 +625,7 @@ async function shareScan() {
 }
 
 .analysis-result-text {
-  @apply text-base leading-relaxed;
+  @apply text-base leading-relaxed whitespace-pre-line;
 }
 </style>
 

@@ -199,9 +199,6 @@
           :message="processingMessage"
           :message-class="processingMessageClass"
         />
-        <div v-if="uploadProgress > 0" class="progress-bar">
-          <div class="progress-fill" :style="{ width: uploadProgress + '%' }"></div>
-        </div>
       </div>
     </div>
 
@@ -371,6 +368,14 @@ function truncateText(text, maxLength) {
 
 function getIngredientCount(scan) {
   const ingredients = scan.ingredients || scan.corrected_ingredients || []
+  if (!ingredients?.length) return 0
+  if (ingredients.length === 1 && typeof ingredients[0] === 'string') {
+    const raw = ingredients[0]
+    const m = raw.match(/^INGREDIENTS:\s*(.*)$/i)
+    const body = (m ? m[1] : raw).trim()
+    const parts = body.split(',').map((s) => s.trim()).filter(Boolean)
+    return parts.length || 1
+  }
   return ingredients.length
 }
 </script>
@@ -520,19 +525,12 @@ function getIngredientCount(scan) {
 
 /* Processing & Error */
 .processing-overlay {
-  @apply fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center;
+  /* Near-opaque so primary/green page chrome (e.g. history gradient) does not bleed through */
+  @apply fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/95;
 }
 
 .processing-content {
   @apply max-w-sm mx-auto px-4 text-center;
-}
-
-.progress-bar {
-  @apply w-full h-2 bg-gray-700 rounded-full overflow-hidden mt-4;
-}
-
-.progress-fill {
-  @apply h-full bg-primary-500 transition-all duration-300;
 }
 
 .error-message {
