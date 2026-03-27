@@ -5,36 +5,125 @@ import numpy as np
 import pandas as pd
 
 
+# Whole-line OCR headers (English only; after normalize_text: strip + lower).
 HEADER_PATTERNS = [
-    r"^\s*ingredients\s*:?\s*$",
-    r"^\s*ingredient\s*:?\s*$",
+    r"^\s*ingredients?\s*:?\s*$",
+    r"^\s*(list|table)\s+of\s+ingredients?\s*:?\s*$",
+    r"^\s*ingredients?\s+list\s*:?\s*$",
 ]
 
-GENERIC_BAD_HINTS = [
-    "storage", "store", "nutrition", "energy", "protein",
-    "allergy", "allergens", "manufactured", "distributed",
-    "keep refrigerated", "serving", "calories",
-    "best before", "made in", "suitable for",
-    "po box", "www.", ".com", "recycle"
-]
-
-TAIL_CUT_HINTS = [
+# English-only label footers / nutrition / legal / contact — substring match on lowercased text.
+# One list drives both box filtering and tail trimming (same semantics, no drift).
+_NON_INGREDIENT_HINTS: tuple[str, ...] = (
+    # nutrition panels
+    "nutrition facts",
+    "nutrition information",
+    "nutritional information",
+    "nutritional values",
+    "supplement facts",
+    "energy value",
+    "reference intake",
+    "daily value",
+    "amount per serving",
+    "per 100g",
+    "per 100ml",
+    "serving size",
+    "of which saturates",
+    "of which sugars",
+    "carbohydrate",
+    "total fat",
+    "nutrition",
+    "nutritional",
+    "energy",
+    "protein",
+    "calories",
+    "serving",
+    # allergen / advisory blocks
     "for allergens",
     "allergen advice",
-    "allergens:",
+    "allergen information",
+    "allergen statement",
+    "allergenic ingredients",
+    "contains allergens",
+    "may also contain",
+    "traces of",
+    "allergens",
+    "allergen",
+    "allergy",
+    "allergies",
+    # storage & handling
+    "storage conditions",
+    "storage instruction",
+    "storage instructions",
     "storage",
+    "store in a cool",
+    "store in a dry",
+    "store below",
+    "store at",
     "store in",
     "keep refrigerated",
-    "for best before",
+    "keep frozen",
+    "once opened",
+    "use within",
+    "refrigerate after opening",
+    # dates & batch
+    "best before end",
     "best before",
-    "made in",
+    "for best before",
+    "use by",
+    "use before",
+    "expiry date",
+    "expiration date",
+    "sell by",
+    "batch code",
+    "lot number",
+    "lot no",
+    "batch no",
+    # origin / manufacturing / distribution
     "manufactured by",
+    "manufactured for",
+    "manufactured",
+    "produced by",
+    "packed by",
+    "packed for",
     "distributed by",
+    "distributed in",
+    "distributed",
+    "imported by",
+    "imported from",
+    "made in",
+    "product of",
+    "country of origin",
+    "registered office",
+    # suitability / disposal / misc footer
     "suitable for",
-    "po box",
+    "not suitable for",
+    "recycling",
+    "recycle",
+    # contact & web
+    "https://",
+    "http://",
     "www.",
-    ".com"
-]
+    ".com",
+    ".net",
+    ".org",
+    "e-mail",
+    "email",
+    "contact us",
+    "customer service",
+    "consumer care",
+    "consumer information",
+    "p.o. box",
+    "po box",
+    "@",
+    "telephone",
+    "tel.",
+    "fax",
+    "fax:",
+)
+
+GENERIC_BAD_HINTS = _NON_INGREDIENT_HINTS
+TAIL_CUT_HINTS = _NON_INGREDIENT_HINTS
 
 
 def normalize_text(s: str) -> str:

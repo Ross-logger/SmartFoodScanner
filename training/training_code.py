@@ -1,4 +1,6 @@
 import joblib
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 from scipy.sparse import hstack
@@ -149,6 +151,16 @@ test_out.to_csv("test_box_predictions.csv", index=False)
 print("\nSaved: test_box_predictions.csv")
 
 # save model + vectorizers + threshold (all required for inference)
+MODEL_DIR = Path(__file__).resolve().parent / "models"
+MODEL_DIR.mkdir(parents=True, exist_ok=True)
+_model_prefix = "ingredient_box_classifier_"
+_max_n = 0
+for _p in MODEL_DIR.glob(f"{_model_prefix}*.joblib"):
+    tail = _p.stem[len(_model_prefix):]
+    if tail.isdigit():
+        _max_n = max(_max_n, int(tail))
+_next_n = _max_n + 1
+model_path = MODEL_DIR / f"{_model_prefix}{_next_n}.joblib"
 joblib.dump(
     {
         "model": model,
@@ -158,6 +170,6 @@ joblib.dump(
         "ingredient_hints": INGREDIENT_HINTS,
         "non_ingredient_hints": NON_INGREDIENT_HINTS,
     },
-    "ingredient_box_classifier.joblib",
+    model_path,
 )
-print("Saved: ingredient_box_classifier.joblib")
+print(f"Saved: {model_path}")
