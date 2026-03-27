@@ -265,6 +265,10 @@ def filter_positive_boxes(
 ) -> pd.DataFrame:
     pos = df[df["pred_prob"] >= threshold].copy()
 
+    # Empty frame: skip further filters — pandas boolean indexing on 0 rows can drop columns.
+    if len(pos) == 0:
+        return pos.reset_index(drop=True)
+
     # remove header itself
     pos = pos[~pos["text"].apply(is_header)].copy()
 

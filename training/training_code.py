@@ -12,7 +12,7 @@ from sklearn.metrics import classification_report, f1_score, precision_recall_fs
 # -----------------------------
 # 1. Load data
 # -----------------------------
-CSV_PATH = "ocr_box_labels_fixed_v2.csv"
+CSV_PATH = "dataset_real_and_synthetic.csv"
 
 df = pd.read_csv(CSV_PATH)
 
