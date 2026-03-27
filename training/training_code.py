@@ -1,6 +1,3 @@
-import joblib
-from pathlib import Path
-
 import pandas as pd
 import numpy as np
 from scipy.sparse import hstack
@@ -11,17 +8,67 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, f1_score, precision_recall_fscore_support
 
+
 # -----------------------------
 # 1. Load data
 # -----------------------------
-df = pd.read_csv("ocr_box_labels_fixed_v2.csv")
+CSV_PATH = "ocr_box_labels_fixed_v2.csv"
 
-# basic cleanup
+df = pd.read_csv(CSV_PATH)
+
 df["text"] = df["text"].fillna("").astype(str)
 df["label"] = df["label"].astype(int)
 
+for col in ["confidence", "x1", "y1", "x2", "y2"]:
+    df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
+
+# geometry
+df["width"] = df["x2"] - df["x1"]
+df["height"] = df["y2"] - df["y1"]
+df["x_center"] = (df["x1"] + df["x2"]) / 2.0
+df["y_center"] = (df["y1"] + df["y2"]) / 2.0
+
+
 # -----------------------------
-# 2. Split by image_id
+# 2. Sort boxes within image and create prev/next context
+# -----------------------------
+def add_context_columns(frame: pd.DataFrame) -> pd.DataFrame:
+    frame = frame.copy()
+    frame = frame.sort_values(["image_id", "y_center", "x1"]).reset_index(drop=True)
+
+    prev_texts = []
+    next_texts = []
+
+    for image_id, grp in frame.groupby("image_id", sort=False):
+        grp = grp.sort_values(["y_center", "x1"]).copy()
+        texts = grp["text"].tolist()
+
+        prev_local = [""] + texts[:-1]
+        next_local = texts[1:] + [""]
+
+        prev_texts.extend(prev_local)
+        next_texts.extend(next_local)
+
+    frame["prev_text"] = prev_texts
+    frame["next_text"] = next_texts
+
+    # combined context text
+    frame["context_text"] = (
+        frame["prev_text"].fillna("").astype(str)
+        + " [SEP] "
+        + frame["text"].fillna("").astype(str)
+        + " [SEP] "
+        + frame["next_text"].fillna("").astype(str)
+    )
+
+    return frame
+
+
+df = add_context_columns(df)
+
+
+# -----------------------------
+# 3. Split by image_id
 # -----------------------------
 gss1 = GroupShuffleSplit(n_splits=1, test_size=0.30, random_state=42)
 train_idx, temp_idx = next(gss1.split(df, groups=df["image_id"]))
@@ -39,41 +86,77 @@ print("Train images:", train_df["image_id"].nunique())
 print("Val images:", val_df["image_id"].nunique())
 print("Test images:", test_df["image_id"].nunique())
 
+
 # -----------------------------
-# 3. Manual features
+# 4. Manual features
 # -----------------------------
 INGREDIENT_HINTS = [
     "sugar", "salt", "oil", "flour", "milk", "wheat", "water",
-    "glucose", "butter", "maize", "corn", "vitamin", "iron"
+    "glucose", "butter", "maize", "corn", "lecithin", "pectin",
+    "citric", "flavour", "flavouring", "emulsifier", "strawberry",
+    "cocoa", "egg", "yeast", "barley", "oat", "almond", "peanut"
 ]
 
 NON_INGREDIENT_HINTS = [
     "storage", "store", "nutrition", "energy", "protein",
     "allergy", "allergens", "manufactured", "distributed",
-    "keep refrigerated", "serving", "calories"
+    "keep refrigerated", "serving", "calories", "made in",
+    "po box", "united kingdom", "ireland", "suitable for",
+    "for best before", "best before", "recycle", "www.", ".com"
 ]
 
-def make_manual_features(texts, confs):
+HEADER_HINTS = ["ingredients", "ingredients:", "ingredient", "ingredient:"]
+
+
+def has_any(text: str, words: list[str]) -> int:
+    t = str(text).lower()
+    return int(any(w in t for w in words))
+
+
+def make_manual_features(frame: pd.DataFrame):
     rows = []
-    for text, conf in zip(texts, confs):
-        t = str(text).lower()
+
+    for _, r in frame.iterrows():
+        t = str(r["text"]).lower()
+        prev_t = str(r["prev_text"]).lower()
+        next_t = str(r["next_text"]).lower()
+
         rows.append({
-            "ocr_confidence": float(conf),
+            "ocr_confidence": float(r["confidence"]),
             "char_len": len(t),
             "word_count": len(t.split()),
             "digit_count": sum(c.isdigit() for c in t),
             "comma_count": t.count(","),
             "percent_count": t.count("%"),
             "paren_count": t.count("(") + t.count(")"),
-            "has_ingredient_hint": int(any(w in t for w in INGREDIENT_HINTS)),
-            "has_noningredient_hint": int(any(w in t for w in NON_INGREDIENT_HINTS)),
-            "is_all_caps": int(t.isupper()),
+            "colon_count": t.count(":"),
+            "is_all_caps": int(str(r["text"]).isupper()),
+
+            "has_ingredient_hint": has_any(t, INGREDIENT_HINTS),
+            "has_noningredient_hint": has_any(t, NON_INGREDIENT_HINTS),
+            "has_header_hint": has_any(t, HEADER_HINTS),
+
+            "prev_has_ingredient_hint": has_any(prev_t, INGREDIENT_HINTS),
+            "prev_has_noningredient_hint": has_any(prev_t, NON_INGREDIENT_HINTS),
+            "prev_has_header_hint": has_any(prev_t, HEADER_HINTS),
+
+            "next_has_ingredient_hint": has_any(next_t, INGREDIENT_HINTS),
+            "next_has_noningredient_hint": has_any(next_t, NON_INGREDIENT_HINTS),
+            "next_has_header_hint": has_any(next_t, HEADER_HINTS),
+
+            "width": float(r["width"]),
+            "height": float(r["height"]),
+            "x_center": float(r["x_center"]),
+            "y_center": float(r["y_center"]),
         })
+
     return rows
 
+
 # -----------------------------
-# 4. Vectorize
+# 5. Vectorize text + features
 # -----------------------------
+# Use context_text instead of only current box text
 tfidf = TfidfVectorizer(
     analyzer="char",
     ngram_range=(3, 5),
@@ -83,19 +166,13 @@ tfidf = TfidfVectorizer(
 
 dict_vec = DictVectorizer(sparse=True)
 
-X_train_text = tfidf.fit_transform(train_df["text"])
-X_val_text = tfidf.transform(val_df["text"])
-X_test_text = tfidf.transform(test_df["text"])
+X_train_text = tfidf.fit_transform(train_df["context_text"])
+X_val_text = tfidf.transform(val_df["context_text"])
+X_test_text = tfidf.transform(test_df["context_text"])
 
-X_train_manual = dict_vec.fit_transform(
-    make_manual_features(train_df["text"], train_df["confidence"])
-)
-X_val_manual = dict_vec.transform(
-    make_manual_features(val_df["text"], val_df["confidence"])
-)
-X_test_manual = dict_vec.transform(
-    make_manual_features(test_df["text"], test_df["confidence"])
-)
+X_train_manual = dict_vec.fit_transform(make_manual_features(train_df))
+X_val_manual = dict_vec.transform(make_manual_features(val_df))
+X_test_manual = dict_vec.transform(make_manual_features(test_df))
 
 X_train = hstack([X_train_text, X_train_manual])
 X_val = hstack([X_val_text, X_val_manual])
@@ -105,18 +182,20 @@ y_train = train_df["label"].values
 y_val = val_df["label"].values
 y_test = test_df["label"].values
 
+
 # -----------------------------
-# 5. Train model
+# 6. Train model
 # -----------------------------
 model = LogisticRegression(
-    max_iter=2000,
+    max_iter=4000,
     class_weight="balanced",
     random_state=42
 )
 model.fit(X_train, y_train)
 
+
 # -----------------------------
-# 6. Validate
+# 7. Tune threshold on validation
 # -----------------------------
 val_probs = model.predict_proba(X_val)[:, 1]
 
@@ -133,8 +212,9 @@ for thr in np.arange(0.2, 0.81, 0.05):
 print("Best threshold on val:", best_thr)
 print("Best val F1:", best_f1)
 
+
 # -----------------------------
-# 7. Final test
+# 8. Final test
 # -----------------------------
 test_probs = model.predict_proba(X_test)[:, 1]
 test_pred = (test_probs >= best_thr).astype(int)
@@ -142,34 +222,18 @@ test_pred = (test_probs >= best_thr).astype(int)
 print("\nTEST REPORT")
 print(classification_report(y_test, test_pred, digits=4))
 
-# save predictions
+prec, rec, f1, _ = precision_recall_fscore_support(
+    y_test, test_pred, average="binary", pos_label=1
+)
+print(f"Ingredient class -> precision={prec:.4f}, recall={rec:.4f}, f1={f1:.4f}")
+
+
+# -----------------------------
+# 9. Save predictions
+# -----------------------------
 test_out = test_df.copy()
 test_out["pred_prob"] = test_probs
 test_out["pred_label"] = test_pred
-test_out.to_csv("test_box_predictions.csv", index=False)
+test_out.to_csv("test_box_predictions_context.csv", index=False)
 
-print("\nSaved: test_box_predictions.csv")
-
-# save model + vectorizers + threshold (all required for inference)
-MODEL_DIR = Path(__file__).resolve().parent / "models"
-MODEL_DIR.mkdir(parents=True, exist_ok=True)
-_model_prefix = "ingredient_box_classifier_"
-_max_n = 0
-for _p in MODEL_DIR.glob(f"{_model_prefix}*.joblib"):
-    tail = _p.stem[len(_model_prefix):]
-    if tail.isdigit():
-        _max_n = max(_max_n, int(tail))
-_next_n = _max_n + 1
-model_path = MODEL_DIR / f"{_model_prefix}{_next_n}.joblib"
-joblib.dump(
-    {
-        "model": model,
-        "tfidf": tfidf,
-        "dict_vec": dict_vec,
-        "best_thr": float(best_thr),
-        "ingredient_hints": INGREDIENT_HINTS,
-        "non_ingredient_hints": NON_INGREDIENT_HINTS,
-    },
-    model_path,
-)
-print(f"Saved: {model_path}")
+print("\nSaved: test_box_predictions_context.csv")
