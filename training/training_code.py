@@ -12,7 +12,7 @@ from sklearn.metrics import classification_report, f1_score, precision_recall_fs
 # -----------------------------
 # 1. Load data
 # -----------------------------
-CSV_PATH = "dataset_real_and_synthetic.csv"
+CSV_PATH = "dataset_100_real_and_400_synthetic.csv"
 
 df = pd.read_csv(CSV_PATH)
 
