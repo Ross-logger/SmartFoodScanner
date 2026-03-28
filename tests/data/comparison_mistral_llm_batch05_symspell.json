@@ -1,0 +1,743 @@
+{
+  "meta": {
+    "predictions_source": "tests/data/comparison_mistral_llm_batch05.json",
+    "ground_truth_file": "tests/data/true_ingredients_symspell.json",
+    "fuzzy_threshold": 0.8
+  },
+  "summary": {
+    "total_images": 20,
+    "avg_fuzzy_precision": 0.8,
+    "avg_fuzzy_recall": 0.73,
+    "avg_fuzzy_f1": 0.76,
+    "avg_merge_precision": 0.78,
+    "avg_merge_recall": 0.96,
+    "avg_merge_f1": 0.86,
+    "avg_split_gap_recall": 0.24,
+    "avg_split_gap_precision": -0.0
+  },
+  "fuzzy": {
+    "precision": 0.8,
+    "recall": 0.73,
+    "f1": 0.76
+  },
+  "merge": {
+    "precision": 0.78,
+    "recall": 0.96,
+    "f1": 0.86,
+    "total_predictions": 137,
+    "total_ground_truth": 154
+  },
+  "details": [
+    {
+      "image": "in103.jpg",
+      "extracted_count": 7,
+      "ground_truth_count": 8,
+      "fuzzy": {
+        "precision": 0.86,
+        "recall": 0.75,
+        "f1": 0.8
+      },
+      "merge": {
+        "precision": 0.86,
+        "recall": 1.0,
+        "f1": 0.92
+      },
+      "split_gap_recall": 0.25,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Roasted Almond Kernels",
+        "Sugar",
+        "Cocoa Solids",
+        "Cocoa Butter",
+        "Mango Flavour",
+        "Emulsifiers (322,476)",
+        "Glazing Agents (Shellac)"
+      ],
+      "true_ingredients": [
+        "Roasted Almond Kernels",
+        "Sugar",
+        "Cocoa Solids",
+        "Cocoa Butter",
+        "Mango Flavour",
+        "322",
+        "476",
+        "Glazing Agents (Shellac)"
+      ]
+    },
+    {
+      "image": "in105.jpg",
+      "extracted_count": 6,
+      "ground_truth_count": 7,
+      "fuzzy": {
+        "precision": 0.83,
+        "recall": 0.71,
+        "f1": 0.77
+      },
+      "merge": {
+        "precision": 0.83,
+        "recall": 1.0,
+        "f1": 0.91
+      },
+      "split_gap_recall": 0.29,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Sugar",
+        "Hydrogenated Vegetable Oil",
+        "Milk Solids",
+        "Cocoa Solids",
+        "Permitted Emulsifying And Stabilizing Agents (INS 322, INS 476)",
+        "Salt"
+      ],
+      "true_ingredients": [
+        "Sugar",
+        "Hydrogenated Vegetable Oil",
+        "Milk Solids",
+        "Cocoa Solids",
+        "322",
+        "476",
+        "Salt"
+      ]
+    },
+    {
+      "image": "in106.jpg",
+      "extracted_count": 4,
+      "ground_truth_count": 5,
+      "fuzzy": {
+        "precision": 0.75,
+        "recall": 0.6,
+        "f1": 0.67
+      },
+      "merge": {
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1": 0.86
+      },
+      "split_gap_recall": 0.4,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Sugar",
+        "Edible Vegetable Fat",
+        "Cocoa Solids",
+        "Emulsifiers (492, 322)"
+      ],
+      "true_ingredients": [
+        "Sugar",
+        "Edible Vegetable Fat",
+        "Cocoa Solids",
+        "492",
+        "322"
+      ]
+    },
+    {
+      "image": "in108.jpg",
+      "extracted_count": 6,
+      "ground_truth_count": 7,
+      "fuzzy": {
+        "precision": 0.83,
+        "recall": 0.71,
+        "f1": 0.77
+      },
+      "merge": {
+        "precision": 0.83,
+        "recall": 0.86,
+        "f1": 0.85
+      },
+      "split_gap_recall": 0.15,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Sugar",
+        "Milk Solids",
+        "Cocoa Butter",
+        "Cocoa Solids",
+        "Almond Bits",
+        "Emulsifiers (476, 322 (i))"
+      ],
+      "true_ingredients": [
+        "Sugar",
+        "Milk Solids",
+        "Cocoa Butter",
+        "Cocoa Solids",
+        "Almond Bits",
+        "476",
+        "322(i)"
+      ]
+    },
+    {
+      "image": "in109.jpg",
+      "extracted_count": 5,
+      "ground_truth_count": 6,
+      "fuzzy": {
+        "precision": 0.8,
+        "recall": 0.67,
+        "f1": 0.73
+      },
+      "merge": {
+        "precision": 0.8,
+        "recall": 0.83,
+        "f1": 0.82
+      },
+      "split_gap_recall": 0.16,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Sugar",
+        "Milk Solids",
+        "Cocoa Butter",
+        "Cocoa Solids",
+        "Emulsifiers (476,322)"
+      ],
+      "true_ingredients": [
+        "Sugar",
+        "Milk Solids",
+        "Cocoa Butter",
+        "Cocoa Solids",
+        "476",
+        "322(i)"
+      ]
+    },
+    {
+      "image": "in112.jpg",
+      "extracted_count": 7,
+      "ground_truth_count": 8,
+      "fuzzy": {
+        "precision": 0.71,
+        "recall": 0.62,
+        "f1": 0.67
+      },
+      "merge": {
+        "precision": 0.57,
+        "recall": 0.88,
+        "f1": 0.69
+      },
+      "split_gap_recall": 0.26,
+      "split_gap_precision": -0.14,
+      "extracted_ingredients": [
+        "Maltitol (INS 965(i))",
+        "Cocoa Butter",
+        "Cocoa Powder",
+        "Almonds",
+        "fructo oligosaccharides",
+        "Emulsifiers (INS 322, INS 476)",
+        "Flavouring (Hazelnut)"
+      ],
+      "true_ingredients": [
+        "965(i)",
+        "Cocoa Butter",
+        "Cocoa Powder",
+        "Almonds",
+        "Fructo-oligosaccharides",
+        "322",
+        "476",
+        "Flavouring (Hazelnut)"
+      ]
+    },
+    {
+      "image": "in117.jpg",
+      "extracted_count": 4,
+      "ground_truth_count": 4,
+      "fuzzy": {
+        "precision": 0.75,
+        "recall": 0.75,
+        "f1": 0.75
+      },
+      "merge": {
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1": 0.86
+      },
+      "split_gap_recall": 0.25,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Cocoa Solids",
+        "Sugar",
+        "Cocoa Butter",
+        "Emusifier (INS 322)"
+      ],
+      "true_ingredients": [
+        "Cocoa Solids",
+        "Sugar",
+        "Cocoa Butter",
+        "322"
+      ]
+    },
+    {
+      "image": "in118.jpg",
+      "extracted_count": 15,
+      "ground_truth_count": 16,
+      "fuzzy": {
+        "precision": 0.87,
+        "recall": 0.81,
+        "f1": 0.84
+      },
+      "merge": {
+        "precision": 0.87,
+        "recall": 0.88,
+        "f1": 0.87
+      },
+      "split_gap_recall": 0.07,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Sugar",
+        "Skimmed Milk Powder",
+        "Hazelnuts",
+        "Palmolein",
+        "Refined Wheat Flour (MAIDA)",
+        "Refined Salseed Fat",
+        "Low Fat Cocoa Powder",
+        "Palm Oil",
+        "Wheat Starch",
+        "Sunflowerseed Oil (High Oleic Acid)",
+        "Whey Protein Concentrate",
+        "Emulsifier (Lecithin - INS 322)",
+        "Powdered Barley Malt Extract",
+        "Raising Agents (INS 503ii, INS 500ii)",
+        "Iodized Salt"
+      ],
+      "true_ingredients": [
+        "Sugar",
+        "Skimmed Milk Powder",
+        "Hazelnuts",
+        "Palmolein",
+        "Refined Wheat Flour (Maida)",
+        "Refined Salseed Fat",
+        "Low Fat Cocoa Powder",
+        "Palm Oil",
+        "Wheat Starch",
+        "Sunflowerseed Oil (High Oleic Acid)",
+        "Whey Protein Concentrate",
+        "322",
+        "Powdered Barley Malt Extract",
+        "503(ii)",
+        "500(ii)",
+        "Iodized Salt"
+      ]
+    },
+    {
+      "image": "in119.jpg",
+      "extracted_count": 14,
+      "ground_truth_count": 14,
+      "fuzzy": {
+        "precision": 0.71,
+        "recall": 0.71,
+        "f1": 0.71
+      },
+      "merge": {
+        "precision": 0.79,
+        "recall": 1.0,
+        "f1": 0.88
+      },
+      "split_gap_recall": 0.29,
+      "split_gap_precision": 0.08,
+      "extracted_ingredients": [
+        "Sugar",
+        "Edible Vegetable Fat",
+        "Refined Wheat Flour",
+        "Milk Solids",
+        "Starch",
+        "Cocoa Solids",
+        "Palmolein Oil",
+        "Emulsifiers (442, 322, 476)",
+        "Edible Salt",
+        "Yeast",
+        "Raising Agent (500(ii))",
+        "Improver (Enzyme)",
+        "Sugar",
+        "Natural and Nature Identical Flavouring Substances (Caramel, Ethyl Vanillin)"
+      ],
+      "true_ingredients": [
+        "Sugar",
+        "Edible Vegetable Fat",
+        "Refined Wheat Flour",
+        "Milk Solids",
+        "Starch",
+        "Cocoa Solids",
+        "Palmolein Oil",
+        "442",
+        "322",
+        "476",
+        "Edible Salt",
+        "Yeast",
+        "500(ii)",
+        "Improver (Enzyme)"
+      ]
+    },
+    {
+      "image": "in121.jpg",
+      "extracted_count": 8,
+      "ground_truth_count": 7,
+      "fuzzy": {
+        "precision": 0.88,
+        "recall": 1.0,
+        "f1": 0.93
+      },
+      "merge": {
+        "precision": 0.88,
+        "recall": 1.0,
+        "f1": 0.93
+      },
+      "split_gap_recall": 0.0,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Sugar",
+        "Liquid Glucose",
+        "Cocoa Solids",
+        "Edible Vegetable Oil (Palm Oil)",
+        "Milk Solids",
+        "Iodised Salt",
+        "Emulsifier (Lecithin of Soya Origin)",
+        "Artificial Flavouring Substances - Vanilla"
+      ],
+      "true_ingredients": [
+        "Sugar",
+        "Liquid Glucose",
+        "Cocoa Solids",
+        "Edible Vegetable Oil (Palm Oil)",
+        "Milk Solids",
+        "Iodised Salt",
+        "Emulsifier (Lecithin of Soy Origin)"
+      ]
+    },
+    {
+      "image": "in134.jpg",
+      "extracted_count": 2,
+      "ground_truth_count": 2,
+      "fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "merge": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "split_gap_recall": 0.0,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Red Rice Flour",
+        "Salt"
+      ],
+      "true_ingredients": [
+        "Red Rice Flour",
+        "Salt"
+      ]
+    },
+    {
+      "image": "in140.jpg",
+      "extracted_count": 8,
+      "ground_truth_count": 11,
+      "fuzzy": {
+        "precision": 0.62,
+        "recall": 0.45,
+        "f1": 0.53
+      },
+      "merge": {
+        "precision": 0.62,
+        "recall": 1.0,
+        "f1": 0.77
+      },
+      "split_gap_recall": 0.55,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Corn",
+        "Edible Vegetable Oil (Palmolein Oil)",
+        "Sugar",
+        "Spices & Condiments (Garlic Powder, Onion Powder, Chilli, Spice Extract)",
+        "Rice Flour",
+        "Iodised Salt",
+        "Potassium Chloride (508)",
+        "Citric Acid (330)"
+      ],
+      "true_ingredients": [
+        "Corn",
+        "Edible Vegetable Oil (Palmolein Oil)",
+        "Sugar",
+        "Garlic Powder",
+        "Onion Powder",
+        "Chilli",
+        "Spice Extract",
+        "Rice Flour",
+        "Iodised Salt",
+        "508",
+        "330"
+      ]
+    },
+    {
+      "image": "in145.jpg",
+      "extracted_count": 4,
+      "ground_truth_count": 4,
+      "fuzzy": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5
+      },
+      "merge": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.67
+      },
+      "split_gap_recall": 0.5,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Water",
+        "Tomato Paste",
+        "Acidity Regulator (INS 330)",
+        "Antioxidant (INS 300)"
+      ],
+      "true_ingredients": [
+        "Water",
+        "Tomato Paste",
+        "330",
+        "300"
+      ]
+    },
+    {
+      "image": "in147.jpg",
+      "extracted_count": 11,
+      "ground_truth_count": 12,
+      "fuzzy": {
+        "precision": 0.73,
+        "recall": 0.67,
+        "f1": 0.7
+      },
+      "merge": {
+        "precision": 0.73,
+        "recall": 1.0,
+        "f1": 0.84
+      },
+      "split_gap_recall": 0.33,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Tomato Puree",
+        "Water",
+        "Sugar",
+        "Iodized Salt",
+        "Corn Starch",
+        "Onion",
+        "Garlic",
+        "Emulsifying and stabilizing Agents (1422, 415)",
+        "Acidity Regulator (260)",
+        "Spices & Condiments",
+        "Preservative (211)"
+      ],
+      "true_ingredients": [
+        "Tomato Puree",
+        "Water",
+        "Sugar",
+        "Iodized Salt",
+        "Corn Starch",
+        "Onion",
+        "Garlic",
+        "1422",
+        "415",
+        "260",
+        "Spices & Condiments",
+        "211"
+      ]
+    },
+    {
+      "image": "in175.jpg",
+      "extracted_count": 5,
+      "ground_truth_count": 5,
+      "fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "merge": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "split_gap_recall": 0.0,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Wheat Flour (Atta)",
+        "RO-purified Water",
+        "Edible Vegetable Oil (Sunflower)",
+        "Edible Hydrogenated Vegetable Fat",
+        "Iodized Salt"
+      ],
+      "true_ingredients": [
+        "Wheat Flour (Atta)",
+        "RO-purified Water",
+        "Edible Vegetable Oil (Sunflower)",
+        "Edible Hydrogenated Vegetable Fat",
+        "Iodized Salt"
+      ]
+    },
+    {
+      "image": "in176.jpg",
+      "extracted_count": 11,
+      "ground_truth_count": 12,
+      "fuzzy": {
+        "precision": 0.73,
+        "recall": 0.67,
+        "f1": 0.7
+      },
+      "merge": {
+        "precision": 0.73,
+        "recall": 0.92,
+        "f1": 0.81
+      },
+      "split_gap_recall": 0.25,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Semolina",
+        "Edible vegetable fat-interesterified (Made from Palm Oil and Palm Kernel Oil)",
+        "Bengal Gram Dal",
+        "Cashew Nut",
+        "Salt",
+        "Curry Leaves",
+        "Sodium Bicarbonate (INS 500 ii)",
+        "Silica (INS 551)",
+        "Mustard",
+        "Green Chilli",
+        "Ginger"
+      ],
+      "true_ingredients": [
+        "Semolina",
+        "Made from Palm Oil",
+        "Palm Kernel Oil",
+        "Bengal Gram Dal",
+        "Cashew Nut",
+        "Salt",
+        "Curry Leaves",
+        "500(ii)",
+        "551",
+        "Mustard",
+        "Green Chilli",
+        "Ginger"
+      ]
+    },
+    {
+      "image": "in177.jpg",
+      "extracted_count": 12,
+      "ground_truth_count": 16,
+      "fuzzy": {
+        "precision": 0.83,
+        "recall": 0.62,
+        "f1": 0.71
+      },
+      "merge": {
+        "precision": 0.83,
+        "recall": 1.0,
+        "f1": 0.91
+      },
+      "split_gap_recall": 0.38,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Skim Milk",
+        "Concentrated Skim Milk",
+        "Water",
+        "Sugar",
+        "Cream (From Milk)",
+        "Thickeners (1422 (From Maize), 1442 (From Maize))",
+        "Milk Solids",
+        "Gelatine",
+        "Flavours",
+        "Acidity Regulators (331, 332, 270, 330)",
+        "Enzyme (Lactase)",
+        "Live Cultures"
+      ],
+      "true_ingredients": [
+        "Skim Milk",
+        "Concentrated Skim Milk",
+        "Water",
+        "Sugar",
+        "Cream (From Milk)",
+        "1422",
+        "1442",
+        "Milk Solids",
+        "Gelatine",
+        "Flavours",
+        "331",
+        "332",
+        "270",
+        "330",
+        "Enzyme (Lactase)",
+        "Live Cultures"
+      ]
+    },
+    {
+      "image": "in179.jpg",
+      "extracted_count": 2,
+      "ground_truth_count": 2,
+      "fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "merge": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "split_gap_recall": 0.0,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Milk",
+        "Lemon"
+      ],
+      "true_ingredients": [
+        "Milk",
+        "Lemon"
+      ]
+    },
+    {
+      "image": "in180.jpg",
+      "extracted_count": 1,
+      "ground_truth_count": 1,
+      "fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "merge": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "split_gap_recall": 0.0,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Durum Wheat Semolina"
+      ],
+      "true_ingredients": [
+        "Durum Wheat Semolina"
+      ]
+    },
+    {
+      "image": "in181.jpg",
+      "extracted_count": 5,
+      "ground_truth_count": 7,
+      "fuzzy": {
+        "precision": 0.6,
+        "recall": 0.43,
+        "f1": 0.5
+      },
+      "merge": {
+        "precision": 0.6,
+        "recall": 1.0,
+        "f1": 0.75
+      },
+      "split_gap_recall": 0.57,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Water",
+        "Milk Solids",
+        "Sugar",
+        "Stabilizers (E461, E412, E407)",
+        "Emulsifier (E471)"
+      ],
+      "true_ingredients": [
+        "Water",
+        "Milk Solids",
+        "Sugar",
+        "461",
+        "412",
+        "407",
+        "471"
+      ]
+    }
+  ]
+}
