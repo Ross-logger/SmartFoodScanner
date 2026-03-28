@@ -1,3 +1,6 @@
+from pathlib import Path
+
+import joblib
 import pandas as pd
 import numpy as np
 from scipy.sparse import hstack
@@ -12,7 +15,11 @@ from sklearn.metrics import classification_report, f1_score, precision_recall_fs
 # -----------------------------
 # 1. Load data
 # -----------------------------
-CSV_PATH = "dataset_100_real_and_400_synthetic.csv"
+_TRAINING_DIR = Path(__file__).resolve().parent
+_DATASETS_DIR = _TRAINING_DIR / "datasets"
+_OUTPUTS_DIR = _TRAINING_DIR / "outputs"
+_MODELS_DIR = _TRAINING_DIR / "models"
+CSV_PATH = _DATASETS_DIR / "dataset_augmented_1000.csv"
 
 df = pd.read_csv(CSV_PATH)
 
@@ -234,6 +241,21 @@ print(f"Ingredient class -> precision={prec:.4f}, recall={rec:.4f}, f1={f1:.4f}"
 test_out = test_df.copy()
 test_out["pred_prob"] = test_probs
 test_out["pred_label"] = test_pred
-test_out.to_csv("test_box_predictions_context.csv", index=False)
+_OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
+_pred_path = _OUTPUTS_DIR / "model_predictions.csv"
+test_out.to_csv(_pred_path, index=False)
 
-print("\nSaved: test_box_predictions_context.csv")
+print(f"\nSaved: {_pred_path}")
+
+_MODELS_DIR.mkdir(parents=True, exist_ok=True)
+_model_path = _MODELS_DIR / "ingredient_box_classifier.joblib"
+joblib.dump(
+    {
+        "classifier": model,
+        "tfidf": tfidf,
+        "dict_vectorizer": dict_vec,
+        "decision_threshold": float(best_thr),
+    },
+    _model_path,
+)
+print(f"Saved: {_model_path}")
