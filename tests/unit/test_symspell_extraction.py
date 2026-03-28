@@ -21,7 +21,7 @@ from backend.services.ingredients_extraction.symspell_extraction import (
 
 def _extract_regex_symspell(ocr_text):
     """Regex section + SymSpell; returns comma-joined string for substring assertions."""
-    rows = extract_ingredient_segments(ocr_text, use_hf_section_detection=False)
+    rows = extract_ingredient_segments(ocr_text)
     return ", ".join(rows) if rows else ""
 
 
@@ -147,8 +147,8 @@ class TestSpellcheckIngredients:
 
         assert result == "water, sugar, salt"
 
-    def test_spellcheck_newline_separated_like_hf_merge(self):
-        """HF merge keeps OCR newlines between ING spans; split treats them like boundaries."""
+    def test_spellcheck_newline_separated(self):
+        """Newline-separated OCR output; split treats them like boundaries."""
         text = "Potatoes\nVegetable Oil\n(Sunflower/Rapeseed)\nSugar"
         result = spellcheck_ingredients(text)
 
@@ -202,7 +202,7 @@ class TestExtractIngredients:
     
     def test_extract_returns_list(self):
         """API returns one comma-joined block in a list from extract_ingredients."""
-        result = extract_ingredients("water, sugar", use_hf_section_detection=False)
+        result = extract_ingredients("water, sugar")
         assert isinstance(result, list)
         assert len(result) == 1
         assert "water" in result[0]

@@ -263,7 +263,6 @@ def spellcheck_ingredients(
 def extract_ingredient_segments(
     ocr_text: str,
     *,
-    use_hf_section_detection: bool = True,
     easyocr_skip_symspell_normalized: Optional[AbstractSet[str]] = None,
 ) -> List[str]:
     """
@@ -283,14 +282,8 @@ def extract_ingredient_segments(
     # Normalize EU-style separators to comma before section extraction/splitting.
     ocr_text = ocr_text.replace("\u00b7", ",").replace("\u2022", ",")
 
-    # Step 1: Extract only the ingredients section (filter headers, footers, etc.)
-    if use_hf_section_detection:
-        from backend.services.ingredients_extraction.hf_section_detection import (
-            extract_ingredients_list_hf,
-        )
-        ingredients_text = extract_ingredients_list_hf(ocr_text) or ocr_text
-    else:
-        ingredients_text = extract_ingredients_section(ocr_text)
+    # Step 1: Extract only the ingredients section (regex-based section detection).
+    ingredients_text = extract_ingredients_section(ocr_text)
 
     ingredients_text = _strip_leading_ingredients_label(ingredients_text)
 
@@ -330,24 +323,17 @@ def extract_ingredient_segments(
 def extract_ingredients(
     ocr_text: str,
     *,
-    use_hf_section_detection: bool = True,
     easyocr_skip_symspell_normalized: Optional[AbstractSet[str]] = None,
 ) -> List[str]:
     """
     Extract and correct the ingredients section from OCR text.
 
     Returns a list of **one** element: all ingredients joined with comma + space,
-    with no leading ``Ingredients`` label. The API still uses ``List[str]`` so
-    the client can treat it as one block (see also ``extract_ingredient_segments``).
-
-    By default uses the HuggingFace NER model for section detection, then
-    SymSpell per-segment correction. Pass ``use_hf_section_detection=False`` to
-    use the legacy regex section helper (tests/scripts).
+    with no leading ``Ingredients`` label. Uses regex section detection followed
+    by SymSpell per-segment correction.
 
     Args:
         ocr_text: Raw OCR text from food label
-        use_hf_section_detection: Use HF NER for section detection (default).
-            If False, uses ``extract_ingredients_section`` (regex).
         easyocr_skip_symspell_normalized: Optional normalized segment keys to
             skip SymSpell for (from EasyOCR line confidence ≥ threshold).
 
@@ -356,7 +342,6 @@ def extract_ingredients(
     """
     segments = extract_ingredient_segments(
         ocr_text,
-        use_hf_section_detection=use_hf_section_detection,
         easyocr_skip_symspell_normalized=easyocr_skip_symspell_normalized,
     )
     if not segments:

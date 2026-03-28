@@ -46,9 +46,6 @@ class DietaryProfile(Base):
     # Mistral OCR (cloud API replaces local EasyOCR)
     use_mistral_ocr = Column(Boolean, default=False)
 
-    # HF ingredient section detection (NER model; scan API always uses HF path)
-    use_hf_section_detection = Column(Boolean, default=True)
-    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

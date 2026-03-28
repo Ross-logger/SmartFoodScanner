@@ -384,27 +384,6 @@ def mock_ocr_reader():
         yield mock_reader
 
 
-@pytest.fixture(scope="function")
-def mock_hf_model():
-    """Mock Hugging Face model for ingredient extraction."""
-    with patch('backend.services.ingredients_extraction.hugging_face_extractor.model') as mock_model:
-        with patch('backend.services.ingredients_extraction.hugging_face_extractor.tokenizer') as mock_tokenizer:
-            # Configure mock tokenizer
-            mock_tokenizer.return_value = {
-                "input_ids": [[1, 2, 3, 4, 5]],
-            }
-            mock_tokenizer.convert_ids_to_tokens.return_value = ["▁Water", "▁Sugar", "▁Salt"]
-            mock_tokenizer.all_special_tokens = ["[CLS]", "[SEP]", "[PAD]"]
-            
-            # Configure mock model
-            mock_output = MagicMock()
-            mock_output.logits.argmax.return_value = [[1, 2, 1]]  # B-ING, I-ING, B-ING
-            mock_model.return_value = mock_output
-            mock_model.config.id2label = {0: "O", 1: "B-ING", 2: "I-ING"}
-            
-            yield mock_model, mock_tokenizer
-
-
 # =============================================================================
 # Cleanup Fixtures
 # =============================================================================

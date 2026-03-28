@@ -40,7 +40,6 @@ pydantic_core==2.41.4
 easyocr==1.7.1
 torch>=2.0.0
 torchvision>=0.15.0
-transformers>=4.30.0
 python-dotenv==1.2.1
 python-jose==3.5.0
 python-Levenshtein==0.27.3

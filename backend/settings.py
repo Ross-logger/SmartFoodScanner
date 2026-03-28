@@ -86,17 +86,10 @@ MISTRAL_OCR_RETRIES = max(1, int(os.getenv("MISTRAL_OCR_RETRIES", "3")))
 # If > 0, shrink the longest side before JPEG+base64 (smaller JSON body; may avoid upstream timeouts).
 MISTRAL_OCR_MAX_LONG_EDGE = int(os.getenv("MISTRAL_OCR_MAX_LONG_EDGE", "0"))
 
-# HuggingFace ingredient section detection model (NER-based). Scan OCR uses this
-# by default; regex section helper is optional (tests/scripts only).
-HF_INGREDIENT_DETECTION_MODEL = os.getenv(
-    "HF_INGREDIENT_DETECTION_MODEL", "openfoodfacts/ingredient-detection"
-)
-
 # =============================================================================
 # Box Classifier + OCR Corrector
 # =============================================================================
 
-USE_BOX_CLASSIFIER = os.getenv("USE_BOX_CLASSIFIER", "true").lower() in ("true", "1", "yes")
 USE_OCR_CORRECTOR = os.getenv("USE_OCR_CORRECTOR", "true").lower() in ("true", "1", "yes")
 BOX_CLASSIFIER_MODEL_PATH = os.getenv(
     "BOX_CLASSIFIER_MODEL_PATH",

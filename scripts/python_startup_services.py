@@ -3,7 +3,7 @@ Run automatically in interactive Python when PYTHONSTARTUP points here.
 
 Recursively imports every submodule under backend.services and binds each
 module object on __main__ as <path_with_underscores> (relative to
-backend.services), e.g. ocr_service, ingredients_extraction_hf_section_detection.
+backend.services), e.g. ocr_service, ingredients_extraction_symspell_extraction.
 Also sets ``services`` -> the ``backend.services`` package.
 
   export PYTHONPATH="/path/to/SmartFoodScanner"
@@ -74,14 +74,8 @@ else:
         setattr(_main, attr, mod)
         _aliases += 1
 
-    _hf_sd = getattr(_main, "ingredients_extraction_hf_section_detection", None)
-    if _hf_sd is not None:
-        _main.hf_section_detection = _hf_sd
-        _main._get_pipeline = _hf_sd._get_pipeline
-        _main.extract_ingredients_list_hf = _hf_sd.extract_ingredients_list_hf
-
     print(
         f"[python_startup_services] Bound {_aliases} service modules on __main__ "
-        f"(_get_pipeline, hf_section_detection, services.<subpkg>, …).",
+        f"(services.<subpkg>, …).",
         file=sys.stderr,
     )

@@ -92,17 +92,31 @@ def scan_ocr(
 
     corrected_text = ocr_text
     ingredients = []
-    used_model_path = False
 
-    # --- Model-based extraction (EasyOCR only) ---
-    if (
-        settings.USE_BOX_CLASSIFIER
-        and ocr_result.easyocr_raw_results
-        and not use_mistral_ocr
-    ):
+    def _symspell_fallback(label: str) -> list:
+        easyocr_skip = None
+        if ocr_result.easyocr_lines:
+            easyocr_skip = build_easyocr_skip_symspell_normalized_keys(
+                ocr_result.easyocr_lines,
+                min_confidence=settings.EASYOCR_SKIP_SYMSPELL_MIN_CONFIDENCE,
+            )
+        result = extract_ingredients(ocr_text, easyocr_skip_symspell_normalized=easyocr_skip)
+        print(f"{label}: {result}")
+        return result
+
+    if dietary_profile and dietary_profile.use_llm_ingredient_extractor:
+        # --- LLM extraction ---
+        llm_result = extract_ingredients_with_llm(ocr_text)
+        if llm_result["success"] and llm_result["ingredients"]:
+            ingredients = _normalize_llm_ingredients(llm_result["ingredients"])
+            print(f"LLM Extracted Ingredients: {ingredients}")
+        else:
+            ingredients = _symspell_fallback("LLM failed – fallback to SymSpell")
+
+    elif ocr_result.easyocr_raw_results and not use_mistral_ocr:
+        # --- Box classifier extraction (default when LLM is off) ---
         try:
-            from backend.services.ingredients_extraction.box_classifier import classify_boxes
-            from backend.services.ingredients_extraction.merge_boxes import extract_ingredients_from_boxes
+            from backend.services.ingredients_extraction.ingredient_box_classifier import classify_boxes, extract_ingredients_from_boxes
             from backend.services.ingredients_extraction.ocr_corrector import correct_ingredient_list
             from backend.services.ingredients_extraction.utils import split_ingredients_text
 
@@ -118,38 +132,19 @@ def scan_ocr(
                 )
                 if ingredients_list:
                     ingredients = [", ".join(ingredients_list)]
-                    used_model_path = True
-                    print(f"Model pipeline - Merged text: {merged_text[:200]}")
-                    print(f"Model pipeline - Corrected ingredients: {ingredients}")
+                    print(f"Box classifier – merged text: {merged_text[:200]}")
+                    print(f"Box classifier – corrected ingredients: {ingredients}")
+
+            if not ingredients:
+                ingredients = _symspell_fallback("Box classifier produced nothing – fallback to SymSpell")
+
         except Exception as e:
-            print(f"Model pipeline failed ({e}), falling back to HF+SymSpell")
+            print(f"Box classifier failed ({e}), falling back to SymSpell")
+            ingredients = _symspell_fallback("Box classifier error – fallback to SymSpell")
 
-    # --- Fallback: existing HF + SymSpell / LLM pipeline ---
-    if not used_model_path:
-        easyocr_skip_symspell_normalized = None
-        if ocr_result.easyocr_lines:
-            easyocr_skip_symspell_normalized = build_easyocr_skip_symspell_normalized_keys(
-                ocr_result.easyocr_lines,
-                min_confidence=settings.EASYOCR_SKIP_SYMSPELL_MIN_CONFIDENCE,
-            )
-
-        if dietary_profile and dietary_profile.use_llm_ingredient_extractor:
-            llm_result = extract_ingredients_with_llm(ocr_text)
-            if llm_result["success"] and llm_result["ingredients"]:
-                ingredients = _normalize_llm_ingredients(llm_result["ingredients"])
-                print(f"LLM Extracted Ingredients (single block): {ingredients}")
-            else:
-                ingredients = extract_ingredients(
-                    ocr_text,
-                    easyocr_skip_symspell_normalized=easyocr_skip_symspell_normalized,
-                )
-                print(f"Fallback to HF section + SymSpell - Extracted Ingredients: {ingredients}")
-        else:
-            ingredients = extract_ingredients(
-                ocr_text,
-                easyocr_skip_symspell_normalized=easyocr_skip_symspell_normalized,
-            )
-            print(f"Extracted Ingredients (HF NER section + SymSpell): {ingredients}")
+    else:
+        # --- Mistral OCR path: no EasyOCR boxes available ---
+        ingredients = _symspell_fallback("Extracted Ingredients (regex section + SymSpell)")
 
     # Analyze ingredients
     analysis = analyze_ingredients(ingredients, dietary_profile)

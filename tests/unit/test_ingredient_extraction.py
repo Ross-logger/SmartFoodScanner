@@ -2,7 +2,6 @@
 Unit Tests for Ingredient Extraction
 
 Tests for ingredient extraction functionality including:
-- Hugging Face model extraction
 - LLM-based extraction (mocked)
 - Various input formats
 - Edge cases and error handling
@@ -23,16 +22,9 @@ from tests.utils.mock_llm import MockLLMService, MockLLMProvider
 from tests.utils.metrics import calculate_precision, calculate_recall
 
 
-class TestHuggingFaceExtractor:
-    """Tests for the Hugging Face model-based extraction."""
-    
-    @pytest.fixture
-    def mock_hf_model(self):
-        """Mock the Hugging Face model and tokenizer."""
-        with patch('backend.services.ingredients_extraction.hugging_face_extractor.model') as mock_model:
-            with patch('backend.services.ingredients_extraction.hugging_face_extractor.tokenizer') as mock_tokenizer:
-                yield mock_model, mock_tokenizer
-    
+class TestExtractor:
+    """Tests for the extractor module."""
+
     def test_extract_simple_ingredients(self):
         """Test extraction from simple ingredient text."""
         # Patch at the import location in extractor.py

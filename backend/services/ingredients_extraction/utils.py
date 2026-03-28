@@ -82,36 +82,6 @@ _RE_WARNING = re.compile(
 _OCR_PHRASE_FIXES = (
     (re.compile(r"concentrate\s+fruit\s+rice", re.IGNORECASE), "concentrated fruit juice"),
 )
-# SymSpell / OCR false friends: keep wording aligned with labels so merge-precision
-# (substring vs joined ground truth) does not penalise harmless variants.
-# HuggingFace token-classification aggregates often insert spaces around
-# punctuation; tighten before SymSpell splits on commas/parentheses.
-_RE_SPACE_BEFORE_PUNCT = re.compile(r"\s+([,;:\)\]\}%])")
-_RE_SPACE_AFTER_OPEN_PUNCT = re.compile(r"([(\[\{])\s+")
-_RE_DIGIT_SPACE_PERCENT = re.compile(r"(\d)\s+%")
-
-
-def normalize_hf_ner_spacing(text: str) -> str:
-    """
-    Remove tokenizer-style gaps before commas, brackets, etc., and after
-    opening brackets — e.g. ``( with foo , bar )`` → ``(with foo, bar)``.
-    Safe to run only on HF NER *word* joins, not on arbitrary prose.
-    """
-    s = text.strip()
-    if not s:
-        return s
-    for _ in range(8):
-        prev = s
-        s = _RE_SPACE_BEFORE_PUNCT.sub(r"\1", s)
-        s = _RE_SPACE_AFTER_OPEN_PUNCT.sub(r"\1", s)
-        s = _RE_DIGIT_SPACE_PERCENT.sub(r"\1%", s)
-        # Footnote star glued to preceding token: "30% *" → "30%*"
-        s = re.sub(r"%\s+\*", "%*", s)
-        if s == prev:
-            break
-    s = re.sub(r"\s{2,}", " ", s).strip()
-    return s
-
 
 _MERGE_ALIGNMENT_FIXES = (
     # "raising agent" is often mis-corrected to "raisin agent" (raisin is in the food dict).
