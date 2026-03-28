@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -12,6 +13,19 @@ from merge_ingredients import run_extraction_for_all_images
 
 _TRAINING_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _TRAINING_DIR.parent
+
+sys.path.insert(0, str(_REPO_ROOT))
+from backend.services.ingredients_extraction.ocr_corrector import correct_ingredient_list  # noqa: E402
+from backend.services.ingredients_extraction.utils import split_ingredients_text  # noqa: E402
+
+
+def apply_ocr_correction(final_text: str) -> str:
+    """Split merged OCR text into candidates, correct them, and rejoin."""
+    if not final_text or not final_text.strip():
+        return final_text
+    candidates = split_ingredients_text(final_text)
+    corrected = correct_ingredient_list(candidates, use_ocr_corrector=True)
+    return ", ".join(corrected) if corrected else final_text
 
 
 def normalize_text(s: str) -> str:
@@ -142,6 +156,7 @@ def evaluate(
     row_gap: float,
     cluster_gap: float,
     fuzzy_threshold: float,
+    use_ocr_corrector: bool = False,
 ) -> tuple[pd.DataFrame, dict[str, float]]:
     pred_merged = run_extraction_for_all_images(
         df_predictions,
@@ -157,7 +172,11 @@ def evaluate(
 
     for _, r in pred_merged.iterrows():
         iid = str(r["image_id"])
-        final_text = str(r["final_text"])
+        raw_final_text = str(r["final_text"])
+        if use_ocr_corrector:
+            final_text = apply_ocr_correction(raw_final_text)
+        else:
+            final_text = raw_final_text
         gt_list = gt_by_image.get(iid)
 
         if gt_list is None:
@@ -209,10 +228,13 @@ def evaluate(
                 for d in pred_details
             )
 
-        rows.append(
-            {
+        row_data: dict = {
                 "image_id": iid,
                 "final_text": final_text,
+        }
+        if use_ocr_corrector:
+            row_data["raw_text_before_correction"] = raw_final_text
+        row_data.update({
                 "ground_truth": ground_truth_str,
                 "gt_matched": gt_matched,
                 "gt_total": gt_total,
@@ -223,8 +245,8 @@ def evaluate(
                 "ingredient_f1": f1,
                 "match_details": match_details_str,
                 "pred_match_details": pred_match_details_str,
-            }
-        )
+        })
+        rows.append(row_data)
 
     out = pd.DataFrame(rows)
     metrics = {
@@ -261,6 +283,13 @@ def main() -> None:
     p.add_argument("--row-gap", type=float, default=90.0, dest="row_gap")
     p.add_argument("--cluster-gap", type=float, default=120.0, dest="cluster_gap")
     p.add_argument("--fuzzy-threshold", type=float, default=85.0, dest="fuzzy_threshold")
+    p.add_argument(
+        "--use-ocr-corrector",
+        action="store_true",
+        default=False,
+        dest="use_ocr_corrector",
+        help="Apply OCR spelling correction before evaluation",
+    )
     args = p.parse_args()
 
     pred_path = args.predictions.resolve()
@@ -281,6 +310,7 @@ def main() -> None:
         row_gap=args.row_gap,
         cluster_gap=args.cluster_gap,
         fuzzy_threshold=args.fuzzy_threshold,
+        use_ocr_corrector=args.use_ocr_corrector,
     )
 
     outp = args.output.resolve()
@@ -297,6 +327,7 @@ def main() -> None:
     print(f"Mean fuzzy ingredient_precision (n={n_p}): {metrics['mean_precision']:.4f}")
     print(f"Mean fuzzy ingredient_f1 (n={n_f1}): {metrics['mean_f1']:.4f}")
     print(f"Fuzzy threshold: {args.fuzzy_threshold}")
+    print(f"OCR corrector: {'ON' if args.use_ocr_corrector else 'OFF'}")
 
     if missing:
         print(

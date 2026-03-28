@@ -14,16 +14,114 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # Allergen Definitions
 # =============================================================================
-
 ALLERGENS = {
-    'gluten': ['wheat', 'barley', 'rye', 'oats', 'gluten'],
-    'dairy': ['milk', 'cheese', 'butter', 'cream', 'yogurt', 'lactose', 'whey'],
-    'nuts': ['peanut', 'almond', 'walnut', 'cashew', 'hazelnut', 'pecan', 'pistachio'],
-    'eggs': ['egg', 'albumin', 'lecithin'],
-    'soy': ['soy', 'soya', 'tofu'],
-    'halal_restricted': ['pork', 'gelatin', 'lard', 'bacon'],
-    'vegetarian_restricted': ['meat', 'chicken', 'beef', 'pork', 'fish', 'gelatin'],
-    'vegan_restricted': ['milk', 'cheese', 'butter', 'honey', 'egg', 'meat', 'chicken', 'beef', 'pork', 'fish']
+    'gluten': [
+        'gluten',
+        'wheat', 'wheat flour', 'whole wheat', 'whole wheat flour', 'wheat flour (atta)',
+        'atta', 'maida', 'semolina', 'durum', 'durum wheat', 'durum wheat semolina',
+        'spelt', 'kamut', 'farro', 'einkorn', 'emmer', 'bulgur', 'couscous',
+        'bran', 'wheat bran', 'wheat germ', 'malt', 'barley', 'barley flour',
+        'barley malt', 'barley malt extract', 'malted barley', 'malt extract',
+        'malt vinegar', 'rye', 'rye flour', 'oats', 'oat flakes', 'oat bran',
+        'triticale', 'seitan', 'breadcrumbs', 'bread crumbs',
+        'wheat starch', 'modified wheat starch'
+    ],
+
+    'dairy': [
+        'milk', 'whole milk', 'skimmed milk', 'skimmilk', 'skim milk',
+        'semi-skimmed milk', 'condensed milk', 'evaporated milk',
+        'milk solids', 'milk powder', 'milk protein', 'milk proteins',
+        'milk fat', 'milk permeate', 'milk derivative',
+        'dried milk', 'dried whole milk', 'dried skimmed milk',
+        'skimmed milk powder', 'whole milk powder',
+        'cheese', 'cheddar', 'mozzarella', 'parmesan', 'gouda', 'gruyere',
+        'butter', 'butterfat', 'butter oil', 'cream', 'double cream',
+        'single cream', 'sour cream', 'whipping cream',
+        'yogurt', 'yoghurt', 'greek yogurt', 'greek yoghurt',
+        'greek style yogurt', 'greek style yoghurt',
+        'kefir', 'curd', 'custard',
+        'whey', 'whey powder', 'whey protein', 'whey protein concentrate',
+        'whey solids', 'casein', 'caseinate', 'sodium caseinate',
+        'calcium caseinate', 'lactose', 'buttermilk', 'ghee',
+        'from milk', '(milk)'
+    ],
+
+    'nuts': [
+        'nut', 'nuts',
+        'peanut', 'peanuts', 'groundnut', 'groundnuts',
+        'almond', 'almonds',
+        'walnut', 'walnuts',
+        'cashew', 'cashews', 'cashewnut', 'cashewnuts',
+        'hazelnut', 'hazelnuts',
+        'pecan', 'pecans',
+        'pistachio', 'pistachios', 'pistachio nuts',
+        'macadamia', 'macadamias', 'macadamia nuts',
+        'brazil nut', 'brazil nuts',
+        'pine nut', 'pine nuts',
+        'chestnut', 'chestnuts',
+        'mixed nuts', 'nut pieces', 'nut flour', 'nut paste',
+        'almond flour', 'almond meal', 'almond paste',
+        'hazelnut paste', 'cashew paste', 'peanut butter'
+    ],
+
+    'eggs': [
+        'egg', 'eggs', 'egg white', 'egg whites', 'egg yolk', 'egg yolks',
+        'albumin', 'ovalbumin', 'egg albumen', 'dried egg', 'powdered egg',
+        'pasteurised egg', 'pasteurized egg', 'egg powder',
+        'meringue'
+    ],
+
+    'soy': [
+        'soy', 'soya', 'soybean', 'soybeans', 'soy bean',
+        'soy flour', 'soya flour',
+        'soy protein', 'soy protein isolate', 'soya protein',
+        'soya protein isolate', 'isolated soya protein',
+        'soy lecithin', 'soya lecithin', 'lecithin (soya)',
+        'textured soy protein', 'textured vegetable protein', 'tvp',
+        'soy milk', 'soya milk',
+        'soy sauce', 'soya sauce',
+        'tofu', 'tempeh', 'miso', 'edamame'
+    ],
+
+    'halal_restricted': [
+        'pork', 'pork fat', 'pork gelatin', 'pork gelatine',
+        'ham', 'bacon', 'lard', 'pepperoni', 'salami',
+        'prosciutto', 'pancetta', 'chorizo', 'mortadella',
+        'gelatin', 'gelatine',
+        'blood', 'blood plasma',
+        'rum', 'wine', 'beer', 'brandy', 'whisky', 'whiskey',
+        'vodka', 'liqueur', 'alcohol', 'ethanol',
+        'mirin', 'cooking wine'
+    ],
+
+    'vegetarian_restricted': [
+        'meat', 'chicken', 'beef', 'pork', 'bacon', 'ham',
+        'turkey', 'duck', 'lamb', 'mutton', 'veal',
+        'fish', 'salmon', 'tuna', 'anchovy', 'anchovies',
+        'sardine', 'sardines', 'cod', 'prawn', 'shrimp',
+        'crab', 'lobster', 'gelatin', 'gelatine',
+        'animal fat', 'beef fat', 'chicken fat', 'fish oil',
+        'meat extract', 'chicken extract', 'beef extract',
+        'stock', 'chicken stock', 'beef stock', 'fish stock',
+        'broth', 'chicken broth', 'beef broth',
+        'animal rennet', 'rennet', 'lard', 'suet',
+        'shellfish', 'oyster', 'mussel', 'clam'
+    ],
+
+    'vegan_restricted': [
+        'milk', 'whole milk', 'skimmed milk', 'skim milk',
+        'milk solids', 'milk powder', 'milk protein', 'milk fat',
+        'cheese', 'butter', 'butterfat', 'butter oil', 'cream',
+        'yogurt', 'yoghurt', 'kefir', 'curd', 'custard',
+        'whey', 'whey powder', 'whey protein', 'casein', 'caseinate',
+        'lactose', 'buttermilk', 'ghee',
+        'egg', 'eggs', 'egg white', 'egg yolk', 'albumin', 'ovalbumin',
+        'honey', 'beeswax', 'royal jelly', 'propolis',
+        'meat', 'chicken', 'beef', 'pork', 'fish', 'shellfish',
+        'gelatin', 'gelatine', 'lard', 'suet',
+        'animal fat', 'meat extract', 'chicken stock', 'beef stock',
+        'fish oil', 'anchovy', 'anchovies', 'rennet', 'animal rennet'
+    ]
 }
 
 

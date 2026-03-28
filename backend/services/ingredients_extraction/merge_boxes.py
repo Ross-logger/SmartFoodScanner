@@ -1,130 +1,70 @@
+"""
+Merge predicted ingredient boxes into coherent ingredient text.
+
+Production port of training/merge_ingredients.py.  Takes a DataFrame of
+OCR boxes (with ``pred_prob`` from the box classifier) and reconstructs
+a single ingredient-text block by clustering, scoring, and joining the
+boxes that the model considers part of the ingredients list.
+"""
+
 import re
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 
+import logging
 
-# Whole-line OCR headers (English only; after normalize_text: strip + lower).
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Constants (shared by filtering, scoring, and tail trimming)
+# ---------------------------------------------------------------------------
+
 HEADER_PATTERNS = [
     r"^\s*ingredients?\s*:?\s*$",
     r"^\s*(list|table)\s+of\s+ingredients?\s*:?\s*$",
     r"^\s*ingredients?\s+list\s*:?\s*$",
 ]
 
-# English-only label footers / nutrition / legal / contact — substring match on lowercased text.
-# One list drives both box filtering and tail trimming (same semantics, no drift).
-_NON_INGREDIENT_HINTS: tuple[str, ...] = (
-    # nutrition panels
-    "nutrition facts",
-    "nutrition information",
-    "nutritional information",
-    "nutritional values",
-    "supplement facts",
-    "energy value",
-    "reference intake",
-    "daily value",
-    "amount per serving",
-    "per 100g",
-    "per 100ml",
-    "serving size",
-    "of which saturates",
-    "of which sugars",
-    "carbohydrate",
-    "total fat",
-    "nutrition",
-    "nutritional",
-    "energy",
-    "protein",
-    "calories",
-    "serving",
-    # allergen / advisory blocks
-    "for allergens",
-    "allergen advice",
-    "allergen information",
-    "allergen statement",
-    "allergenic ingredients",
-    "contains allergens",
-    "may also contain",
-    "traces of",
-    "allergens",
-    "allergen",
-    "allergy",
-    "allergies",
-    # storage & handling
-    "storage conditions",
-    "storage instruction",
-    "storage instructions",
-    "storage",
-    "store in a cool",
-    "store in a dry",
-    "store below",
-    "store at",
-    "store in",
-    "keep refrigerated",
-    "keep frozen",
-    "once opened",
-    "use within",
-    "refrigerate after opening",
-    # dates & batch
-    "best before end",
-    "best before",
-    "for best before",
-    "use by",
-    "use before",
-    "expiry date",
-    "expiration date",
-    "sell by",
-    "batch code",
-    "lot number",
-    "lot no",
-    "batch no",
-    # origin / manufacturing / distribution
-    "manufactured by",
-    "manufactured for",
-    "manufactured",
-    "produced by",
-    "packed by",
-    "packed for",
-    "distributed by",
-    "distributed in",
-    "distributed",
-    "imported by",
-    "imported from",
-    "made in",
-    "product of",
-    "country of origin",
-    "registered office",
-    # suitability / disposal / misc footer
-    "suitable for",
-    "not suitable for",
-    "recycling",
-    "recycle",
-    # contact & web
-    "https://",
-    "http://",
-    "www.",
-    ".com",
-    ".net",
-    ".org",
-    "e-mail",
-    "email",
-    "contact us",
-    "customer service",
-    "consumer care",
-    "consumer information",
-    "p.o. box",
-    "po box",
-    "@",
-    "telephone",
-    "tel.",
-    "fax",
-    "fax:",
+_NON_INGREDIENT_HINTS: Tuple[str, ...] = (
+    "nutrition facts", "nutrition information", "nutritional information",
+    "nutritional values", "supplement facts", "energy value",
+    "reference intake", "daily value", "amount per serving",
+    "per 100g", "per 100ml", "serving size",
+    "of which saturates", "of which sugars", "carbohydrate",
+    "total fat", "nutrition", "nutritional", "energy", "protein",
+    "calories", "serving",
+    "for allergens", "allergen advice", "allergen information",
+    "allergen statement", "allergenic ingredients", "contains allergens",
+    "may also contain", "traces of",
+    "allergens", "allergen", "allergy", "allergies",
+    "storage conditions", "storage instruction", "storage instructions",
+    "storage", "store in a cool", "store in a dry", "store below",
+    "store at", "store in", "keep refrigerated", "keep frozen",
+    "once opened", "use within", "refrigerate after opening",
+    "best before end", "best before", "for best before",
+    "use by", "use before", "expiry date", "expiration date", "sell by",
+    "batch code", "lot number", "lot no", "batch no",
+    "manufactured by", "manufactured for", "manufactured",
+    "produced by", "packed by", "packed for",
+    "distributed by", "distributed in", "distributed",
+    "imported by", "imported from", "made in", "product of",
+    "country of origin", "registered office",
+    "suitable for", "not suitable for", "recycling", "recycle",
+    "https://", "http://", "www.", ".com", ".net", ".org",
+    "e-mail", "email", "contact us", "customer service",
+    "consumer care", "consumer information", "p.o. box", "po box",
+    "@", "telephone", "tel.", "fax", "fax:",
 )
 
 GENERIC_BAD_HINTS = _NON_INGREDIENT_HINTS
 TAIL_CUT_HINTS = _NON_INGREDIENT_HINTS
 
+
+# ---------------------------------------------------------------------------
+# Text helpers
+# ---------------------------------------------------------------------------
 
 def normalize_text(s: str) -> str:
     return str(s).strip().lower()
@@ -167,62 +107,41 @@ def symbol_ratio(text: str) -> float:
 
 
 def looks_like_junk_fragment(text: str) -> bool:
-    """
-    General OCR junk heuristic.
-    No hardcoded product-specific strings.
-    """
     t = str(text).strip()
     if not t:
         return True
-
-    # very short fragments
     if len(t) <= 2:
         return True
-
-    # mostly digits
     if digit_ratio(t) > 0.75:
         return True
-
-    # too little alphabetic content
     if alpha_ratio(t) < 0.25 and len(t) <= 6:
         return True
-
-    # too many symbols for a short token
     if len(t) <= 8 and symbol_ratio(t) > 0.4:
         return True
-
-    # looks like code / serial / garbage chunk
     if len(t) <= 8 and re.fullmatch(r"[A-Za-z0-9\-_/.]+", t) and alpha_ratio(t) < 0.5:
         return True
-
     return False
 
 
 def looks_like_continuation(text: str) -> bool:
-    """
-    Fragment likely continuing previous ingredient text.
-    """
     t = str(text).strip()
     tl = t.lower()
-
     if not t:
         return False
-
     if t.startswith(("(", "[", "%", ",", ";", ":", "&")):
         return True
-
     if re.fullmatch(r"\(?\d+([.,]\d+)?%\)?", t):
         return True
-
     if tl.startswith(("and ", "with ", "from ", "of ", "or ")):
         return True
-
-    # box starts lowercase after split
     if t and t[0].islower() and len(t) <= 20:
         return True
-
     return False
 
+
+# ---------------------------------------------------------------------------
+# Box pipeline functions
+# ---------------------------------------------------------------------------
 
 def prepare_boxes(df_image: pd.DataFrame) -> pd.DataFrame:
     df = df_image.copy()
@@ -241,16 +160,14 @@ def prepare_boxes(df_image: pd.DataFrame) -> pd.DataFrame:
         df["confidence"] = pd.to_numeric(df["confidence"], errors="coerce").fillna(0.0)
 
     df["text"] = df["text"].fillna("").astype(str)
-
     df["width"] = df["x2"] - df["x1"]
     df["height"] = df["y2"] - df["y1"]
     df["x_center"] = (df["x1"] + df["x2"]) / 2.0
     df["y_center"] = (df["y1"] + df["y2"]) / 2.0
-
     return df
 
 
-def find_header_box(df: pd.DataFrame):
+def find_header_box(df: pd.DataFrame) -> Optional[pd.Series]:
     headers = df[df["text"].apply(is_header)].copy()
     if len(headers) == 0:
         return None
@@ -261,78 +178,75 @@ def find_header_box(df: pd.DataFrame):
 def filter_positive_boxes(
     df: pd.DataFrame,
     threshold: float = 0.4,
-    strong_keep_threshold: float = 0.8
+    strong_keep_threshold: float = 0.8,
 ) -> pd.DataFrame:
     pos = df[df["pred_prob"] >= threshold].copy()
-
-    # Empty frame: skip further filters — pandas boolean indexing on 0 rows can drop columns.
     if len(pos) == 0:
         return pos.reset_index(drop=True)
 
-    # remove header itself
     pos = pos[~pos["text"].apply(is_header)].copy()
-
-    # remove generic junk unless model is very confident
     pos = pos[~(
-        pos["text"].apply(looks_like_junk_fragment) &
-        (pos["pred_prob"] < strong_keep_threshold)
+        pos["text"].apply(looks_like_junk_fragment)
+        & (pos["pred_prob"] < strong_keep_threshold)
     )]
-
-    # remove generic non-ingredient hints unless model is extremely confident
     pos = pos[~(
-        pos["text"].apply(has_bad_hint) &
-        (pos["pred_prob"] < 0.92)
+        pos["text"].apply(has_bad_hint)
+        & (pos["pred_prob"] < 0.92)
     )]
-
     return pos.reset_index(drop=True)
 
 
 def apply_header_constraint(
     pos: pd.DataFrame,
-    header_row,
-    tolerance_above: float = 25.0
+    header_row: Optional[pd.Series],
+    tolerance_above: float = 25.0,
 ) -> pd.DataFrame:
     if header_row is None or len(pos) == 0:
         return pos
-    return pos[pos["y_center"] >= header_row["y_center"] - tolerance_above].copy().reset_index(drop=True)
+    return (
+        pos[pos["y_center"] >= header_row["y_center"] - tolerance_above]
+        .copy()
+        .reset_index(drop=True)
+    )
 
 
 def remove_isolated_boxes(
     pos: pd.DataFrame,
     y_radius: float = 120.0,
-    x_radius: float = 900.0
+    x_radius: float = 900.0,
 ) -> pd.DataFrame:
     if len(pos) <= 1:
         return pos.copy()
 
     pos = pos.reset_index(drop=True)
     keep = []
-
     for i, row in pos.iterrows():
         dy = np.abs(pos["y_center"] - row["y_center"])
         dx = np.abs(pos["x_center"] - row["x_center"])
         neighbors = ((dy <= y_radius) & (dx <= x_radius)).sum() - 1
-
         if row["pred_prob"] >= 0.75 or neighbors >= 1 or looks_like_continuation(row["text"]):
             keep.append(True)
         else:
             keep.append(False)
-
     return pos[np.array(keep)].copy().reset_index(drop=True)
 
 
-def cluster_boxes_by_rows(pos: pd.DataFrame, row_gap: float = 90.0) -> list[pd.DataFrame]:
+# ---------------------------------------------------------------------------
+# Clustering
+# ---------------------------------------------------------------------------
+
+def cluster_boxes_by_rows(
+    pos: pd.DataFrame, row_gap: float = 90.0
+) -> List[pd.DataFrame]:
     if len(pos) == 0:
         return []
-
     pos = pos.sort_values(["y_center", "x1"]).copy().reset_index(drop=True)
-    clusters = []
+    clusters: List[pd.DataFrame] = []
     current = [pos.iloc[0]]
 
     for i in range(1, len(pos)):
         prev = current[-1]
         cur = pos.iloc[i]
-
         if abs(cur["y_center"] - prev["y_center"]) <= row_gap:
             current.append(cur)
         else:
@@ -343,26 +257,26 @@ def cluster_boxes_by_rows(pos: pd.DataFrame, row_gap: float = 90.0) -> list[pd.D
     return clusters
 
 
-def merge_close_clusters(clusters: list[pd.DataFrame], cluster_gap: float = 120.0) -> list[pd.DataFrame]:
+def merge_close_clusters(
+    clusters: List[pd.DataFrame], cluster_gap: float = 120.0
+) -> List[pd.DataFrame]:
     if not clusters:
         return []
-
     merged = [clusters[0].copy()]
-
     for c in clusters[1:]:
         prev = merged[-1]
         prev_bottom = prev["y2"].max()
         cur_top = c["y1"].min()
-
         if cur_top - prev_bottom <= cluster_gap:
             merged[-1] = pd.concat([prev, c], ignore_index=True)
         else:
             merged.append(c.copy())
-
     return merged
 
 
-def score_cluster(cluster: pd.DataFrame, header_row=None) -> float:
+def score_cluster(
+    cluster: pd.DataFrame, header_row: Optional[pd.Series] = None
+) -> float:
     score = float(cluster["pred_prob"].sum())
     score += 0.18 * len(cluster)
 
@@ -376,46 +290,45 @@ def score_cluster(cluster: pd.DataFrame, header_row=None) -> float:
         cluster_top = cluster["y1"].min()
         dist = max(0.0, cluster_top - header_row["y2"])
         score -= 0.002 * dist
-
     return float(score)
 
 
-def choose_best_cluster(clusters: list[pd.DataFrame], header_row=None):
+def choose_best_cluster(
+    clusters: List[pd.DataFrame], header_row: Optional[pd.Series] = None
+) -> Optional[pd.DataFrame]:
     if not clusters:
         return None
-
     scored = []
     for c in clusters:
         if len(c) == 0:
             continue
         scored.append((score_cluster(c, header_row=header_row), c))
-
     if not scored:
         return None
-
     scored.sort(key=lambda x: x[0], reverse=True)
     return scored[0][1].copy().reset_index(drop=True)
 
 
+# ---------------------------------------------------------------------------
+# Text reconstruction
+# ---------------------------------------------------------------------------
+
 def assign_rows(cluster: pd.DataFrame, row_gap: float = 45.0) -> pd.DataFrame:
     if len(cluster) == 0:
         return cluster.copy()
-
     cluster = cluster.sort_values(["y_center", "x1"]).copy().reset_index(drop=True)
-
     median_h = max(1.0, float(cluster["height"].median()))
     adaptive_gap = max(row_gap, median_h * 0.7)
 
     row_ids = []
     current_row = 0
-    prev_y = None
+    prev_y: Optional[float] = None
 
     for _, r in cluster.iterrows():
         if prev_y is None:
             row_ids.append(current_row)
             prev_y = r["y_center"]
             continue
-
         if abs(r["y_center"] - prev_y) <= adaptive_gap:
             row_ids.append(current_row)
         else:
@@ -429,42 +342,32 @@ def assign_rows(cluster: pd.DataFrame, row_gap: float = 45.0) -> pd.DataFrame:
 
 def cleanup_row_boxes(row_df: pd.DataFrame) -> pd.DataFrame:
     row_df = row_df.sort_values("x1").copy().reset_index(drop=True)
-
     keep = []
     for _, r in row_df.iterrows():
         txt = str(r["text"]).strip()
-
         if looks_like_junk_fragment(txt) and not looks_like_continuation(txt):
             keep.append(False)
             continue
-
         keep.append(True)
-
     return row_df[np.array(keep)].copy().reset_index(drop=True)
 
 
-def smart_join_row_texts(texts: list[str]) -> str:
-    out = []
-
+def smart_join_row_texts(texts: List[str]) -> str:
+    out: List[str] = []
     for t in texts:
         t = str(t).strip()
         if not t:
             continue
-
         if not out:
             out.append(t)
             continue
-
         prev = out[-1]
-
         if looks_like_continuation(t):
             out[-1] = prev.rstrip() + " " + t
             continue
-
         if prev.endswith(("(", "[", "/", "-", "&", ":")):
             out[-1] = prev + " " + t
             continue
-
         out.append(t)
 
     line = " ".join(out)
@@ -472,68 +375,58 @@ def smart_join_row_texts(texts: list[str]) -> str:
     return line
 
 
-def reconstruct_text_from_cluster(cluster: pd.DataFrame) -> str:
+def reconstruct_text_from_cluster(cluster: Optional[pd.DataFrame]) -> str:
     if cluster is None or len(cluster) == 0:
         return ""
-
     cluster = assign_rows(cluster)
-    lines = []
-
+    lines: List[str] = []
     for _, row_df in cluster.groupby("row_id", sort=True):
         row_df = cleanup_row_boxes(row_df)
         if len(row_df) == 0:
             continue
-
         line = smart_join_row_texts(row_df["text"].astype(str).tolist())
         if line:
             lines.append(line)
-
     return "\n".join(lines).strip()
 
+
+# ---------------------------------------------------------------------------
+# Post-processing
+# ---------------------------------------------------------------------------
 
 def trim_tail_by_hints(text: str) -> str:
     if not text:
         return ""
-
     lower = text.lower()
     cut_positions = []
-
     for hint in TAIL_CUT_HINTS:
         idx = lower.find(hint)
         if idx > 0:
             cut_positions.append(idx)
-
     if cut_positions:
-        text = text[:min(cut_positions)].strip()
-
+        text = text[: min(cut_positions)].strip()
     return text
 
 
 def remove_trailing_junk_lines(text: str) -> str:
     if not text:
         return ""
-
     cleaned_lines = []
     for line in text.splitlines():
         line = line.strip()
         if not line:
             continue
-
         if has_bad_hint(line):
             continue
-
         if looks_like_junk_fragment(line):
             continue
-
         cleaned_lines.append(line)
-
     return "\n".join(cleaned_lines).strip()
 
 
 def normalize_ingredient_text(text: str) -> str:
     if not text:
         return ""
-
     text = text.replace(" ,", ",")
     text = text.replace(" .", ".")
     text = text.replace(" ;", ";")
@@ -544,7 +437,6 @@ def normalize_ingredient_text(text: str) -> str:
     text = re.sub(r"\s*\n\s*", "\n", text)
     text = re.sub(r"\n{2,}", "\n", text)
     text = re.sub(r"[\s,;:]+$", "", text).strip()
-
     return text
 
 
@@ -555,14 +447,30 @@ def postprocess_ingredient_text(text: str) -> str:
     return text
 
 
-def extract_ingredient_region_for_image(
-    df_image: pd.DataFrame,
+# ---------------------------------------------------------------------------
+# High-level API
+# ---------------------------------------------------------------------------
+
+def extract_ingredient_region(
+    df_boxes: pd.DataFrame,
     threshold: float = 0.4,
     row_gap: float = 90.0,
-    cluster_gap: float = 120.0
-) -> dict[str, Any]:
-    df = prepare_boxes(df_image)
+    cluster_gap: float = 120.0,
+) -> Dict[str, Any]:
+    """
+    Run the full merge pipeline on a single image's boxes.
 
+    Args:
+        df_boxes: DataFrame with columns
+            ``text, confidence, x1, y1, x2, y2, pred_prob``.
+        threshold: Minimum ``pred_prob`` to keep a box.
+        row_gap: Max vertical distance to group boxes into the same row cluster.
+        cluster_gap: Max gap to merge adjacent clusters.
+
+    Returns:
+        Dict with ``raw_text`` and ``final_text`` keys (plus internals).
+    """
+    df = prepare_boxes(df_boxes)
     header_row = find_header_box(df)
     pos = filter_positive_boxes(df, threshold=threshold)
     pos = apply_header_constraint(pos, header_row)
@@ -581,50 +489,34 @@ def extract_ingredient_region_for_image(
         "clusters": clusters,
         "best_cluster": best_cluster,
         "raw_text": raw_text,
-        "final_text": final_text
+        "final_text": final_text,
     }
 
 
-def run_extraction_for_all_images(
-    df_predictions: pd.DataFrame,
+def extract_ingredients_from_boxes(
+    df_boxes: pd.DataFrame,
     threshold: float = 0.4,
     row_gap: float = 90.0,
-    cluster_gap: float = 120.0
-) -> pd.DataFrame:
-    rows = []
+    cluster_gap: float = 120.0,
+) -> str:
+    """
+    Convenience wrapper: merge boxes and return the final ingredient text.
 
-    for image_id, df_img in df_predictions.groupby("image_id", sort=True):
-        result = extract_ingredient_region_for_image(
-            df_img,
-            threshold=threshold,
-            row_gap=row_gap,
-            cluster_gap=cluster_gap
-        )
+    Args:
+        df_boxes: DataFrame with ``pred_prob`` column (from ``classify_boxes``).
 
-        header_row = result["header_row"]
-        header_text = None if header_row is None else str(header_row["text"])
-        header_y = None if header_row is None else float(header_row["y_center"])
-
-        best_cluster = result["best_cluster"]
-        cluster_size = 0 if best_cluster is None else int(len(best_cluster))
-        cluster_mean_prob = None if best_cluster is None else float(best_cluster["pred_prob"].mean())
-
-        rows.append({
-            "image_id": image_id,
-            "header_text": header_text,
-            "header_y": header_y,
-            "cluster_size": cluster_size,
-            "cluster_mean_prob": cluster_mean_prob,
-            "raw_text": result["raw_text"],
-            "final_text": result["final_text"],
-        })
-
-    return pd.DataFrame(rows)
-
-
-if __name__ == "__main__":
-    # Example (run from training/):
-    # df = pd.read_csv("outputs/test_box_predictions.csv")
-    # out = run_extraction_for_all_images(df, threshold=0.4)
-    # out.to_csv("outputs/final_ingredient_predictions.csv", index=False)
-    pass
+    Returns:
+        Merged + post-processed ingredient text string.
+    """
+    result = extract_ingredient_region(
+        df_boxes,
+        threshold=threshold,
+        row_gap=row_gap,
+        cluster_gap=cluster_gap,
+    )
+    final = result["final_text"]
+    logger.info(
+        "Merge boxes: %d chars of ingredient text extracted",
+        len(final),
+    )
+    return final

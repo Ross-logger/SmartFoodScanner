@@ -6,7 +6,6 @@ import os
 import platform
 from pathlib import Path
 from dotenv import load_dotenv
-from numpy._core.numeric import True_
 
 load_dotenv()
 
@@ -86,6 +85,17 @@ MISTRAL_OCR_MODEL = os.getenv("MISTRAL_OCR_MODEL", "mistral-ocr-latest")
 # by default; regex section helper is optional (tests/scripts only).
 HF_INGREDIENT_DETECTION_MODEL = os.getenv(
     "HF_INGREDIENT_DETECTION_MODEL", "openfoodfacts/ingredient-detection"
+)
+
+# =============================================================================
+# Box Classifier + OCR Corrector
+# =============================================================================
+
+USE_BOX_CLASSIFIER = os.getenv("USE_BOX_CLASSIFIER", "true").lower() in ("true", "1", "yes")
+USE_OCR_CORRECTOR = os.getenv("USE_OCR_CORRECTOR", "true").lower() in ("true", "1", "yes")
+BOX_CLASSIFIER_MODEL_PATH = os.getenv(
+    "BOX_CLASSIFIER_MODEL_PATH",
+    str(Path(__file__).resolve().parent.parent / "training" / "models" / "ingredient_box_classifier.joblib"),
 )
 
 # =============================================================================

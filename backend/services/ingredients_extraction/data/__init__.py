@@ -7,10 +7,12 @@ from backend.services.ingredients_extraction.data.common_ingredients import (
     FOOD_INGREDIENTS,
     E_NUMBERS,
     VERY_COMMON_INGREDIENTS,
+    INGREDIENT_ALIASES,
 )
 
 __all__ = [
     'FOOD_INGREDIENTS',
     'E_NUMBERS',
     'VERY_COMMON_INGREDIENTS',
+    'INGREDIENT_ALIASES',
 ]

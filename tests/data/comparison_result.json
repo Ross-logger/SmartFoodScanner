@@ -1,574 +1,443 @@
 {
   "summary": {
-    "total_images": 15,
-    "avg_exact_precision": 0.24942307692307691,
-    "avg_exact_recall": 0.3572064777327935,
-    "avg_exact_f1": 0.2900346652070791,
-    "avg_fuzzy_precision": 0.43274827024827023,
-    "avg_fuzzy_recall": 0.5354063577747789,
-    "avg_fuzzy_f1": 0.43921640901841125,
-    "avg_merge_precision": 0.7119565217391305,
-    "avg_merge_recall": 0.5037037037037037,
-    "avg_merge_f1": 0.5899923833493393,
-    "avg_split_gap_recall": 0.0989781076623182,
-    "avg_split_gap_precision": 0.37931929181929186
-  },
-  "exact": {
-    "precision": 0.24942307692307691,
-    "recall": 0.3572064777327935,
-    "f1": 0.2900346652070791
+    "total_images": 10,
+    "avg_fuzzy_precision": 0.99,
+    "avg_fuzzy_recall": 0.95,
+    "avg_fuzzy_f1": 0.96,
+    "avg_merge_precision": 0.97,
+    "avg_merge_recall": 0.98,
+    "avg_merge_f1": 0.97,
+    "avg_split_gap_recall": 0.04,
+    "avg_split_gap_precision": -0.02
   },
   "fuzzy": {
-    "precision": 0.43274827024827023,
-    "recall": 0.5354063577747789,
-    "f1": 0.43921640901841125
+    "precision": 0.99,
+    "recall": 0.95,
+    "f1": 0.96
   },
   "merge": {
-    "precision": 0.7119565217391305,
-    "recall": 0.5037037037037037,
-    "f1": 0.5899923833493393,
-    "total_predictions": 184,
-    "total_ground_truth": 135
+    "precision": 0.97,
+    "recall": 0.98,
+    "f1": 0.97,
+    "total_predictions": 101,
+    "total_ground_truth": 106
   },
   "details": [
     {
-      "image": "IMG_0050.png",
-      "extracted_count": 16,
-      "ground_truth_count": 13,
-      "exact": {
-        "precision": 0.5625,
-        "recall": 0.6923076923076923,
-        "f1": 0.6206896551724138
-      },
+      "image": "IMG_0028.png",
+      "extracted_count": 11,
+      "ground_truth_count": 11,
       "fuzzy": {
-        "precision": 0.6875,
-        "recall": 0.8461538461538461,
-        "f1": 0.7586206896551724
-      },
-      "merge": {
-        "precision": 0.8125,
-        "recall": 0.7692307692307693,
-        "f1": 0.790273556231003
-      },
-      "split_gap_recall": 0.07692307692307698,
-      "split_gap_precision": 0.25,
-      "extracted_ingredients": [
-        "sugar, glucose syrup, sweetened, condensed skimmed milk skimmed milk sugar lactose (milk)), palm oil, butter oil, milk, cocoa butter, dried whole milk, cocoa mass, invert sugar syrup, saltilk, emulsifiers lecithin soya, skimmed, powder, natural flavourings"
-      ],
-      "true_ingredients": [
-        "Sugar",
-        "Glucose Syrup",
-        "Sweetened Condensed Skimmed Milk (Skimmed Milk, Sugar, Lactose (Milk))",
-        "Palm Oil",
-        "Butter Oil",
-        "Cocoa Butter",
-        "Dried Whole Milk",
-        "Cocoa Mass",
-        "Invert Sugar Syrup",
-        "Salt",
-        "Emulsifier: Lecithin (Soya)",
-        "Skimmed Milk Powder",
-        "Natural Flavourings"
-      ]
-    },
-    {
-      "image": "IMG_0052.png",
-      "extracted_count": 15,
-      "ground_truth_count": 10,
-      "exact": {
-        "precision": 0.3333333333333333,
-        "recall": 0.5,
-        "f1": 0.4
-      },
-      "fuzzy": {
-        "precision": 0.4,
-        "recall": 0.6,
-        "f1": 0.48
-      },
-      "merge": {
-        "precision": 0.8,
-        "recall": 0.5,
-        "f1": 0.6153846153846154
-      },
-      "split_gap_recall": 0.0,
-      "split_gap_precision": 0.46666666666666673,
-      "extracted_ingredients": [
-        "sugar, glucose syrup, cornflour, acid citric acid, malic acid, natural flavourings, sunflower oil, natural_colour: anthocyanins (from grape black carrots radish sweet potato lutein), beetroot red, carotenes, plain caramel, stabiliser, sunflower concentrate, carnauba wax, spirulina concentrate"
-      ],
-      "true_ingredients": [
-        "Sugar",
-        "Glucose Syrup",
-        "Cornflour",
-        "Acid: Citric Acid, Malic Acid",
-        "Natural Flavourings",
-        "Natural Colour: Anthocyanins (from Grape, Black Carrot, Radish, Sweet Potato), Lutein, Beetroot Red, Carotenes, Plain Caramel",
-        "Stabiliser: Gum Arabic",
-        "Safflower Concentrate",
-        "Glazing Agent: Carnauba Wax",
-        "Spirulina Concentrate"
-      ]
-    },
-    {
-      "image": "IMG_0054.png",
-      "extracted_count": 3,
-      "ground_truth_count": 5,
-      "exact": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1": 0.0
-      },
-      "fuzzy": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1": 0.0
-      },
-      "merge": {
-        "precision": 0.3333333333333333,
-        "recall": 0.0,
-        "f1": 0.0
-      },
-      "split_gap_recall": 0.0,
-      "split_gap_precision": 0.3333333333333333,
-      "extracted_ingredients": [
-        "sparkling green tea, green tea carbonated water, natural flavourings orange fruit vegetable and peanut (safflower; carrots lemon)"
-      ],
-      "true_ingredients": [
-        "Sparkling Green Tea (Green Tea, Carbonated Water)",
-        "Sugar",
-        "Natural Flavourings (Orange, Mango)",
-        "Fruit, Vegetable and Plant Concentrates (Safflower, Carrot, Blackcurrants, Lemon)",
-        "Kombucha Culture"
-      ]
-    },
-    {
-      "image": "IMG_0065.png",
-      "extracted_count": 12,
-      "ground_truth_count": 9,
-      "exact": {
-        "precision": 0.4166666666666667,
-        "recall": 0.5555555555555556,
-        "f1": 0.4761904761904762
-      },
-      "fuzzy": {
-        "precision": 0.5833333333333334,
-        "recall": 0.7777777777777778,
-        "f1": 0.6666666666666666
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
       },
       "merge": {
         "precision": 1.0,
-        "recall": 0.7777777777777778,
-        "f1": 0.8750000000000001
-      },
-      "split_gap_recall": 0.2222222222222222,
-      "split_gap_precision": 0.5833333333333333,
-      "extracted_ingredients": [
-        "potatoes, vegetable oil, (sunflower/rapeseed), sugar, sea salt, dried balsamic vinegar, acid citric acid, tartaric acid, gluten free dried barley malt, vinegar, rice flour, natural flavor"
-      ],
-      "true_ingredients": [
-        "Potatoes",
-        "Vegetable Oil (Sunflower/Rapeseed)",
-        "Sugar",
-        "Sea Salt",
-        "Dried Balsamic Vinegar",
-        "Acid: Citric Acid, Tartaric Acid",
-        "Gluten Free Dried Barley Malt Vinegar",
-        "Rice Flour",
-        "Natural Flavouring"
-      ]
-    },
-    {
-      "image": "IMG_0066.png",
-      "extracted_count": 9,
-      "ground_truth_count": 6,
-      "exact": {
-        "precision": 0.3333333333333333,
-        "recall": 0.5,
-        "f1": 0.4
-      },
-      "fuzzy": {
-        "precision": 0.5555555555555556,
-        "recall": 0.8333333333333334,
-        "f1": 0.6666666666666667
-      },
-      "merge": {
-        "precision": 0.6666666666666666,
-        "recall": 0.5,
-        "f1": 0.5714285714285715
+        "recall": 1.0,
+        "f1": 1.0
       },
       "split_gap_recall": 0.0,
-      "split_gap_precision": 0.3333333333333333,
+      "split_gap_precision": 0.0,
       "extracted_ingredients": [
-        "greek style yogurt milk, honey, brown sugar, cornflour, concentrated lemon, rice, cultured bifidobacterium, lactobacillus bulgaricus, streptococcus thermophilus"
-      ],
-      "true_ingredients": [
-        "Greek Style Yogurt (Milk)",
-        "Honey",
-        "Brown Sugar",
-        "Cornflour",
-        "Concentrated Lemon Juice",
-        "Cultures: Bifidobacterium, Lactobacillus bulgaricus, Streptococcus thermophilus"
-      ]
-    },
-    {
-      "image": "IMG_0067.png",
-      "extracted_count": 16,
-      "ground_truth_count": 19,
-      "exact": {
-        "precision": 0.375,
-        "recall": 0.3157894736842105,
-        "f1": 0.34285714285714286
-      },
-      "fuzzy": {
-        "precision": 0.5,
-        "recall": 0.42105263157894735,
-        "f1": 0.45714285714285713
-      },
-      "merge": {
-        "precision": 0.6875,
-        "recall": 0.5263157894736842,
-        "f1": 0.5962059620596206
-      },
-      "split_gap_recall": 0.21052631578947367,
-      "split_gap_precision": 0.3125,
-      "extracted_ingredients": [
-        "wwhipeinecteou cream milk wheat flour contains gluten (with calcium carbonated nut iron niacin thiamine pasteurized eggmusilec dark chocolate cocoa mass sugar cocoa butter soya lecithin vanilla flavourings sugar sweetened condensed w skimmed milk skimmed milk sugar lactose (milk)) whole milk butter (milk) milk chocolate cocoa butter dried whole gi milk cocoa mass emulsifiers lecithin vanilla flavourings, duck, golden syrup (invert sugar syrup), palm oil, fat reduced cocoa, acid, powder, humectant glycerol, rapeseed oil, raising agent, pork, e450, e501, emulsifiers e471, salt, cornflour"
-      ],
-      "true_ingredients": [
-        "Whipping Cream (Milk)",
-        "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
-        "Pasteurised Egg",
-        "Dark Chocolate (Cocoa Mass, Sugar, Cocoa Butter, Emulsifier: Soya Lecithin, Vanilla Flavouring)",
-        "Sugar",
-        "Sweetened Condensed Skimmed Milk (Skimmed Milk, Sugar, Lactose (Milk))",
-        "Whole Milk",
-        "Butter (Milk)",
-        "Milk Chocolate (Sugar, Cocoa Butter, Dried Whole Milk, Cocoa Mass, Emulsifier: Soya Lecithin, Vanilla Flavouring)",
-        "Golden Syrup (Invert Sugar Syrup)",
+        "Wheatflour (contains Gluten)",
+        "Invert Sugar Syrup",
         "Palm Oil",
-        "Fat Reduced Cocoa Powder",
-        "Humectant: Glycerol",
-        "Rapeseed Oil",
-        "Raising Agent: E450, E501",
-        "Emulsifier: E471",
-        "Salt",
-        "Cornflour",
-        "Flavouring"
-      ]
-    },
-    {
-      "image": "IMG_0068.png",
-      "extracted_count": 12,
-      "ground_truth_count": 8,
-      "exact": {
-        "precision": 0.3333333333333333,
-        "recall": 0.5,
-        "f1": 0.4
-      },
-      "fuzzy": {
-        "precision": 0.5,
-        "recall": 0.75,
-        "f1": 0.6
-      },
-      "merge": {
-        "precision": 0.8333333333333334,
-        "recall": 0.625,
-        "f1": 0.7142857142857143
-      },
-      "split_gap_recall": 0.125,
-      "split_gap_precision": 0.5,
-      "extracted_ingredients": [
-        "fat free greek style yogurt milk, strawberries, sugar, strawberry puree, cornflour, flavourings, cultured bifidobacterium, lactobacillus acidophilus, lactobacillus bulgaricus, thermophilus, natural colour, anthocyanins (from black carrots)"
-      ],
-      "true_ingredients": [
-        "Fat Free Greek Style Yogurt (Milk)",
-        "Strawberries",
         "Sugar",
-        "Strawberry Puree",
-        "Cornflour",
-        "Natural Flavourings",
-        "Cultures: Bifidobacterium, Lactobacillus acidophilus, Lactobacillus bulgaricus, Streptococcus thermophilus",
-        "Natural Colour: Anthocyanins (from Black Carrots)"
-      ]
-    },
-    {
-      "image": "IMG_9029.png",
-      "extracted_count": 10,
-      "ground_truth_count": 8,
-      "exact": {
-        "precision": 0.4,
-        "recall": 0.5,
-        "f1": 0.4444444444444445
-      },
-      "fuzzy": {
-        "precision": 0.8,
-        "recall": 1.0,
-        "f1": 0.888888888888889
-      },
-      "merge": {
-        "precision": 0.6,
-        "recall": 0.625,
-        "f1": 0.6122448979591836
-      },
-      "split_gap_recall": 0.125,
-      "split_gap_precision": 0.19999999999999996,
-      "extracted_ingredients": [
-        "wheat flour contains gluten, unsalted butter (milk), cruyere cheese milk, dried skimmed, milk, salt, yeast, barley malt flour contains box recycle gluten, sugar, tray recycle"
+        "Sunflower Oil",
+        "Concentrated Fruit Juice (Redcurrant, Blackcurrant, Cherry)",
+        "Salt",
+        "Gelling Agent: Pectins (from Fruit)",
+        "Acidity Regulator: Citric Acid",
+        "Dried Whole Milk",
+        "Emulsifier: Sunflower Lecithin"
       ],
       "true_ingredients": [
         "Wheatflour (contains Gluten)",
-        "Unsalted Butter (Milk)",
-        "Gruyere Cheese (Milk)",
-        "Dried Skimmed Milk",
+        "Invert Sugar Syrup",
+        "Palm Oil",
+        "Sugar",
+        "Sunflower Oil",
+        "Concentrated Fruit Juice (Redcurrant, Blackcurrant, Cherry)",
         "Salt",
-        "Yeast",
-        "Barley Malt Flour (contains Gluten)",
-        "Sugar"
+        "Gelling Agent: Pectins (from Fruit)",
+        "Acidity Regulator: Citric Acid",
+        "Dried Whole Milk",
+        "Emulsifier: Sunflower Lecithin"
       ]
     },
     {
-      "image": "in11.jpg",
-      "extracted_count": 4,
-      "ground_truth_count": 2,
-      "exact": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1": 0.0
-      },
-      "fuzzy": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1": 0.0
-      },
-      "merge": {
-        "precision": 0.25,
-        "recall": 0.0,
-        "f1": 0.0
-      },
-      "split_gap_recall": 0.0,
-      "split_gap_precision": 0.25,
-      "extracted_ingredients": [
-        "greek yogurt pasteurized double toned milk milk solids, permitted starter cultured, processed blueberry pulp (sugar;blueberry puree;water; (ins lemon rice concentrate total fruit content: 3% 440)), pectin"
-      ],
-      "true_ingredients": [
-        "Greek yogurt (pasteurized double toned milk, milk solids, permitted starter cultures)",
-        "processed blueberry pulp (sugar, blueberry puree, water, pectin (INS 440), lemon juice concentrate)"
-      ]
-    },
-    {
-      "image": "in31.jpg",
-      "extracted_count": 21,
-      "ground_truth_count": 10,
-      "exact": {
-        "precision": 0.15,
-        "recall": 0.3,
-        "f1": 0.2
-      },
-      "fuzzy": {
-        "precision": 0.19047619047619047,
-        "recall": 0.4,
-        "f1": 0.25806451612903225
-      },
-      "merge": {
-        "precision": 0.7619047619047619,
-        "recall": 0.4,
-        "f1": 0.5245901639344264
-      },
-      "split_gap_recall": 0.10000000000000003,
-      "split_gap_precision": 0.6119047619047618,
-      "extracted_ingredients": [
-        "chicken meat, water, breadcrumbs wheat flour, yeast, salt, permitted, bread improvers, preservative (ins 282), acidity regulator (insz6o)), edible, vegetable oil (rbd palmolein). butter wheat flour, corn flour, corn starch, salt, and emulsifier (ins 466)), isolated, protein, iodized salt, spices, condiments, texturizer (ins 451())"
-      ],
-      "true_ingredients": [
-        "Chicken Meat",
-        "Water",
-        "Breadcrumbs (Wheat Flour, Yeast, Salt, Permitted Bread Improvers, Preservative (INS 282), Acidity Regulator (INS260))",
-        "Edible Vegetable Oil (RBD Palmolein)",
-        "Batter (Wheat Flour, Corn Flour, Corn Starch, Salt, Emulsifier (INS 466))",
-        "Soy",
-        "Isolated Soy Protein",
-        "Iodized Salt",
-        "Spices & Condiments",
-        "Texturizer (INS 451(i))"
-      ]
-    },
-    {
-      "image": "in32.jpg",
-      "extracted_count": 13,
-      "ground_truth_count": 8,
-      "exact": {
-        "precision": 0.15384615384615385,
-        "recall": 0.25,
-        "f1": 0.1904761904761905
-      },
-      "fuzzy": {
-        "precision": 0.3076923076923077,
-        "recall": 0.5,
-        "f1": 0.380952380952381
-      },
-      "merge": {
-        "precision": 0.7692307692307693,
-        "recall": 0.375,
-        "f1": 0.504201680672269
-      },
-      "split_gap_recall": 0.125,
-      "split_gap_precision": 0.6153846153846154,
-      "extracted_ingredients": [
-        "chicken meat, breadcrumbs wheat, flour, yeast, salt, permitted bread improvers, preservative (ins 282), acidity regulator, (ins 260)), water, edible vegetable oil refined palm olein butter wheat flour corn flour corn starch salt and emulsifier (ins 466)), protein spices & condiments, iodized salt and texturizer (ins 451())"
-      ],
-      "true_ingredients": [
-        "Chicken Meat",
-        "Breadcrumbs (Wheat Flour, Yeast, Salt, Permitted Bread Improvers, Preservative (INS 282), Acidity Regulator (INS 260))",
-        "Water",
-        "Edible Vegetable Oil (Refined Palmolein Oil)",
-        "Batter (Wheat Flour, Corn Flour, Corn Starch, Salt, Emulsifier (INS 466))",
-        "Soy Protein",
-        "Spices & Condiments",
-        "Iodized Salt And Texturizer (INS 451(i))"
-      ]
-    },
-    {
-      "image": "in52.jpg",
-      "extracted_count": 1,
-      "ground_truth_count": 10,
-      "exact": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1": 0.0
-      },
+      "image": "IMG_0029.png",
+      "extracted_count": 5,
+      "ground_truth_count": 5,
       "fuzzy": {
         "precision": 1.0,
-        "recall": 0.1,
-        "f1": 0.18181818181818182
+        "recall": 1.0,
+        "f1": 1.0
       },
       "merge": {
-        "precision": 0.0,
-        "recall": 0.1,
-        "f1": 0.0
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
       },
-      "split_gap_recall": 0.1,
+      "split_gap_recall": 0.0,
       "split_gap_precision": 0.0,
       "extracted_ingredients": [
-        "cocoa cream sugar vegetable fat cocoa seeds emulsifiers e322 from soya refined wheat"
+        "Wheatflour contains Gluten (With Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+        "Unsalted Butter (Milk)",
+        "Caster Sugar",
+        "Cornflour",
+        "Salt"
       ],
       "true_ingredients": [
-        "Choco Cream (Sugar, Vegetable Fat, Cocoa Solids, Emulsifiers (E322 from Soya))",
-        "Refined Wheat Flour (Maida)",
-        "Sugar",
-        "Edible Vegetable Oil (Palm)",
-        "Milk Solids",
-        "Golden Syrup",
-        "Cocoa Powder",
-        "Emulsifier (E322 from Soya)",
-        "Leavening Agents (E503 ii, E500 ii)",
+        "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+        "Unsalted Butter (Milk)",
+        "Caster Sugar",
+        "Cornflour",
         "Salt"
       ]
     },
     {
-      "image": "in73.jpg",
-      "extracted_count": 20,
-      "ground_truth_count": 10,
-      "exact": {
-        "precision": 0.15,
-        "recall": 0.3,
-        "f1": 0.2
-      },
+      "image": "IMG_0030.png",
+      "extracted_count": 6,
+      "ground_truth_count": 6,
       "fuzzy": {
-        "precision": 0.2,
-        "recall": 0.4,
-        "f1": 0.26666666666666666
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
       },
       "merge": {
-        "precision": 0.6,
-        "recall": 0.7,
-        "f1": 0.6461538461538462
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
       },
-      "split_gap_recall": 0.39999999999999997,
-      "split_gap_precision": 0.44999999999999996,
+      "split_gap_recall": 0.0,
+      "split_gap_precision": 0.0,
       "extracted_ingredients": [
-        "almonds (2696), dark compound (2596), sugar, edible vegetable fat, hydrogenated, cocoa solids, emulsifiers (ins 491,322)), peanuts (2296), rice crisp, rice flour wheat flour sugar malt salt milk powder honey, oligofructose, sugar sunflower, oil, liquid glucose, cocoa powder, antioxidant (ins 300), edible, common salt, cocoa butter"
+        "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+        "Butter (Milk)",
+        "Sugar",
+        "Cornflour",
+        "Salt",
+        "Durum Wheat Semolina (contains Gluten)"
       ],
       "true_ingredients": [
-        "Almonds",
-        "Dark Compound (Sugar, Edible Vegetable Fat (Hydrogenated), Cocoa Solids, Emulsifiers (INS 491, 322))",
-        "Peanuts",
-        "Rice Crispy (Rice Flour, Wheat Flour, Sugar, Malt, Salt, Milk Powder)",
-        "Honey",
-        "Oligofructose",
-        "Cocoa Powder",
-        "Antioxidant (INS 322)",
-        "Edible Common Salt",
-        "Cocoa Butter"
+        "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+        "Butter (Milk)",
+        "Sugar",
+        "Cornflour",
+        "Salt",
+        "Durum Wheat Semolina (contains Gluten)"
       ]
     },
     {
-      "image": "in97.jpg",
-      "extracted_count": 20,
-      "ground_truth_count": 9,
-      "exact": {
-        "precision": 0.2,
-        "recall": 0.4444444444444444,
-        "f1": 0.2758620689655173
-      },
+      "image": "IMG_0031.png",
+      "extracted_count": 7,
+      "ground_truth_count": 11,
       "fuzzy": {
-        "precision": 0.35,
-        "recall": 0.7777777777777778,
-        "f1": 0.48275862068965514
+        "precision": 1.0,
+        "recall": 0.64,
+        "f1": 0.78
       },
       "merge": {
-        "precision": 0.65,
-        "recall": 0.4444444444444444,
-        "f1": 0.5279187817258882
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
       },
-      "split_gap_recall": 0.0,
-      "split_gap_precision": 0.45,
+      "split_gap_recall": 0.36,
+      "split_gap_precision": 0.0,
       "extracted_ingredients": [
-        "cake concentrate milk solids, starch, baking powder, refined wheat flour, emulsifiers, stabilizers e417 e415, salt, colour e171, flavouring, vanilla, refined, wheat flour, sugar, vegetable oil, water, cocoa powder, salt preservative (ins202, ins2oo), humectant (ins422, leavening agents (inssoo (ii)))"
-      ],
-      "true_ingredients": [
-        "Cake Concentrate (Milk Solids, Starch, Baking Powder, Refined Wheat Flour, Emulsifiers and Stabilizers (E417, E415), Salt, Colour (E171), Flavouring - Vanilla)",
-        "Refined Wheat Flour",
+        "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+        "Butter (Milk)",
         "Sugar",
-        "Vegetable Oil",
-        "Water",
-        "Coco Powder",
-        "Preservative (INS202, INS200)",
-        "Humectant (INS422)",
-        "Leaving Agents (INS500 (ii))"
-      ]
-    },
-    {
-      "image": "in140.jpg",
-      "extracted_count": 12,
-      "ground_truth_count": 8,
-      "exact": {
-        "precision": 0.3333333333333333,
-        "recall": 0.5,
-        "f1": 0.4
-      },
-      "fuzzy": {
-        "precision": 0.4166666666666667,
-        "recall": 0.625,
-        "f1": 0.5
-      },
-      "merge": {
-        "precision": 0.6666666666666666,
-        "recall": 0.5,
-        "f1": 0.5714285714285715
-      },
-      "split_gap_recall": 0.0,
-      "split_gap_precision": 0.3333333333333333,
-      "extracted_ingredients": [
-        "corn, edible vegetable oil, palm olein oil, sugar, spices, condiments, garlic powder onion powder chili spice extract, rice flour, iodised salt, potassium, chlorine e508, citric acid e330"
-      ],
-      "true_ingredients": [
-        "Corn",
-        "Edible Vegetable Oil (Palmolein Oil)",
-        "Sugar",
-        "Spices & Condiments (Garlic Powder, Onion Powder, Chilli, Spice Extract)",
+        "Cornflour",
         "Rice Flour",
-        "Iodised Salt",
-        "Potassium Chloride (508)",
-        "Citric Acid (330)"
+        "Salt",
+        "Raising Agent: Sodium Bicarbonate"
+      ],
+      "true_ingredients": [
+        "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+        "Calcium Carbonate",
+        "Iron",
+        "Niacin",
+        "Thiamin",
+        "Butter (Milk)",
+        "Sugar",
+        "Cornflour",
+        "Rice Flour",
+        "Salt",
+        "Raising Agent: Sodium Bicarbonate"
+      ]
+    },
+    {
+      "image": "IMG_0033.png",
+      "extracted_count": 9,
+      "ground_truth_count": 9,
+      "fuzzy": {
+        "precision": 0.89,
+        "recall": 0.89,
+        "f1": 0.89
+      },
+      "merge": {
+        "precision": 0.89,
+        "recall": 1.0,
+        "f1": 0.94
+      },
+      "split_gap_recall": 0.11,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Wheatflour (contains Gluten) (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+        "Sugar",
+        "Coconut Oil",
+        "Fat Reduced Cocoa Powder",
+        "Dried Whey (Milk)",
+        "Emulsifier: Soya Lecithin",
+        "Salt",
+        "Raising Agent: Sodium Bicarbonate",
+        "Vanilla Extract"
+      ],
+      "true_ingredients": [
+        "Wheatflour (contains Gluten)",
+        "Sugar",
+        "Coconut Oil",
+        "Fat Reduced Cocoa Powder",
+        "Dried Whey (Milk)",
+        "Emulsifier: Soya Lecithin",
+        "Salt",
+        "Raising Agent: Sodium Bicarbonate",
+        "Vanilla Extract"
+      ]
+    },
+    {
+      "image": "IMG_0034.png",
+      "extracted_count": 16,
+      "ground_truth_count": 16,
+      "fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "merge": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "split_gap_recall": 0.0,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Maize",
+        "Sugar",
+        "Peanuts",
+        "Honey",
+        "Salt",
+        "Caramelised Sugar Syrup",
+        "Barley Malt Extract",
+        "Iron",
+        "Niacin",
+        "Pantothenic Acid",
+        "Vitamin B6",
+        "Riboflavin",
+        "Thiamin",
+        "Folic Acid",
+        "Vitamin D",
+        "Vitamin B12"
+      ],
+      "true_ingredients": [
+        "Maize",
+        "Sugar",
+        "Peanuts",
+        "Honey",
+        "Salt",
+        "Caramelised Sugar Syrup",
+        "Barley Malt Extract",
+        "Iron",
+        "Niacin",
+        "Pantothenic Acid",
+        "Vitamin B6",
+        "Riboflavin",
+        "Thiamin",
+        "Folic Acid",
+        "Vitamin D",
+        "Vitamin B12"
+      ]
+    },
+    {
+      "image": "IMG_0035.png",
+      "extracted_count": 9,
+      "ground_truth_count": 9,
+      "fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "merge": {
+        "precision": 0.89,
+        "recall": 1.0,
+        "f1": 0.94
+      },
+      "split_gap_recall": 0.0,
+      "split_gap_precision": -0.11,
+      "extracted_ingredients": [
+        "Wholewheat (contains Gluten)",
+        "Barley Malt Extract (contains Gluten)",
+        "Sugar",
+        "Salts",
+        "Niacin",
+        "Iron",
+        "Thiamin",
+        "Riboflavins",
+        "Folic Acid"
+      ],
+      "true_ingredients": [
+        "Wholewheat (contains Gluten)",
+        "Barley Malt Extract (contains Gluten)",
+        "Sugar",
+        "Salt",
+        "Niacin",
+        "Iron",
+        "Thiamin",
+        "Riboflavins",
+        "Folic Acid"
+      ]
+    },
+    {
+      "image": "IMG_0036.png",
+      "extracted_count": 13,
+      "ground_truth_count": 13,
+      "fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "merge": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "split_gap_recall": 0.0,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Oat Flakes",
+        "Vegetable Oil (Sunflower/Rapeseed)",
+        "Sugar",
+        "Glucose Syrup",
+        "Almond Halves",
+        "Crisped Rice (Rice Flour, Wheatflour, Sugar, Malted Barley, Salt)",
+        "Freeze-Dried Strawberry Slices (Freeze-Dried Strawberry Slices, Sunflower Oil)",
+        "Honey",
+        "Oat Flour",
+        "Salt",
+        "Natural Flavouring",
+        "Caramelised Sugar",
+        "Antioxidant: Tocopherol-Rich Extract"
+      ],
+      "true_ingredients": [
+        "Oat Flakes",
+        "Vegetable Oil (Sunflower/Rapeseed)",
+        "Sugar",
+        "Glucose Syrup",
+        "Almond Halves",
+        "Crisped Rice (Rice Flour, Wheatflour, Sugar, Malted Barley, Salt)",
+        "Freeze-Dried Strawberry Slices (Freeze-Dried Strawberry Slices, Sunflower Oil)",
+        "Honey",
+        "Oat Flour",
+        "Salt",
+        "Natural Flavoring",
+        "Caramelised Sugar",
+        "Antioxidant: Tocopherol-Rich Extract"
+      ]
+    },
+    {
+      "image": "IMG_0037.png",
+      "extracted_count": 15,
+      "ground_truth_count": 16,
+      "fuzzy": {
+        "precision": 1.0,
+        "recall": 0.94,
+        "f1": 0.97
+      },
+      "merge": {
+        "precision": 0.93,
+        "recall": 0.88,
+        "f1": 0.9
+      },
+      "split_gap_recall": -0.06,
+      "split_gap_precision": -0.07,
+      "extracted_ingredients": [
+        "Oat Flakes",
+        "Vegetable Oil (Sunflower/Rapeseed)",
+        "Sugar",
+        "Almond Halves",
+        "Rice Crisp (Rice Flour, Wheatflour (contains Gluten), Sugar, Malted Barley (contains Gluten), Salt)",
+        "Glucose Syrup",
+        "Cornflakes (Maize Flour, Salt)",
+        "Sliced Brazil Nuts",
+        "Chopped Roasted Hazelnuts",
+        "Oat Flour",
+        "Flavourings",
+        "Honey",
+        "Salt",
+        "Caramelised Sugar",
+        "Antioxidant : Tocopherol-rich Extract"
+      ],
+      "true_ingredients": [
+        "Oat Flakes",
+        "Vegetable Oil (Sunflower, Rapeseed)",
+        "Sugar",
+        "Almond Halves",
+        "Rice Crisp (Rice Flour, Wheatflour (contains Gluten), Sugar, Malted Barley (contains Gluten), Salt)",
+        "Glucose Syrup",
+        "Cornflakes (Maize Flour, Salt)",
+        "Sliced Brazil Nuts",
+        "Chopped Roasted Hazelnuts",
+        "Chopped Pecan Nuts",
+        "Oat Flour",
+        "Flavourings",
+        "Honey",
+        "Salt",
+        "Caramelised Sugar",
+        "Antioxidant : Tocopherol-rich Extract"
+      ]
+    },
+    {
+      "image": "IMG_0038.png",
+      "extracted_count": 10,
+      "ground_truth_count": 10,
+      "fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "merge": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "split_gap_recall": 0.0,
+      "split_gap_precision": 0.0,
+      "extracted_ingredients": [
+        "Oat Flakes",
+        "Maple Flavour Barley Flakes (Barley, Sugar, Water, Natural Flavouring)",
+        "Toasted Malted Wheatflakes (Wheat, Barley Malt Extract)",
+        "Sunflower Seeds",
+        "Barley Flakes",
+        "Roasted Hazelnuts",
+        "Pumpkin Seeds",
+        "Almonds",
+        "Chopped Cashew Nuts",
+        "Sliced Almonds"
+      ],
+      "true_ingredients": [
+        "Oat Flakes",
+        "Maple Flavour Barley Flakes (Barley, Sugar, Water, Natural Flavouring)",
+        "Toasted Malted Wheatflakes (Wheat, Barley Malt Extract)",
+        "Sunflower Seeds",
+        "Barley Flakes",
+        "Roasted Hazelnuts",
+        "Pumpkin Seeds",
+        "Almonds",
+        "Chopped Cashew Nuts",
+        "Sliced Almonds"
       ]
     }
   ]

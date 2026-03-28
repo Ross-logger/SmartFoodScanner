@@ -31,6 +31,8 @@ class OCRResult:
     text: str
     easyocr_lines: Optional[List[Tuple[str, float]]] = None
     """``(line_text, confidence)`` in the same order as lines joined into ``text``; ``None`` for Mistral OCR."""
+    easyocr_raw_results: Optional[List] = None
+    """Raw EasyOCR output ``[(bbox, text, confidence), ...]`` with bounding boxes; ``None`` for Mistral OCR."""
 
 # ---------------------------------------------------------------------------
 # EasyOCR singleton
@@ -255,7 +257,7 @@ def extract_ocr_from_image(
 
         lines = collect_filtered_easyocr_lines(results)
         text = "\n".join(t for t, _ in lines).strip()
-        return OCRResult(text=text, easyocr_lines=lines)
+        return OCRResult(text=text, easyocr_lines=lines, easyocr_raw_results=results)
 
     except Exception as e:
         raise Exception(f"OCR extraction failed: {str(e)}") from e

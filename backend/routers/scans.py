@@ -90,62 +90,96 @@ def scan_ocr(
             detail=f"OCR failed: {str(e)}"
         )
 
-    easyocr_skip_symspell_normalized = None
-    if ocr_result.easyocr_lines:
-        easyocr_skip_symspell_normalized = build_easyocr_skip_symspell_normalized_keys(
-            ocr_result.easyocr_lines,
-            min_confidence=settings.EASYOCR_SKIP_SYMSPELL_MIN_CONFIDENCE,
-        )
+    corrected_text = ocr_text
+    ingredients = []
+    used_model_path = False
 
-    # Extract ingredients — use LLM if enabled, otherwise fall back to SymSpell
-    if dietary_profile and dietary_profile.use_llm_ingredient_extractor:
-        # Use LLM-based extraction
-        llm_result = extract_ingredients_with_llm(ocr_text)
-        if llm_result["success"] and llm_result["ingredients"]:
-            ingredients = _normalize_llm_ingredients(llm_result["ingredients"])
-            print(f"LLM Extracted Ingredients (single block): {ingredients}")
+    # --- Model-based extraction (EasyOCR only) ---
+    if (
+        settings.USE_BOX_CLASSIFIER
+        and ocr_result.easyocr_raw_results
+        and not use_mistral_ocr
+    ):
+        try:
+            from backend.services.ingredients_extraction.box_classifier import classify_boxes
+            from backend.services.ingredients_extraction.merge_boxes import extract_ingredients_from_boxes
+            from backend.services.ingredients_extraction.ocr_corrector import correct_ingredient_list
+            from backend.services.ingredients_extraction.utils import split_ingredients_text
+
+            df_boxes = classify_boxes(ocr_result.easyocr_raw_results)
+            merged_text = extract_ingredients_from_boxes(df_boxes)
+
+            if merged_text.strip():
+                corrected_text = merged_text
+                candidates = split_ingredients_text(merged_text)
+                ingredients_list = correct_ingredient_list(
+                    candidates,
+                    use_ocr_corrector=settings.USE_OCR_CORRECTOR,
+                )
+                if ingredients_list:
+                    ingredients = [", ".join(ingredients_list)]
+                    used_model_path = True
+                    print(f"Model pipeline - Merged text: {merged_text[:200]}")
+                    print(f"Model pipeline - Corrected ingredients: {ingredients}")
+        except Exception as e:
+            print(f"Model pipeline failed ({e}), falling back to HF+SymSpell")
+
+    # --- Fallback: existing HF + SymSpell / LLM pipeline ---
+    if not used_model_path:
+        easyocr_skip_symspell_normalized = None
+        if ocr_result.easyocr_lines:
+            easyocr_skip_symspell_normalized = build_easyocr_skip_symspell_normalized_keys(
+                ocr_result.easyocr_lines,
+                min_confidence=settings.EASYOCR_SKIP_SYMSPELL_MIN_CONFIDENCE,
+            )
+
+        if dietary_profile and dietary_profile.use_llm_ingredient_extractor:
+            llm_result = extract_ingredients_with_llm(ocr_text)
+            if llm_result["success"] and llm_result["ingredients"]:
+                ingredients = _normalize_llm_ingredients(llm_result["ingredients"])
+                print(f"LLM Extracted Ingredients (single block): {ingredients}")
+            else:
+                ingredients = extract_ingredients(
+                    ocr_text,
+                    easyocr_skip_symspell_normalized=easyocr_skip_symspell_normalized,
+                )
+                print(f"Fallback to HF section + SymSpell - Extracted Ingredients: {ingredients}")
         else:
             ingredients = extract_ingredients(
                 ocr_text,
                 easyocr_skip_symspell_normalized=easyocr_skip_symspell_normalized,
             )
-            print(f"Fallback to HF section + SymSpell - Extracted Ingredients: {ingredients}")
-    else:
-        ingredients = extract_ingredients(
-            ocr_text,
-            easyocr_skip_symspell_normalized=easyocr_skip_symspell_normalized,
-        )
-        print(f"Extracted Ingredients (HF NER section + SymSpell): {ingredients}")
-    
+            print(f"Extracted Ingredients (HF NER section + SymSpell): {ingredients}")
+
     # Analyze ingredients
     analysis = analyze_ingredients(ingredients, dietary_profile)
-    
+
     # Save image (we'll use a UUID-based filename)
     image_filename = f"{current_user.id}_{uuid.uuid4().hex[:8]}_image.jpg"
     image_path = os.path.join(settings.UPLOAD_DIR, image_filename)
-    
+
     with open(image_path, "wb") as f:
         f.write(image_data)
-    
+
     # Save scan to database
     scan = Scan(
         user_id=current_user.id,
         image_path=image_path,
         ocr_text=ocr_text,
-        corrected_text=ocr_text,  # No separate correction step, use OCR text directly
+        corrected_text=corrected_text,
         ingredients=ingredients,
         is_safe=analysis["is_safe"],
         warnings=analysis["warnings"],
         analysis_result=analysis["analysis_result"]
     )
-    
+
     db.add(scan)
     db.commit()
     db.refresh(scan)
-    
+
     return ScanOCRResponse(
         ocr_text=ocr_text,
-        corrected_text=ocr_text,  # No separate correction step, use OCR text directly
+        corrected_text=corrected_text,
         ingredients=ingredients,
         is_safe=analysis["is_safe"],
         warnings=analysis["warnings"],

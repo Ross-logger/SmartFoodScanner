@@ -77,7 +77,7 @@ df = add_context_columns(df)
 # -----------------------------
 # 3. Split by image_id
 # -----------------------------
-gss1 = GroupShuffleSplit(n_splits=1, test_size=0.30, random_state=42)
+gss1 = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
 train_idx, temp_idx = next(gss1.split(df, groups=df["image_id"]))
 
 train_df = df.iloc[train_idx].copy()
