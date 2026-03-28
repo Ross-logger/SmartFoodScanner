@@ -14,6 +14,9 @@ Usage:
   python scripts/compare_ingredients_accuracy.py --use_mistral_ocr
   python scripts/compare_ingredients_accuracy.py --use_llm
   python scripts/compare_ingredients_accuracy.py --limit 5
+  # Batches of 20 (Mistral OCR + LLM): use --output per batch to avoid overwriting
+  python scripts/compare_ingredients_accuracy.py --use_mistral_ocr --use_llm --limit 20 --output tests/data/comparison_mistral_llm_batch01.json
+  python scripts/compare_ingredients_accuracy.py --use_mistral_ocr --use_llm --offset 20 --limit 20 --output tests/data/comparison_mistral_llm_batch02.json
   python scripts/compare_ingredients_accuracy.py --use_hf_section --output tests/data/comparison_result_symspell_hf_section.json
   python scripts/compare_ingredients_accuracy.py --only IMG_0050.png in11.jpg --use_hf_section
   python scripts/compare_ingredients_accuracy.py --ground_truth tests/data/true_ingredients_symspell.json
@@ -151,6 +154,7 @@ def _run_pipeline(
     use_llm: bool = False,
     use_hf_section: bool = False,
     limit: Optional[int] = None,
+    offset: int = 0,
     ocr_cache: Optional[Dict[str, str]] = None,
     only_images: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
@@ -190,6 +194,13 @@ def _run_pipeline(
             raise FileNotFoundError(
                 f"No --only images left after filtering. Requested: {sorted(want)}"
             )
+    if offset > 0:
+        if offset >= len(ordered_names):
+            raise FileNotFoundError(
+                f"--offset {offset} is past the end of the sorted image list "
+                f"({len(ordered_names)} images after filters)."
+            )
+        ordered_names = ordered_names[offset:]
     if limit is not None:
         ordered_names = ordered_names[:limit]
 
@@ -266,6 +277,7 @@ def compare_with_ground_truth(
     use_llm: bool = False,
     use_hf_section: bool = False,
     limit: Optional[int] = None,
+    offset: int = 0,
     no_cache: bool = False,
     only_images: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
@@ -299,13 +311,16 @@ def compare_with_ground_truth(
         print(f"OCR cache  : {len(ocr_cache)} entries loaded from {cache_path.name}")
     if only_images:
         print(f"Processing images from {images_dir} (--only: {len(only_images)} names)...")
-    elif limit is not None:
-        print(f"Processing images from {images_dir} (limit: first {limit} with ground truth)...")
+    elif limit is not None or offset > 0:
+        off = f", offset {offset}" if offset > 0 else ""
+        lim = f", limit {limit}" if limit is not None else ""
+        print(f"Processing images from {images_dir} (batch{off}{lim})...")
     else:
         print(f"Processing images from {images_dir} (ground truth: {len(ground_truth)} images)...")
     dataset = _run_pipeline(
         images_dir, ground_truth, use_mistral_ocr=use_mistral_ocr,
         use_llm=use_llm, use_hf_section=use_hf_section, limit=limit,
+        offset=offset,
         ocr_cache=ocr_cache,
         only_images=only_images,
     )
@@ -600,7 +615,14 @@ def _parse_args() -> argparse.Namespace:
         type=int,
         default=None,
         metavar="N",
-        help="Process only the first N images (sorted naturally). Default: all.",
+        help="Process at most N images after --offset (sorted naturally). Default: all.",
+    )
+    parser.add_argument(
+        "--offset",
+        type=int,
+        default=0,
+        metavar="K",
+        help="Skip the first K images (after sorting / --only). Use with --limit for batches.",
     )
     parser.add_argument(
         "--images_dir",
@@ -649,6 +671,9 @@ def main() -> int:
     if args.limit is not None and args.limit < 1:
         print("Error: --limit must be >= 1", file=sys.stderr)
         return 1
+    if args.offset < 0:
+        print("Error: --offset must be >= 0", file=sys.stderr)
+        return 1
 
     try:
         results = compare_with_ground_truth(
@@ -659,6 +684,7 @@ def main() -> int:
             use_llm=args.use_llm,
             use_hf_section=args.use_hf_section,
             limit=args.limit,
+            offset=args.offset,
             no_cache=args.no_cache,
             only_images=args.only,
         )
