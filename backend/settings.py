@@ -80,6 +80,11 @@ EASYOCR_USE_GPU = True
 # Per-user toggle lives in DietaryProfile.use_mistral_ocr.
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY") or None
 MISTRAL_OCR_MODEL = os.getenv("MISTRAL_OCR_MODEL", "mistral-ocr-latest")
+# Mistral is fronted by Cloudflare; 502/520 often mean origin timeout or transient failure.
+MISTRAL_OCR_TIMEOUT = int(os.getenv("MISTRAL_OCR_TIMEOUT", "120"))
+MISTRAL_OCR_RETRIES = max(1, int(os.getenv("MISTRAL_OCR_RETRIES", "3")))
+# If > 0, shrink the longest side before JPEG+base64 (smaller JSON body; may avoid upstream timeouts).
+MISTRAL_OCR_MAX_LONG_EDGE = int(os.getenv("MISTRAL_OCR_MAX_LONG_EDGE", "0"))
 
 # HuggingFace ingredient section detection model (NER-based). Scan OCR uses this
 # by default; regex section helper is optional (tests/scripts only).

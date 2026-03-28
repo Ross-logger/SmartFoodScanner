@@ -7,6 +7,7 @@ import base64
 import io
 import logging
 import re
+import time
 from PIL import Image, ImageOps
 import numpy as np
 import easyocr
@@ -22,6 +23,9 @@ from pillow_heif import register_heif_opener
 logger = logging.getLogger(__name__)
 
 register_heif_opener()
+
+# Cloudflare / gateway responses where a short retry often succeeds after a transient origin failure.
+_MISTRAL_OCR_RETRYABLE_STATUS = frozenset({429, 502, 503, 520, 521, 522, 524})
 
 
 @dataclass(frozen=True)
@@ -150,6 +154,17 @@ def extract_text_with_mistral_ocr(image_data: bytes) -> str:
     if image.mode != "RGB":
         image = image.convert("RGB")
 
+    max_edge = settings.MISTRAL_OCR_MAX_LONG_EDGE
+    if max_edge > 0:
+        w, h = image.size
+        long_edge = max(w, h)
+        if long_edge > max_edge:
+            scale = max_edge / long_edge
+            new_w = max(1, int(w * scale))
+            new_h = max(1, int(h * scale))
+            image = image.resize((new_w, new_h), Image.Resampling.LANCZOS)
+            logger.debug("Mistral OCR: resized long edge %s -> %s", long_edge, max_edge)
+
     buf = io.BytesIO()
     image.save(buf, format="JPEG", quality=95)
     b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
@@ -162,20 +177,66 @@ def extract_text_with_mistral_ocr(image_data: bytes) -> str:
         },
     }
 
-    resp = requests.post(
-        "https://api.mistral.ai/v1/ocr",
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}",
-        },
-        json=payload,
-        timeout=60,
-    )
+    url = "https://api.mistral.ai/v1/ocr"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}",
+    }
+    timeout = settings.MISTRAL_OCR_TIMEOUT
+    retries = settings.MISTRAL_OCR_RETRIES
 
-    if resp.status_code != 200:
-        logger.error("Mistral OCR API error %s: %s", resp.status_code, resp.text[:300])
-        raise Exception(f"Mistral OCR API returned {resp.status_code}: {resp.text[:200]}")
+    resp = None
+    for attempt in range(retries):
+        try:
+            resp = requests.post(
+                url,
+                headers=headers,
+                json=payload,
+                timeout=timeout,
+            )
+        except requests.RequestException as exc:
+            if attempt < retries - 1:
+                delay = min(2**attempt, 8)
+                logger.warning(
+                    "Mistral OCR request failed (%s), retry %s/%s in %ss",
+                    exc,
+                    attempt + 1,
+                    retries,
+                    delay,
+                )
+                time.sleep(delay)
+                continue
+            logger.error("Mistral OCR request failed after %s attempts: %s", retries, exc)
+            raise Exception(f"Mistral OCR request failed: {exc}") from exc
 
+        if resp.status_code == 200:
+            break
+
+        if resp.status_code in _MISTRAL_OCR_RETRYABLE_STATUS and attempt < retries - 1:
+            delay = min(2**attempt, 8)
+            logger.warning(
+                "Mistral OCR HTTP %s (attempt %s/%s); retrying in %ss — often transient (Cloudflare/origin).",
+                resp.status_code,
+                attempt + 1,
+                retries,
+                delay,
+            )
+            time.sleep(delay)
+            continue
+
+        snippet = resp.text[:300] if resp.text else ""
+        logger.error("Mistral OCR API error %s: %s", resp.status_code, snippet)
+        if resp.status_code in _MISTRAL_OCR_RETRYABLE_STATUS:
+            raise Exception(
+                f"Mistral OCR unavailable (HTTP {resp.status_code}). "
+                "This is usually a temporary Mistral/edge issue — retry shortly, or set "
+                "MISTRAL_OCR_MAX_LONG_EDGE=2048 to send a smaller image."
+            )
+        raise Exception(
+            f"Mistral OCR API returned {resp.status_code}: {(resp.text or '')[:200]}"
+        )
+
+    assert resp is not None and resp.status_code == 200
     data = resp.json()
     pages = data.get("pages", [])
     text_parts = [p.get("markdown", "") for p in pages if p.get("markdown")]
