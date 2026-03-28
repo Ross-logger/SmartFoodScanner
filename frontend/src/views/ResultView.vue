@@ -78,18 +78,18 @@
         <!-- Edit Mode -->
         <div v-if="isEditing" class="edit-mode">
           <p class="edit-hint">Edit the full ingredient list text. Analysis will re-run on save.</p>
-          <div class="edit-ingredients-list">
+          <div ref="editIngredientsListEl" class="edit-ingredients-list">
             <div
               v-for="(ingredient, index) in editableIngredients"
               :key="index"
               class="edit-ingredient-row"
             >
-              <input
-                type="text"
+              <textarea
                 v-model="editableIngredients[index]"
                 class="edit-ingredient-input"
-                placeholder="Ingredient name"
-                @keydown.enter.prevent="addIngredient(index + 1)"
+                placeholder="Ingredient name or full label text"
+                rows="1"
+                @input="onIngredientTextareaInput"
               />
               <button
                 @click="removeIngredient(index)"
@@ -219,7 +219,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useScanStore } from '@/stores/scan'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
@@ -232,6 +232,26 @@ const error = ref(null)
 const isEditing = ref(false)
 const isSaving = ref(false)
 const editableIngredients = ref([])
+const editIngredientsListEl = ref(null)
+
+const INGREDIENT_TEXTAREA_MIN_PX = 44
+function ingredientTextareaMaxPx() {
+  if (typeof window === 'undefined') return 480
+  return Math.round(window.innerHeight * 0.55)
+}
+
+function resizeIngredientTextarea(el) {
+  if (!el || el.tagName !== 'TEXTAREA') return
+  el.style.height = 'auto'
+  const cap = ingredientTextareaMaxPx()
+  const next = Math.min(el.scrollHeight, cap)
+  el.style.height = `${Math.max(next, INGREDIENT_TEXTAREA_MIN_PX)}px`
+  el.style.overflowY = el.scrollHeight > cap ? 'auto' : 'hidden'
+}
+
+function onIngredientTextareaInput(event) {
+  resizeIngredientTextarea(event.target)
+}
 
 const scanResult = computed(() => scanStore.currentScan)
 const ingredients = computed(() => {
@@ -335,9 +355,13 @@ function formatDate(dateString) {
   })
 }
 
-function startEditing() {
+async function startEditing() {
   editableIngredients.value = [...ingredients.value]
   isEditing.value = true
+  await nextTick()
+  editIngredientsListEl.value
+    ?.querySelectorAll('textarea.edit-ingredient-input')
+    .forEach((el) => resizeIngredientTextarea(el))
 }
 
 function cancelEditing() {
@@ -345,12 +369,18 @@ function cancelEditing() {
   editableIngredients.value = []
 }
 
-function addIngredient(atIndex) {
+async function addIngredient(atIndex) {
   if (atIndex !== undefined) {
     editableIngredients.value.splice(atIndex, 0, '')
   } else {
     editableIngredients.value.push('')
   }
+  await nextTick()
+  const list = editIngredientsListEl.value?.querySelectorAll('textarea.edit-ingredient-input')
+  if (!list?.length) return
+  const idx = atIndex !== undefined ? atIndex : list.length - 1
+  const el = list[idx]
+  if (el) resizeIngredientTextarea(el)
 }
 
 function removeIngredient(index) {
@@ -466,17 +496,18 @@ async function shareScan() {
 }
 
 .edit-ingredient-row {
-  @apply flex items-center gap-2;
+  @apply flex items-start gap-2;
 }
 
 .edit-ingredient-input {
-  @apply flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm
+  @apply flex-1 min-w-0 min-h-[2.75rem] border border-gray-300 rounded-lg px-3 py-2 text-sm
          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-         bg-white;
+         bg-white resize-none leading-relaxed;
+  field-sizing: content;
 }
 
 .remove-ingredient-button {
-  @apply text-gray-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0;
+  @apply text-gray-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0 mt-0.5;
 }
 
 .add-ingredient-button {
