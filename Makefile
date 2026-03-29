@@ -1,4 +1,4 @@
-.PHONY: help shell install run dev frontend backend vllm stop-frontend stop-backend stop-vllm stop screens migrate-generate migrate migrate-downgrade migrate-history
+.PHONY: help shell install run dev frontend backend vllm stop-frontend stop-backend stop-vllm stop screens migrate-generate migrate migrate-downgrade migrate-history run-unit-test run-integration-test run-performance-test run-all-tests
 
 # Variables
 VENV = .venv
@@ -74,3 +74,20 @@ migrate-downgrade: ## Roll back the last migration
 
 migrate-history: ## Show migration history
 	$(ALEMBIC) history --verbose
+
+# =============================================================================
+# Tests (pytest; pytest.ini sets testpaths and markers)
+# =============================================================================
+PYTEST = cd $(PROJECT_ROOT) && PYTHONPATH=$(PROJECT_ROOT) $(PYTHON) -m pytest
+
+run-unit-test: ## Run unit tests (tests/unit)
+	$(PYTEST) tests/unit
+
+run-integration-test: ## Run integration tests (tests/integration)
+	$(PYTEST) tests/integration
+
+run-performance-test: ## Run performance tests (tests/performance)
+	$(PYTEST) tests/performance
+
+run-all-tests: ## Run unit, integration, and performance tests in order
+	$(PYTEST) tests/unit tests/integration tests/performance
