@@ -227,7 +227,7 @@ python3 evaluate_merge_predictions.py \
 | Flag | Default | Description |
 |---|---|---|
 | `--predictions` | `outputs/test_box_predictions.csv` | Box-level CSV. |
-| `--ground-truth-json` | `tests/data/true_ingredients_symspell.json` | Ground-truth JSON. |
+| `--ground-truth-json` | `tests/data/true_ingredients_for_box_classifier.json` | Ground-truth JSON. |
 | `--output` | `outputs/merge_evaluation_review_fuzzy.csv` | Where to write the per-image results CSV. |
 | `--threshold` | `0.4` | Minimum `pred_prob` to keep a box. |
 | `--row-gap` | `90.0` | Max vertical pixel gap to group boxes into the same row. |

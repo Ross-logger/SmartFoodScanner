@@ -40,7 +40,7 @@ from backend.services.ocr import extract_ocr_from_image  # noqa: E402
 
 
 IMAGES_DIR = PROJECT_ROOT / "tests" / "data" / "images"
-GROUND_TRUTH_PATH = PROJECT_ROOT / "tests" / "data" / "true_ingredients.json"
+GROUND_TRUTH_PATH = PROJECT_ROOT / "tests" / "data" / "true_ingredients_for_box_classifier.json"
 DEFAULT_LIMIT = 50
 # Report totals scaled to this many images (benchmark runs on ``DEFAULT_LIMIT``).
 EXTRAPOLATE_TO_N_IMAGES = 100

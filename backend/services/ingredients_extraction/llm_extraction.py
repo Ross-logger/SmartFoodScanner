@@ -3,7 +3,7 @@ LLM-based Ingredient Extractor
 Uses LLM to accurately extract ingredients from food product labels.
 
 Benchmark (offline artefact ``tests/data/comparison_result_with_llm_extraction.json``):
-100 label images with ground truth in ``tests/data/true_ingredients.json`` (``IMG_0045.png``
+100 label images with ground truth in ``tests/data/true_ingredients_for_llm.json`` (``IMG_0045.png``
 excluded: unusable Mistral OCR in cache). Per-image macro averages:
 
 - **Exact (set overlap):** precision 95.09%, recall 95.05%, F1 95.06%

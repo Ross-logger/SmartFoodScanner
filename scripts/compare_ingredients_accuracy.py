@@ -3,9 +3,9 @@
 Compare extracted ingredients with ground truth.
 
 Runs the full pipeline (OCR + ingredient extraction) on each image in
-tests/data/images, loads ground truth from tests/data/true_ingredients.json
-(by default). For SymSpell-style evaluation against atomic sub-ingredients, use
-``tests/data/true_ingredients_symspell.json`` (regenerate with
+tests/data/images, loads ground truth from tests/data/true_ingredients_for_llm.json
+(by default). For box-classifier-style evaluation against atomic sub-ingredients, use
+``tests/data/true_ingredients_for_box_classifier.json`` (regenerate with
 ``python scripts/build_true_ingredients_symspell.py``).
 and reports fuzzy and merge (containment) metrics.
 
@@ -14,9 +14,8 @@ Usage:
   python scripts/compare_ingredients_accuracy.py --use_mistral_ocr
   python scripts/compare_ingredients_accuracy.py --use_llm
   python scripts/compare_ingredients_accuracy.py --limit 5
-  python scripts/compare_ingredients_accuracy.py --use_hf_section --output tests/data/comparison_result_symspell_hf_section.json
-  python scripts/compare_ingredients_accuracy.py --only IMG_0050.png in11.jpg --use_hf_section
-  python scripts/compare_ingredients_accuracy.py --ground_truth tests/data/true_ingredients_symspell.json
+  python scripts/compare_ingredients_accuracy.py --only IMG_0050.png in11.jpg
+  python scripts/compare_ingredients_accuracy.py --ground_truth tests/data/true_ingredients_for_box_classifier.json
 """
 
 import argparse
@@ -42,7 +41,7 @@ from tests.utils.metrics import (
 )
 
 IMAGES_DIR = PROJECT_ROOT / "tests" / "data" / "images"
-GROUND_TRUTH_PATH = PROJECT_ROOT / "tests" / "data" / "true_ingredients.json"
+GROUND_TRUTH_PATH = PROJECT_ROOT / "tests" / "data" / "true_ingredients_for_llm.json"
 COMPARISON_RESULT_PATH = PROJECT_ROOT / "tests" / "data" / "comparison_result.json"
 COMPARISON_RESULT_SUBSET_PATH = (
     PROJECT_ROOT / "tests" / "data" / "comparison_result_only_subset.json"
@@ -475,7 +474,7 @@ def print_summary(results: Dict[str, Any]) -> None:
     print("\n" + "=" * 80)
     print("  INGREDIENT EXTRACTION vs GROUND TRUTH")
     print(f"  OCR engine : {results.get('engine', 'EasyOCR')}")
-    print("  Pipeline   : OCR + extract_ingredients | Ground truth: true_ingredients.json")
+    print("  Pipeline   : OCR + extract_ingredients | Ground truth: true_ingredients_for_llm.json")
     print("=" * 80)
     print(f"  Total images: {s['total_images']}")
     print()
@@ -608,7 +607,7 @@ def _parse_args() -> argparse.Namespace:
         "--ground_truth",
         type=Path,
         default=None,
-        help=f"Path to true_ingredients.json. Default: {GROUND_TRUTH_PATH}",
+        help=f"Path to ground truth JSON. Default: {GROUND_TRUTH_PATH}",
     )
     parser.add_argument(
         "--output",

@@ -4,7 +4,7 @@ This note explains why runs such as **~43% exact** / **~54% fuzzy** / **~50% mer
 
 - [`extract_ingredients` (SymSpell)](/backend/services/ingredients_extraction/symspell_extraction.py)
 - Cached Mistral-style OCR in [`tests/data/cached_mistral_ocr_results.json`](/tests/data/cached_mistral_ocr_results.json)
-- Ground truth in [`tests/data/true_ingredients.json`](/tests/data/true_ingredients.json)
+- Ground truth in [`tests/data/true_ingredients_for_llm.json`](/tests/data/true_ingredients_for_llm.json)
 - Evaluation in [`scripts/compare_ingredients_accuracy.py`](/scripts/compare_ingredients_accuracy.py)
 
 Low scores are expected from **stacked mismatch** between section detection, splitting, dictionary correction, and strict set-based scoring—not from a single SymSpell bug.

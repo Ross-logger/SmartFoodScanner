@@ -1,8 +1,8 @@
 # Accuracy Improvement Suggestions
 
-Based on comparing **extracted ingredients** (from the SymSpell pipeline) with **ground truth** in `true_ingredients.json` and `ingredients_dataset.json`.
+Based on comparing **extracted ingredients** (from the pipeline) with **ground truth** in `true_ingredients_for_llm.json` and `ingredients_dataset.json`.
 
-**Dataset:** 75 entries (filtered to only images present in `true_ingredients.json`).
+**Dataset:** 75 entries (filtered to only images present in `true_ingredients_for_llm.json`).
 
 **Current performance (exact match):**
 

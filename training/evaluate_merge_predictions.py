@@ -271,7 +271,7 @@ def main() -> None:
     p.add_argument(
         "--ground-truth-json",
         type=Path,
-        default=_REPO_ROOT / "tests/data/true_ingredients_symspell.json",
+        default=_REPO_ROOT / "tests/data/true_ingredients_for_box_classifier.json",
         help="JSON array of {image, true_ingredients}",
     )
     p.add_argument(

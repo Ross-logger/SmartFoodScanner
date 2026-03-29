@@ -3,7 +3,7 @@
 Run EasyOCR on test images and write ``tests/data/cached_easyocr_results.json``.
 
 Uses the same cache path as ``compare_ingredients_accuracy.py`` (default EasyOCR
-cache). By default only processes images listed in ``true_ingredients.json`` so
+cache). By default only processes images listed in ``true_ingredients_for_llm.json`` so
 the cache aligns with the benchmark dataset.
 
 Usage:
@@ -28,7 +28,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from backend.services.ocr import extract_text_from_image
 
 IMAGES_DIR = PROJECT_ROOT / "tests" / "data" / "images"
-GROUND_TRUTH_PATH = PROJECT_ROOT / "tests" / "data" / "true_ingredients.json"
+GROUND_TRUTH_PATH = PROJECT_ROOT / "tests" / "data" / "true_ingredients_for_llm.json"
 EASYOCR_CACHE_PATH = PROJECT_ROOT / "tests" / "data" / "cached_easyocr_results.json"
 
 _IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff"}
@@ -87,7 +87,7 @@ def main() -> int:
         "--ground_truth",
         type=Path,
         default=GROUND_TRUTH_PATH,
-        help="Only OCR images listed here (default: true_ingredients.json). Ignored with --all.",
+        help="Only OCR images listed here (default: true_ingredients_for_llm.json). Ignored with --all.",
     )
     parser.add_argument(
         "--all",

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Build tests/data/true_ingredients_symspell.json from true_ingredients.json.
+Build tests/data/true_ingredients_for_box_classifier.json from true_ingredients_for_llm.json.
 
 Compound label lines like
   Breadcrumbs (Wheat Flour, Yeast, Salt, Preservative (INS 282))
 are expanded to atomic ingredient phrases: Wheat Flour, Yeast, Salt, etc.
 The outer composite name (Breadcrumbs) is dropped when the parentheses hold a
-multi-part list, matching how SymSpell-style extractors surface sub-ingredients.
+multi-part list, matching how the box-classifier pipeline surfaces sub-ingredients.
 
 Single-parenthetical qualifiers (e.g. Permitted Stabilizer (E 460(i)),
 Bengal Gram Flour (Besan)) stay as one string.
@@ -34,8 +34,8 @@ from pathlib import Path
 from typing import List
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_SRC = PROJECT_ROOT / "tests" / "data" / "true_ingredients.json"
-DEFAULT_DST = PROJECT_ROOT / "tests" / "data" / "true_ingredients_symspell.json"
+DEFAULT_SRC = PROJECT_ROOT / "tests" / "data" / "true_ingredients_for_llm.json"
+DEFAULT_DST = PROJECT_ROOT / "tests" / "data" / "true_ingredients_for_box_classifier.json"
 
 # Normalised (lowercase, single spaces) label before ":" on pack copy.
 _FUNCTIONAL_HEADS = frozenset(
@@ -123,7 +123,7 @@ def strip_functional_label_split(s: str) -> List[str]:
 
 def expand_compound_phrase(label: str) -> List[str]:
     """
-    Split composite ingredient lines into atomic phrases for symspell evaluation.
+    Split composite ingredient lines into atomic phrases for box-classifier evaluation.
 
     If the first '(...)' group contains multiple top-level comma segments,
     return the recursively expanded segments (outer name dropped). Otherwise

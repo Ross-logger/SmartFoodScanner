@@ -4,7 +4,7 @@ Auto-label EasyOCR detection boxes as ingredient-section (1) or not (0).
 
 Reads:
   - tests/data/easyocr_raw_results.json   (box-level OCR detections)
-  - tests/data/true_ingredients.json       (ground-truth ingredient lists)
+  - tests/data/true_ingredients_for_llm.json  (ground-truth ingredient lists)
 
 Outputs:
   - tests/data/ocr_box_labels.csv
@@ -36,7 +36,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 RAW_RESULTS_PATH = PROJECT_ROOT / "tests" / "data" / "easyocr_raw_results.json"
-GROUND_TRUTH_PATH = PROJECT_ROOT / "tests" / "data" / "true_ingredients.json"
+GROUND_TRUTH_PATH = PROJECT_ROOT / "tests" / "data" / "true_ingredients_for_llm.json"
 OUTPUT_PATH = PROJECT_ROOT / "tests" / "data" / "ocr_box_labels.csv"
 
 FUZZY_THRESHOLD = 0.55
