@@ -348,9 +348,7 @@ Integration tests validate the complete processing pipeline from image upload or
 
 API endpoint tests verify the correct behaviour of all REST endpoints, including authentication flows, dietary profile management, OCR scan submission, barcode scan submission, and history retrieval. These tests use the FastAPI TestClient to simulate HTTP requests and validate response status codes, content types, and payload structures. Database integration tests verify that scan records are correctly persisted for both scan types and that relationships between users, profiles, and scans are properly maintained.
 
-#### 4.4.4 Accuracy Target and Evaluation
-
-The system targets a dietary compliance detection accuracy of at least 95 percent. This target is evaluated using a test dataset containing over one hundred test cases, where each case specifies an ingredient list, a dietary profile configuration, and the expected safety determination. Accuracy is calculated as the proportion of test cases where the predicted safety determination matches the expected value.
+#### 4.4.4 Evaluation Methodology
 
 Ingredient extraction accuracy is evaluated separately for each processing flow using ground-truth ingredient lists. For the model-based pipeline, merged predictions can be scored offline with the training script evaluate_merge_predictions.py, which compares exported classifier outputs (for example outputs/model_predictions.csv) against a ground-truth JSON file (for example datasets/true_ingredients_augmented_1000.json) using RapidFuzz-based matching at a configurable fuzzy threshold, yielding per-image ingredient precision, recall, and F1 together with wall-clock timing. For the LLM-based pipeline, the same ground-truth lists support merge-level or token-level metrics so that the two flows are comparable. Additional scripts may compute fuzzy token matching at threshold 0.8 and merge-based containment metrics for sensitivity analysis. Per-category metrics for dietary restriction detection are also computed to identify areas that may require improvement. Numerical results of these evaluations are reported in the results chapter rather than here.
 
