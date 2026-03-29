@@ -33,8 +33,13 @@ class TestFullPipelineFlow:
         ocr_text = "Ingredients: Water, Sugar, Wheat Flour, Salt"
         
         # Extract ingredients
-        with patch('backend.services.ingredients_extraction.hugging_face_extractor.extract_ingredients') as mock_hf:
-            mock_hf.return_value = ["Water", "Sugar", "Wheat Flour", "Salt"]
+        with patch(
+            "backend.services.ingredients_extraction.extractor.extract_ingredients_with_llm"
+        ) as mock_llm_ext:
+            mock_llm_ext.return_value = {
+                "success": True,
+                "ingredients": ["Water", "Sugar", "Wheat Flour", "Salt"],
+            }
             ingredients = extract(ocr_text)
         
         # Create dietary profile
@@ -61,8 +66,13 @@ class TestFullPipelineFlow:
         """Test pipeline detects halal violations."""
         ocr_text = "Ingredients: Water, Gelatin, Sugar, Natural Flavors"
         
-        with patch('backend.services.ingredients_extraction.hugging_face_extractor.extract_ingredients') as mock_hf:
-            mock_hf.return_value = ["Water", "Gelatin", "Sugar", "Natural Flavors"]
+        with patch(
+            "backend.services.ingredients_extraction.extractor.extract_ingredients_with_llm"
+        ) as mock_llm_ext:
+            mock_llm_ext.return_value = {
+                "success": True,
+                "ingredients": ["Water", "Gelatin", "Sugar", "Natural Flavors"],
+            }
             ingredients = extract(ocr_text)
         
         profile = MagicMock()
@@ -86,8 +96,13 @@ class TestFullPipelineFlow:
         """Test pipeline detects vegan violations."""
         ocr_text = "Ingredients: Flour, Butter, Eggs, Milk, Sugar"
         
-        with patch('backend.services.ingredients_extraction.hugging_face_extractor.extract_ingredients') as mock_hf:
-            mock_hf.return_value = ["Flour", "Butter", "Eggs", "Milk", "Sugar"]
+        with patch(
+            "backend.services.ingredients_extraction.extractor.extract_ingredients_with_llm"
+        ) as mock_llm_ext:
+            mock_llm_ext.return_value = {
+                "success": True,
+                "ingredients": ["Flour", "Butter", "Eggs", "Milk", "Sugar"],
+            }
             ingredients = extract(ocr_text)
         
         profile = MagicMock()
@@ -110,8 +125,13 @@ class TestFullPipelineFlow:
         """Test pipeline correctly identifies safe product."""
         ocr_text = "Ingredients: Water, Rice Flour, Sugar, Sunflower Oil, Salt"
         
-        with patch('backend.services.ingredients_extraction.hugging_face_extractor.extract_ingredients') as mock_hf:
-            mock_hf.return_value = ["Water", "Rice Flour", "Sugar", "Sunflower Oil", "Salt"]
+        with patch(
+            "backend.services.ingredients_extraction.extractor.extract_ingredients_with_llm"
+        ) as mock_llm_ext:
+            mock_llm_ext.return_value = {
+                "success": True,
+                "ingredients": ["Water", "Rice Flour", "Sugar", "Sunflower Oil", "Salt"],
+            }
             ingredients = extract(ocr_text)
         
         # Profile with multiple restrictions
@@ -157,65 +177,63 @@ class TestAPIEndpointIntegration:
         # Create test image
         image_bytes = create_test_image()
         
-        # Mock OCR and extraction
-        with patch('backend.routers.scans.extract_text_from_image') as mock_ocr:
-            mock_ocr.return_value = "Ingredients: Water, Sugar, Salt"
-            
-            with patch('backend.routers.scans.extract_ingredients') as mock_extract:
-                mock_extract.return_value = ["Water", "Sugar", "Salt"]
-                
-                # Login and get token
+        # Mock OCR (no raw boxes → LLM fallback path) and LLM ingredient extraction
+        with patch("backend.routers.scans.extract_ocr_from_image") as mock_ocr:
+            mock_ocr.return_value = MagicMock(
+                text="Ingredients: Water, Sugar, Salt",
+                easyocr_raw_results=[],
+            )
+            with patch("backend.routers.scans.extract_ingredients_with_llm") as mock_llm:
+                mock_llm.return_value = {
+                    "success": True,
+                    "ingredients": ["Water", "Sugar", "Salt"],
+                }
+
                 response = client.post(
                     "/api/auth/login",
-                    data={"username": "testuser", "password": "testpassword123"}
+                    json={"username": "testuser", "password": "testpassword123"},
                 )
-                
-                if response.status_code == 200:
-                    token = response.json()["access_token"]
-                    
-                    # Upload image
-                    files = {"file": ("test.jpg", io.BytesIO(image_bytes), "image/jpeg")}
-                    scan_response = client.post(
-                        "/api/scan/ocr",
-                        files=files,
-                        headers={"Authorization": f"Bearer {token}"}
-                    )
-                    
-                    # Should work (status 200) or fail gracefully
-                    assert scan_response.status_code in [200, 401, 500]
+
+                assert response.status_code == 200
+                token = response.json()["access_token"]
+
+                files = {"file": ("test.jpg", io.BytesIO(image_bytes), "image/jpeg")}
+                scan_response = client.post(
+                    "/api/scan/ocr",
+                    files=files,
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+
+                assert scan_response.status_code == 200
     
     def test_dietary_profile_endpoint(self, client, test_user, test_db):
-        """Test dietary profile CRUD operations."""
-        # Login
+        """Create/update dietary profile via API (POST /api/dietary-profiles/custom)."""
         response = client.post(
             "/api/auth/login",
-            data={"username": "testuser", "password": "testpassword123"}
+            json={"username": "testuser", "password": "testpassword123"},
         )
-        
-        if response.status_code == 200:
-            token = response.json()["access_token"]
-            headers = {"Authorization": f"Bearer {token}"}
-            
-            # Create dietary profile
-            profile_data = {
-                "halal": True,
-                "gluten_free": True,
-                "vegetarian": False,
-                "vegan": False,
-                "nut_free": True,
-                "dairy_free": False,
-                "allergens": ["sesame"],
-                "custom_restrictions": []
-            }
-            
-            create_response = client.post(
-                "/api/dietary/profile",
-                json=profile_data,
-                headers=headers
-            )
-            
-            # Should create or conflict if exists
-            assert create_response.status_code in [200, 201, 409]
+        assert response.status_code == 200
+        token = response.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+
+        profile_data = {
+            "halal": True,
+            "gluten_free": True,
+            "vegetarian": False,
+            "vegan": False,
+            "nut_free": True,
+            "dairy_free": False,
+            "allergens": ["sesame"],
+            "custom_restrictions": [],
+        }
+
+        create_response = client.post(
+            "/api/dietary-profiles/custom",
+            json=profile_data,
+            headers=headers,
+        )
+
+        assert create_response.status_code == 200
 
 
 @pytest.mark.integration
@@ -311,15 +329,16 @@ class TestComplianceAccuracy:
         
         for case in gluten_cases:
             profile = MagicMock()
-            profile.halal = False
-            profile.gluten_free = True
-            profile.vegetarian = False
-            profile.vegan = False
-            profile.nut_free = False
-            profile.dairy_free = False
-            profile.allergens = []
-            profile.custom_restrictions = []
-            
+            profile_data = case.get("profile", {})
+            profile.halal = profile_data.get("halal", False)
+            profile.gluten_free = profile_data.get("gluten_free", False)
+            profile.vegetarian = profile_data.get("vegetarian", False)
+            profile.vegan = profile_data.get("vegan", False)
+            profile.nut_free = profile_data.get("nut_free", False)
+            profile.dairy_free = profile_data.get("dairy_free", False)
+            profile.allergens = profile_data.get("allergens", [])
+            profile.custom_restrictions = profile_data.get("custom_restrictions", [])
+
             with patch('backend.services.ingredients_analysis.service.analyze_with_llm') as mock_llm:
                 mock_llm.return_value = None
                 result = analyze_ingredients(case["ingredients"], profile)

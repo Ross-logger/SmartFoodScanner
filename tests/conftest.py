@@ -26,7 +26,6 @@ from fastapi.testclient import TestClient
 
 from backend.database import Base, get_db
 from backend.models import User, DietaryProfile, Scan
-from backend.main import app
 from backend.security import get_password_hash
 
 from tests.utils.mock_llm import MockLLMService, MockLLMProvider
@@ -63,12 +62,14 @@ def test_db(test_engine) -> Generator[Session, None, None]:
 @pytest.fixture(scope="function")
 def client(test_db) -> Generator[TestClient, None, None]:
     """Create a FastAPI test client with test database."""
+    from backend.main import app
+
     def override_get_db():
         try:
             yield test_db
         finally:
             pass
-    
+
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as test_client:
         yield test_client
@@ -99,7 +100,7 @@ def test_user_token(client, test_user) -> str:
     """Get authentication token for test user."""
     response = client.post(
         "/api/auth/login",
-        data={"username": "testuser", "password": "testpassword123"}
+        json={"username": "testuser", "password": "testpassword123"},
     )
     if response.status_code == 200:
         return response.json()["access_token"]

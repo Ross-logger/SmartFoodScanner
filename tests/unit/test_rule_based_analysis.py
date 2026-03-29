@@ -281,7 +281,17 @@ class TestNutFreeAnalysis:
         
         assert result["is_safe"] == True
         assert len(result["warnings"]) == 0
-    
+
+    def test_nut_free_coconut_oil_allowed(self):
+        """'nut' must not match inside 'coconut' (word-boundary matching)."""
+        profile = create_mock_dietary_profile(nut_free=True)
+        ingredients = ["Rice", "Coconut Oil", "Spices"]
+
+        result = analyze_with_rules(ingredients, profile)
+
+        assert result["is_safe"] is True
+        assert result["warnings"] == []
+
     def test_nut_free_unsafe_peanut(self):
         """Test product with peanuts."""
         profile = create_mock_dietary_profile(nut_free=True)

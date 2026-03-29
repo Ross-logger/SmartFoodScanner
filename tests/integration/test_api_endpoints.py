@@ -44,7 +44,7 @@ class TestAuthEndpoints:
             "password": "testpassword123"
         }
         
-        response = client.post("/api/auth/login", data=login_data)
+        response = client.post("/api/auth/login", json=login_data)
         
         if response.status_code == 200:
             data = response.json()
@@ -58,7 +58,7 @@ class TestAuthEndpoints:
             "password": "wrongpassword"
         }
         
-        response = client.post("/api/auth/login", data=login_data)
+        response = client.post("/api/auth/login", json=login_data)
         
         # 401 Unauthorized, 400 Bad Request, or 422 Validation Error are all acceptable
         assert response.status_code in [401, 400, 422]
@@ -79,7 +79,7 @@ class TestUserEndpoints:
         # Login first
         login_response = client.post(
             "/api/auth/login",
-            data={"username": "testuser", "password": "testpassword123"}
+            json={"username": "testuser", "password": "testpassword123"},
         )
         
         if login_response.status_code == 200:
@@ -99,7 +99,7 @@ class TestUserEndpoints:
         """Test updating user profile."""
         login_response = client.post(
             "/api/auth/login",
-            data={"username": "testuser", "password": "testpassword123"}
+            json={"username": "testuser", "password": "testpassword123"},
         )
         
         if login_response.status_code == 200:
@@ -127,7 +127,7 @@ class TestDietaryProfileEndpoints:
         """Test creating dietary profile."""
         login_response = client.post(
             "/api/auth/login",
-            data={"username": "testuser", "password": "testpassword123"}
+            json={"username": "testuser", "password": "testpassword123"},
         )
         
         if login_response.status_code == 200:
@@ -145,9 +145,9 @@ class TestDietaryProfileEndpoints:
             }
             
             response = client.post(
-                "/api/dietary/profile",
+                "/api/dietary-profiles/custom",
                 json=profile_data,
-                headers={"Authorization": f"Bearer {token}"}
+                headers={"Authorization": f"Bearer {token}"},
             )
             
             # Should create or conflict if exists
@@ -172,15 +172,15 @@ class TestDietaryProfileEndpoints:
         
         login_response = client.post(
             "/api/auth/login",
-            data={"username": "testuser", "password": "testpassword123"}
+            json={"username": "testuser", "password": "testpassword123"},
         )
         
         if login_response.status_code == 200:
             token = login_response.json()["access_token"]
             
             response = client.get(
-                "/api/dietary/profile",
-                headers={"Authorization": f"Bearer {token}"}
+                "/api/dietary-profiles",
+                headers={"Authorization": f"Bearer {token}"},
             )
             
             if response.status_code == 200:
@@ -207,7 +207,7 @@ class TestDietaryProfileEndpoints:
         
         login_response = client.post(
             "/api/auth/login",
-            data={"username": "testuser", "password": "testpassword123"}
+            json={"username": "testuser", "password": "testpassword123"},
         )
         
         if login_response.status_code == 200:
@@ -218,14 +218,13 @@ class TestDietaryProfileEndpoints:
                 "vegan": True
             }
             
-            response = client.put(
-                "/api/dietary/profile",
+            response = client.patch(
+                "/api/users/profile/restrictions",
                 json=update_data,
-                headers={"Authorization": f"Bearer {token}"}
+                headers={"Authorization": f"Bearer {token}"},
             )
-            
-            # Should update successfully
-            assert response.status_code in [200, 404, 405]
+
+            assert response.status_code == 200
 
 
 @pytest.mark.integration
@@ -251,43 +250,42 @@ class TestScanEndpoints:
         
         login_response = client.post(
             "/api/auth/login",
-            data={"username": "testuser", "password": "testpassword123"}
+            json={"username": "testuser", "password": "testpassword123"},
         )
         
-        if login_response.status_code == 200:
-            token = login_response.json()["access_token"]
-            
-            # Create test image
-            image_bytes = create_test_image()
-            
-            # Mock OCR and extraction
-            with patch('backend.routers.scans.extract_text_from_image') as mock_ocr:
-                mock_ocr.return_value = "Ingredients: Water, Sugar, Salt"
-                
-                with patch('backend.routers.scans.extract_ingredients') as mock_extract:
-                    mock_extract.return_value = ["Water", "Sugar", "Salt"]
-                    
-                    files = {"file": ("test.jpg", io.BytesIO(image_bytes), "image/jpeg")}
-                    
-                    response = client.post(
-                        "/api/scan/ocr",
-                        files=files,
-                        headers={"Authorization": f"Bearer {token}"}
-                    )
-                    
-                    # Should work or fail gracefully
-                    assert response.status_code in [200, 401, 500]
-                    
-                    if response.status_code == 200:
-                        data = response.json()
-                        assert "ingredients" in data
-                        assert "is_safe" in data
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        image_bytes = create_test_image()
+
+        with patch("backend.routers.scans.extract_ocr_from_image") as mock_ocr:
+            mock_ocr.return_value = MagicMock(
+                text="Ingredients: Water, Sugar, Salt",
+                easyocr_raw_results=[],
+            )
+            with patch("backend.routers.scans.extract_ingredients_with_llm") as mock_llm:
+                mock_llm.return_value = {
+                    "success": True,
+                    "ingredients": ["Water", "Sugar", "Salt"],
+                }
+
+                files = {"file": ("test.jpg", io.BytesIO(image_bytes), "image/jpeg")}
+                response = client.post(
+                    "/api/scan/ocr",
+                    files=files,
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+
+                assert response.status_code == 200
+                data = response.json()
+                assert "ingredients" in data
+                assert "is_safe" in data
     
     def test_scan_invalid_file_type(self, client, test_user):
         """Test scan with invalid file type."""
         login_response = client.post(
             "/api/auth/login",
-            data={"username": "testuser", "password": "testpassword123"}
+            json={"username": "testuser", "password": "testpassword123"},
         )
         
         if login_response.status_code == 200:
@@ -314,7 +312,7 @@ class TestHistoryEndpoints:
         """Test getting scan history."""
         login_response = client.post(
             "/api/auth/login",
-            data={"username": "testuser", "password": "testpassword123"}
+            json={"username": "testuser", "password": "testpassword123"},
         )
         
         if login_response.status_code == 200:

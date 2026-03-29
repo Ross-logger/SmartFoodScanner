@@ -5,6 +5,7 @@ Fallback method for analyzing ingredients when LLM is unavailable.
 
 from typing import List
 import logging
+import re
 
 from backend.models import DietaryProfile
 
@@ -125,6 +126,24 @@ ALLERGENS = {
 }
 
 
+def _ingredient_contains_term(ingredient: str, term: str) -> bool:
+    """
+    True if ``term`` appears in ``ingredient`` as a meaningful match.
+
+    Multi-word terms use substring match. Single-word terms use a token-style
+    match so short keys (e.g. ``nut``) do not match inside ``coconut``,
+    and ``egg`` does not match inside ``eggplant``.
+    """
+    ing = ingredient.lower().strip()
+    term = term.lower().strip()
+    if not term or not ing:
+        return False
+    if " " in term:
+        return term in ing
+    pattern = r"(?<![a-z0-9])" + re.escape(term) + r"(?![a-z0-9])"
+    return bool(re.search(pattern, ing, re.IGNORECASE))
+
+
 def analyze_with_rules(
     ingredients: List[str],
     dietary_profile: DietaryProfile
@@ -147,37 +166,37 @@ def analyze_with_rules(
     # Check each restriction
     if dietary_profile.gluten_free:
         for item in ALLERGENS['gluten']:
-            if any(item in ing for ing in ingredients_lower):
+            if any(_ingredient_contains_term(ing, item) for ing in ingredients_lower):
                 warnings.append(f"Contains gluten: {item}")
                 is_safe = False
     
     if dietary_profile.dairy_free:
         for item in ALLERGENS['dairy']:
-            if any(item in ing for ing in ingredients_lower):
+            if any(_ingredient_contains_term(ing, item) for ing in ingredients_lower):
                 warnings.append(f"Contains dairy: {item}")
                 is_safe = False
     
     if dietary_profile.nut_free:
         for item in ALLERGENS['nuts']:
-            if any(item in ing for ing in ingredients_lower):
+            if any(_ingredient_contains_term(ing, item) for ing in ingredients_lower):
                 warnings.append(f"Contains nuts: {item}")
                 is_safe = False
     
     if dietary_profile.halal:
         for item in ALLERGENS['halal_restricted']:
-            if any(item in ing for ing in ingredients_lower):
+            if any(_ingredient_contains_term(ing, item) for ing in ingredients_lower):
                 warnings.append(f"Not halal: Contains {item}")
                 is_safe = False
     
     if dietary_profile.vegetarian:
         for item in ALLERGENS['vegetarian_restricted']:
-            if any(item in ing for ing in ingredients_lower):
+            if any(_ingredient_contains_term(ing, item) for ing in ingredients_lower):
                 warnings.append(f"Not vegetarian: Contains {item}")
                 is_safe = False
     
     if dietary_profile.vegan:
         for item in ALLERGENS['vegan_restricted']:
-            if any(item in ing for ing in ingredients_lower):
+            if any(_ingredient_contains_term(ing, item) for ing in ingredients_lower):
                 warnings.append(f"Not vegan: Contains {item}")
                 is_safe = False
     
@@ -186,7 +205,7 @@ def analyze_with_rules(
         matched_custom = [
             allergen
             for allergen in dietary_profile.allergens
-            if any(allergen.lower() in ing for ing in ingredients_lower)
+            if any(_ingredient_contains_term(ing, allergen) for ing in ingredients_lower)
         ]
         if matched_custom:
             warnings.append(
