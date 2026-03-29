@@ -96,12 +96,11 @@ The project is subject to the following constraints: dietary restriction support
 
 #### 1.4.2 Deliverables
 
-The project targets the following performance benchmarks:
+The project targets the following deliverables and performance targets:
 
 - OCR accuracy of at least 90 percent on clear images of standard product packaging.
-- Dietary compliance detection accuracy of at least 95 percent for common restriction categories.
-- Average end-to-end processing time of less than 12 seconds per scan.
-- Positive user feedback on the interface and overall usability.
+- Average end-to-end processing time of less than 12 seconds per scan for non-LLM-based ingredient extraction.
+- Both LLM-based and non-LLM-based ingredient extraction solutions, giving users a choice between cloud-powered accuracy and local processing speed.
 
 The primary deliverable is a functioning web application through which users can scan ingredient labels or barcodes and receive a dietary compliance assessment against their personalised requirements.
 
