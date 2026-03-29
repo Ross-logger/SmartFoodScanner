@@ -10,14 +10,20 @@ Outputs:
   4) Text after OCR correction — ``split_ingredients_text`` → ``correct_ingredient_list``,
      joined with ", " (same shape as the scan API ingredient string).
 
-Usage (from project root, with .venv activated):
-  python scripts/run_box_classifier_on_image.py path/to/image.jpg
-  python scripts/run_box_classifier_on_image.py path/to/image.png --no-ocr-corrector
+Usage (with .venv activated):
+
+  From repo root (``SmartFoodScanner/``):
+    python scripts/run_box_classifier_on_image.py tests/data/images/IMG_0028.png
+
+  From another directory, pass the script by absolute path or ``../scripts/...``;
+  image paths like ``tests/data/...`` are resolved from the repo root automatically:
+    cd training && python ../scripts/run_box_classifier_on_image.py tests/data/images/IMG_0028.png
 """
 
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -59,6 +65,9 @@ def main() -> int:
         help="Skip SymSpell/RapidFuzz correction (still split + cleanup path).",
     )
     args = parser.parse_args()
+
+    # So relative image paths (e.g. tests/data/...) work when cwd is not the repo root.
+    os.chdir(PROJECT_ROOT)
 
     path = args.image.expanduser().resolve()
     if not path.is_file():
