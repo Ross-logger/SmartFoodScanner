@@ -31,7 +31,6 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend.services.ocr import extract_text_from_image
-from backend.services.ingredients_extraction.symspell_extraction import extract_ingredients
 from backend.services.ingredients_extraction import extract_ingredients_with_llm
 from tests.utils.metrics import (
     calculate_fuzzy_match_accuracy,
@@ -223,11 +222,8 @@ def _run_pipeline(
                 ocr_cache[img_name] = ocr_text
                 source_tag = "live"
 
-            if use_llm:
-                llm_result = extract_ingredients_with_llm(ocr_text)
-                extracted = llm_result.get("ingredients", [])
-            else:
-                extracted = extract_ingredients(ocr_text, use_hf_section_detection=use_hf_section)
+            llm_result = extract_ingredients_with_llm(ocr_text)
+            extracted = llm_result.get("ingredients", [])
             true_ingredients = ground_truth.get(img_path.name, [])
 
             dataset.append({

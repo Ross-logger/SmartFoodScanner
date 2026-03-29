@@ -27,9 +27,8 @@ class TestExtractor:
 
     def test_extract_simple_ingredients(self):
         """Test extraction from simple ingredient text."""
-        # Patch at the import location in extractor.py
-        with patch('backend.services.ingredients_extraction.extractor.extract_ingredients') as mock_extract:
-            mock_extract.return_value = ["Water", "Sugar", "Salt"]
+        with patch('backend.services.ingredients_extraction.extractor.extract_ingredients_with_llm') as mock_llm:
+            mock_llm.return_value = {"success": True, "ingredients": ["Water", "Sugar", "Salt"]}
             
             result = extract("Ingredients: Water, Sugar, Salt")
             
@@ -40,11 +39,11 @@ class TestExtractor:
     
     def test_extract_complex_ingredients(self):
         """Test extraction from complex ingredient text."""
-        with patch('backend.services.ingredients_extraction.extractor.extract_ingredients') as mock_extract:
-            mock_extract.return_value = [
+        with patch('backend.services.ingredients_extraction.extractor.extract_ingredients_with_llm') as mock_llm:
+            mock_llm.return_value = {"success": True, "ingredients": [
                 "Wheat Flour", "Palm Oil", "Sugar", "Salt",
                 "Mono and Diglycerides", "Soy Lecithin"
-            ]
+            ]}
             
             text = "Ingredients: Wheat Flour, Palm Oil, Sugar, Salt, Mono and Diglycerides (E471), Soy Lecithin"
             result = extract(text)
@@ -65,8 +64,8 @@ class TestExtractor:
     
     def test_extract_no_ingredients(self):
         """Test extraction from text with no ingredients."""
-        with patch('backend.services.ingredients_extraction.extractor.extract_ingredients') as mock_extract:
-            mock_extract.return_value = []
+        with patch('backend.services.ingredients_extraction.extractor.extract_ingredients_with_llm') as mock_llm:
+            mock_llm.return_value = {"success": True, "ingredients": []}
             
             result = extract("This is just some random text without ingredients")
             
@@ -74,20 +73,19 @@ class TestExtractor:
     
     def test_extract_with_percentages(self):
         """Test extraction handles percentage values correctly."""
-        with patch('backend.services.ingredients_extraction.extractor.extract_ingredients') as mock_extract:
-            mock_extract.return_value = ["Water", "Sugar", "Cocoa"]
+        with patch('backend.services.ingredients_extraction.extractor.extract_ingredients_with_llm') as mock_llm:
+            mock_llm.return_value = {"success": True, "ingredients": ["Water", "Sugar", "Cocoa"]}
             
             text = "Ingredients: Water (65%), Sugar (20%), Cocoa (15%)"
             result = extract(text)
             
             assert len(result) >= 3
-            # Percentages should be stripped, only ingredient names
             assert all("%" not in ing for ing in result)
     
     def test_extract_multilingual_text(self):
         """Test extraction from multilingual text."""
-        with patch('backend.services.ingredients_extraction.extractor.extract_ingredients') as mock_extract:
-            mock_extract.return_value = ["Wasser", "Zucker", "Salz"]
+        with patch('backend.services.ingredients_extraction.extractor.extract_ingredients_with_llm') as mock_llm:
+            mock_llm.return_value = {"success": True, "ingredients": ["Wasser", "Zucker", "Salz"]}
             
             text = "Zutaten: Wasser, Zucker, Salz"
             result = extract(text)
@@ -364,9 +362,9 @@ class TestSyntheticExtractionData:
         
         samples = get_synthetic_ocr_samples()
         
-        with patch('backend.services.ingredients_extraction.extractor.extract_ingredients') as mock_extract:
+        with patch('backend.services.ingredients_extraction.extractor.extract_ingredients_with_llm') as mock_llm:
             for sample in samples:
-                mock_extract.return_value = sample["ground_truth_ingredients"]
+                mock_llm.return_value = {"success": True, "ingredients": sample["ground_truth_ingredients"]}
                 
                 result = extract(sample["ocr_text"])
                 

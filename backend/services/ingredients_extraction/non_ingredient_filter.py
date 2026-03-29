@@ -7,7 +7,7 @@ from OCR-scanned food labels. It handles:
 - Removing garbage text (single characters, numbers only, etc.)
 - Filtering out non-ingredient words (addresses, instructions, etc.)
 
-Used by symspell_extraction.py to clean OCR text before ingredient extraction.
+Used by the extraction pipeline to clean OCR text before ingredient extraction.
 """
 
 import re

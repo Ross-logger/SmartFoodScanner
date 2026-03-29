@@ -42,35 +42,15 @@ Two engines, selectable per-user via `DietaryProfile.use_mistral_ocr`:
 
 Output: a raw multi-line string of all text found on the label (not yet split into ingredients).
 
-> **There is no separate OCR correction stage.** The raw OCR string is passed directly to extraction. Any OCR errors must be handled either by SymSpell (Stage 3a) or by the LLM (Stage 3b).
+> **There is no separate OCR correction stage.** The raw OCR string is passed directly to extraction. Any OCR errors are handled by the LLM (Stage 3a) or the box classifier + OCR corrector (Stage 3b).
 
 ---
 
 ### Stage 3 — Ingredient Extraction (OCR text → ingredient list)
 
-Two paths, selectable per-user via `DietaryProfile.use_llm_ingredient_extractor`. If LLM extraction is enabled but the LLM call fails, it automatically falls back to HF section + SymSpell.
+Two paths depending on user settings and OCR engine used.
 
-#### Path A — HF section + SymSpell (default when LLM is off)
-
-**File:** `backend/services/ingredients_extraction/symspell_extraction.py` → `extract_ingredients()`
-
-The scan API always uses **HF NER for section detection**, then SymSpell **only inside** the extraction step (segments are not returned separately). Steps:
-
-1. **Section detection (HF NER)** — `hf_section_detection.extract_ingredients_list_hf` runs the `openfoodfacts/ingredient-detection` NER model. It **splices character ranges** from the original OCR so commas and other gaps between `ING` spans are preserved (not only tokenizer `word` joins). On failure or no `ING` entities, the full OCR string is used.
-
-   The **regex** helper `non_ingredient_filter.extract_ingredients_section` remains for tests/scripts: `extract_ingredients(..., use_hf_section_detection=False)`.
-
-2. **Delimiter splitting** (`_split_ingredients_text`) — internal only: splits the section text for per-segment processing.
-
-3. **Per-segment validation and SymSpell** (`is_valid_ingredient`, `_correct_text`) — invalid segments (addresses, footers, etc.) are dropped before correction.
-
-4. **Final filter and post-process** (`filter_ingredients`, `post_process_ingredients`) — per-segment cleanup.
-
-5. **API shape** — segments are joined with `", "` and returned as **one** string: `INGREDIENTS: item1, item2, ...` inside a **one-element JSON array** (`ingredients` on the scan response). The app does not return a separate list item per ingredient for this path.
-
-**LLM path:** the model still returns a JSON array of strings; `POST /scan/ocr` **joins** them with the same `INGREDIENTS: ...` single-block format for a consistent stored shape.
-
-#### Path B — LLM extraction
+#### Path A — LLM extraction
 
 **File:** `backend/services/ingredients_extraction/llm_extraction.py` → `extract_ingredients_with_llm()`
 
@@ -83,7 +63,13 @@ The raw OCR string is sent as-is to the configured LLM (Groq / Gemini / OpenAI /
 
 **The LLM implicitly corrects OCR errors** as a side-effect of understanding context — it can infer that `"Whet Fleur"` means `"Wheat Flour"`. This is not a dedicated OCR correction stage; it is the extraction stage doing double duty.
 
-No local dictionary or filtering is applied afterwards. For **stored scans**, `POST /scan/ocr` joins the LLM array into the same single `INGREDIENTS: ...` block as Path A.
+#### Path B — Box classifier extraction (EasyOCR, when LLM is off)
+
+**Files:** `backend/services/ingredients_extraction/ingredient_box_classifier.py`, `backend/services/ingredients_extraction/ocr_corrector.py`
+
+When EasyOCR is used and LLM extraction is disabled, raw EasyOCR detection results (bounding boxes with text and confidence scores) are processed by the box classifier, which assigns ingredient probability to each box. Boxes above the threshold are merged into coherent ingredient text, split into candidates, and corrected via the OCR corrector (dictionary-constrained spelling correction and junk filtering).
+
+If the box classifier produces no results, the system falls back to LLM extraction.
 
 ---
 
@@ -116,15 +102,14 @@ No OCR or extraction is performed. Ingredients come pre-parsed from the Open Foo
 | Field | Controls |
 |---|---|
 | `use_mistral_ocr` | Stage 2: local EasyOCR vs Mistral OCR cloud API |
-| `use_hf_section_detection` | Stored on profile (default true); **not** toggled in the app — scans always use HF NER for section detection when using Path A |
-| `use_llm_ingredient_extractor` | Stage 3: LLM vs HF section + SymSpell (falls back to HF + SymSpell on LLM failure) |
+| `use_llm_ingredient_extractor` | Stage 3: LLM extraction vs box classifier pipeline |
 
 ---
 
 ## Summary: does LLM fix OCR errors?
 
-**Yes, indirectly.** When `use_llm_ingredient_extractor = True`, the raw OCR text (including any OCR typos) is handed to the LLM. The LLM's language understanding lets it recover from many OCR errors as part of extraction — e.g. `"Suqar"` → `"Sugar"`. This is not a dedicated correction stage; it happens inside the extraction prompt.
+**Yes, indirectly.** When LLM extraction is used, the raw OCR text (including any OCR typos) is handed to the LLM. The LLM's language understanding lets it recover from many OCR errors as part of extraction — e.g. `"Suqar"` → `"Sugar"`. This is not a dedicated correction stage; it happens inside the extraction prompt.
 
-With the default SymSpell path, OCR errors are partially corrected by the dictionary lookup (edit-distance ≤ 2), but the correction is limited to known food terms.
+With the box classifier path, OCR errors are corrected by the OCR corrector module (dictionary-constrained spelling correction).
 
 **Neither path has a standalone OCR correction stage** that rewrites the OCR text before extraction. The `corrected_text` field stored in the database is currently set to the same value as `ocr_text`.

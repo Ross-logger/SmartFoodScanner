@@ -3,7 +3,7 @@ Run automatically in interactive Python when PYTHONSTARTUP points here.
 
 Recursively imports every submodule under backend.services and binds each
 module object on __main__ as <path_with_underscores> (relative to
-backend.services), e.g. ocr_service, ingredients_extraction_symspell_extraction.
+backend.services), e.g. ocr_service, ingredients_extraction_llm_extraction.
 Also sets ``services`` -> the ``backend.services`` package.
 
   export PYTHONPATH="/path/to/SmartFoodScanner"

@@ -16,8 +16,6 @@ from backend.schemas import (
 )
 from backend.security import get_current_user
 from backend.services.ocr import extract_ocr_from_image
-from backend.services.ocr.easyocr_confidence import build_easyocr_skip_symspell_normalized_keys
-from backend.services.ingredients_extraction.symspell_extraction import extract_ingredients
 from backend.services.ingredients_analysis import analyze_ingredients
 from backend.services.ingredients_extraction import extract_ingredients_with_llm
 from backend.services.barcode import get_product_by_barcode
@@ -93,16 +91,14 @@ def scan_ocr(
     corrected_text = ocr_text
     ingredients = []
 
-    def _symspell_fallback(label: str) -> list:
-        easyocr_skip = None
-        if ocr_result.easyocr_lines:
-            easyocr_skip = build_easyocr_skip_symspell_normalized_keys(
-                ocr_result.easyocr_lines,
-                min_confidence=settings.EASYOCR_SKIP_SYMSPELL_MIN_CONFIDENCE,
-            )
-        result = extract_ingredients(ocr_text, easyocr_skip_symspell_normalized=easyocr_skip)
-        print(f"{label}: {result}")
-        return result
+    def _llm_fallback(label: str) -> list:
+        llm_result = extract_ingredients_with_llm(ocr_text)
+        if llm_result["success"] and llm_result["ingredients"]:
+            result = _normalize_llm_ingredients(llm_result["ingredients"])
+            print(f"{label} (LLM fallback): {result}")
+            return result
+        print(f"{label} (LLM fallback also failed)")
+        return []
 
     if dietary_profile and dietary_profile.use_llm_ingredient_extractor:
         # --- LLM extraction ---
@@ -110,8 +106,6 @@ def scan_ocr(
         if llm_result["success"] and llm_result["ingredients"]:
             ingredients = _normalize_llm_ingredients(llm_result["ingredients"])
             print(f"LLM Extracted Ingredients: {ingredients}")
-        else:
-            ingredients = _symspell_fallback("LLM failed – fallback to SymSpell")
 
     elif ocr_result.easyocr_raw_results and not use_mistral_ocr:
         # --- Box classifier extraction (default when LLM is off) ---
@@ -136,15 +130,15 @@ def scan_ocr(
                     print(f"Box classifier – corrected ingredients: {ingredients}")
 
             if not ingredients:
-                ingredients = _symspell_fallback("Box classifier produced nothing – fallback to SymSpell")
+                ingredients = _llm_fallback("Box classifier produced nothing")
 
         except Exception as e:
-            print(f"Box classifier failed ({e}), falling back to SymSpell")
-            ingredients = _symspell_fallback("Box classifier error – fallback to SymSpell")
+            print(f"Box classifier failed ({e}), falling back to LLM")
+            ingredients = _llm_fallback("Box classifier error")
 
     else:
         # --- Mistral OCR path: no EasyOCR boxes available ---
-        ingredients = _symspell_fallback("Extracted Ingredients (regex section + SymSpell)")
+        ingredients = _llm_fallback("Mistral OCR path – no box classifier")
 
     # Analyze ingredients
     analysis = analyze_ingredients(ingredients, dietary_profile)

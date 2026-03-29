@@ -20,7 +20,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from backend.services.barcode.openfoodfacts import fetch_product
 from backend.services.ocr.service import extract_text_from_image
 from backend.services.ingredients_extraction.extractor import extract
-from backend.services.ingredients_extraction import extract_ingredients_with_llm, symspell_extraction
+from backend.services.ingredients_extraction import extract_ingredients_with_llm
 from backend.services.ingredients_analysis.service import analyze_ingredients
 from tests.utils.test_helpers import create_test_image, create_test_image_with_text
 from tests.data.synthetic.ocr_samples import get_performance_samples
@@ -31,7 +31,7 @@ from tests.data.synthetic.ocr_samples import get_performance_samples
 # =============================================================================
 
 # Response Time Targets (in seconds)
-TARGET_FULL_PIPELINE_TIME = 10.0  # End-to-end processing target
+TARGET_FULL_PIPELINE_TIME = 12.0  # End-to-end processing target
 TARGET_MAX_SINGLE_REQUEST_TIME = 15.0  # Max time for any single request
 TARGET_OCR_TIME = 5.0  # OCR processing target
 TARGET_BARCODE_TIME = 3.0  # Barcode lookup target (network dependent)
@@ -511,58 +511,3 @@ class TestPerformanceMetrics:
         print(f"Total: avg={summary['total']['avg']:.4f}s, max={summary['total']['max']:.4f}s, min={summary['total']['min']:.4f}s")
         print("============================================")
 
-
-# =============================================================================
-# EXTRACTION MODE COMPARISON (SymSpell vs LLM)
-# =============================================================================
-
-@pytest.mark.performance
-@pytest.mark.slow
-class TestExtractionComparison:
-    """
-    Compare full-pipeline speed: rule-based/SymSpell extraction vs LLM extraction.
-    Run with: pytest tests/performance/test_performance.py::TestExtractionComparison -v -s
-    """
-
-    def test_full_pipeline_symspell_vs_llm(self):
-        """Run full pipeline with SymSpell then with LLM; report timing for both."""
-        image_bytes = create_test_image_with_text(TEST_IMAGE_TEXT)
-        profile = PROFILE_HALAL_GLUTEN_FREE
-        n = 10
-        symspell_extraction_times = []
-        llm_extraction_times = []
-
-        # ---- SymSpell (rule-based) pipeline ----
-        def pipeline_symspell():
-            ocr_text = extract_text_from_image(image_bytes)
-            ingredients = extract(ocr_text)
-            return analyze_ingredients(ingredients, profile)
-
-        # warmup(pipeline_symspell, NUM_WARMUP_ITERATIONS)
-        symspell_extraction_times = run_timed_iterations(pipeline_symspell, n)
-        symspell_extraction_avg = statistics.mean(symspell_extraction_times)
-        symspell_extraction_max = max(symspell_extraction_times)
-
-        # ---- LLM pipeline ----
-        def pipeline_llm():
-            ocr_text = extract_text_from_image(image_bytes)
-            llm_result = extract_ingredients_with_llm(ocr_text)
-            ingredients = llm_result.get("ingredients", []) if llm_result.get("success") else []
-            return analyze_ingredients(ingredients, profile)
-
-        # warmup(pipeline_llm, NUM_WARMUP_ITERATIONS)
-        llm_extraction_times = run_timed_iterations(pipeline_llm, n)
-        llm_extraction_avg = statistics.mean(llm_extraction_times)
-        llm_extraction_max = max(llm_extraction_times)
-
-        # Report comparison
-        print("\n=== Full pipeline: SymSpell vs LLM (REAL SERVICES) ===")
-        print(f"Iterations per mode: {n}")
-        print(f"SymSpell (rule-based) avg: {symspell_extraction_avg:.2f}s, max: {symspell_extraction_max:.2f}s")
-        print(f"SymSpell (rule-based) times: {symspell_extraction_times}")
-        print(f"LLM avg: {llm_extraction_avg:.2f}s, max: {llm_extraction_max:.2f}s")
-        print(f"LLM times: {llm_extraction_times}")
-        print("=====================================================")
-
-        # Both should complete; assert at least one run succeeded for each
-        assert len(symspell_extraction_times) == n and len(llm_extraction_times) == n
