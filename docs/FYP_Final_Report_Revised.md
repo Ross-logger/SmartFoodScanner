@@ -414,11 +414,13 @@ The evaluation script runs the full extraction pipeline on box-level classifier 
 
 Under exact matching (fuzzy threshold 100), the model-based pipeline achieved the following mean scores over one hundred images.
 
+
 | Metric    | Value   |
-|-----------|---------|
+| --------- | ------- |
 | Precision | 97.75 % |
 | Recall    | 95.60 % |
 | F1        | 96.54 % |
+
 
 Under relaxed fuzzy matching at threshold 0.8, scores rise modestly to precision 98.27 percent, recall 96.24 percent, and F1 97.10 percent. The small gap between exact and fuzzy results indicates that the vast majority of extracted ingredients already match the ground truth verbatim, and only a small fraction benefit from fuzzy tolerance to accommodate minor formatting differences.
 
@@ -438,16 +440,18 @@ End-to-end latency was measured by running both processing flows on ten represen
 
 The following table reports the timing breakdown averaged over the ten images.
 
-| Stage              | Model-based | LLM-based |
-|--------------------|-------------|-----------|
-| Avg total time     | 11.14 s     | 19.02 s   |
-| Avg OCR time       | 4.87 s      | 2.12 s    |
-| Avg extraction time| 0.22 s      | 10.85 s   |
-| Avg analysis time  | 6.04 s      | 6.05 s    |
-| Min total time     | 5.70 s      | 16.46 s   |
-| Max total time     | 25.91 s     | 24.13 s   |
-| Median total time  | 8.26 s      | 18.35 s   |
-| Stdev total time   | 6.29 s      | 2.30 s    |
+
+| Stage               | Model-based | LLM-based |
+| ------------------- | ----------- | --------- |
+| Avg total time      | 11.14 s     | 19.02 s   |
+| Avg OCR time        | 4.87 s      | 2.12 s    |
+| Avg extraction time | 0.22 s      | 10.85 s   |
+| Avg analysis time   | 6.04 s      | 6.05 s    |
+| Min total time      | 5.70 s      | 16.46 s   |
+| Max total time      | 25.91 s     | 24.13 s   |
+| Median total time   | 8.26 s      | 18.35 s   |
+| Stdev total time    | 6.29 s      | 2.30 s    |
+
 
 Several observations follow from these results.
 
@@ -471,20 +475,168 @@ Test isolation is maintained through shared fixtures that provide an in-memory S
 
 The following table summarises the key characteristics of the two extraction flows side by side.
 
-| Characteristic         | Model-based pipeline                          | LLM-based pipeline                          |
-|------------------------|-----------------------------------------------|----------------------------------------------|
-| Extraction F1          | 96.54 % (exact match)                         | 95.17 % (merge-level matching)              |
-| Median total latency   | 8.26 s                                        | 18.35 s                                      |
-| OCR engine             | EasyOCR (local)                               | Mistral OCR (cloud API)                      |
-| Extraction method      | Box classifier, merge, OCR corrector (local)  | Mistral 7B LLM (remote inference)            |
-| External dependencies  | None during extraction                        | Mistral OCR API and LLM API                  |
-| Offline capability     | Fully offline for OCR and extraction stages   | Requires network for OCR and extraction      |
-| Output format          | Reconstructed text, delimiter-split           | Structured JSON list with compound entries   |
-| Primary strength       | Speed and offline operation                   | Semantic understanding of complex layouts    |
-| Primary weakness       | Sensitive to OCR quality and box fragmentation| Dependent on API availability and latency    |
+
+| Characteristic        | Model-based pipeline                           | LLM-based pipeline                         |
+| --------------------- | ---------------------------------------------- | ------------------------------------------ |
+| Extraction F1         | 96.54 % (exact match)                          | 95.17 % (merge-level matching)             |
+| Median total latency  | 8.26 s                                         | 18.35 s                                    |
+| OCR engine            | EasyOCR (local)                                | Mistral OCR (cloud API)                    |
+| Extraction method     | Box classifier, merge, OCR corrector (local)   | Mistral 7B LLM (remote inference)          |
+| External dependencies | None during extraction                         | Mistral OCR API and LLM API                |
+| Offline capability    | Fully offline for OCR and extraction stages    | Requires network for OCR and extraction    |
+| Output format         | Reconstructed text, delimiter-split            | Structured JSON list with compound entries |
+| Primary strength      | Speed and offline operation                    | Semantic understanding of complex layouts  |
+| Primary weakness      | Sensitive to OCR quality and box fragmentation | Dependent on API availability and latency  |
+
 
 Both flows exceed the deliverable target of at least 90 percent OCR accuracy on clear images, achieving extraction F1 scores above 95 percent on the evaluation set. The model-based pipeline offers a latency advantage of approximately 2.2 times over the LLM-based pipeline on the test hardware and operates without network dependencies during the extraction stage. The LLM-based pipeline produces more consistently structured output and handles edge cases such as compound ingredients spanning multiple lines and ambiguous abbreviations more reliably, at the cost of higher and less controllable latency. The difference in reported F1 between the two flows is partly attributable to the stricter ground-truth format used for LLM evaluation, as discussed in Section 5.2.2, rather than a proportional difference in practical extraction quality. The analysis stage contributes approximately 6 seconds to both flows, as both use the same LLM-based dietary analysis service. Reducing analysis latency, for example by caching common dietary evaluations or using the rule-based analyser as the default, would benefit both flows equally.
 
 ### 5.6 Summary
 
 This chapter has presented the quantitative evaluation of the Smart Ingredients Scanner across two dimensions: ingredient extraction accuracy and end-to-end processing latency. The model-based pipeline achieved a mean extraction F1 of 96.54 percent under exact matching, while the LLM-based pipeline achieved a merge-level F1 of 95.17 percent under a stricter ground-truth format that preserves compound ingredient structures. Both flows comfortably exceed the 90 percent accuracy target defined in the project deliverables, and the LLM figure represents a conservative lower bound given the evaluation format mismatch discussed in Section 5.2.2. The model-based flow recorded a median total processing time of 8.26 seconds on a MacBook Pro M1 Pro without GPU acceleration, meeting the deliverable target of less than 12 seconds per scan. EasyOCR's on-device latency, which accounts for the largest share of model-based processing time, would be substantially reduced on hardware with CUDA-compatible GPU support, as demonstrated by the 0.81-second average reported by Nagayi et al. (2025) on an RTX 3070. The automated test suite validates the correctness and reliability of all core components, with statement coverage of 94 percent or above across core service modules. The dual-flow architecture provides users with a meaningful choice between fast, fully offline extraction and semantically robust cloud-based extraction, with both paths delivering high-accuracy dietary compliance verification.
+
+---
+
+# 6. Conclusion
+
+This chapter provides a critical review of the project, summarises the achievements against the original objectives and deliverable targets, and outlines directions for future extension.
+
+## 6.1 Critical Review
+
+Overall, the project progressed well and produced a working system that met its main technical goals. One of the most beneficial decisions was the adoption of a modular three-tier architecture, which separated the user interface, application logic, and data management into distinct layers. This separation reduced coupling between components and made the system easier to develop, test, and refine throughout the project. In practice, the Vue.js Progressive Web Application front-end could be improved without affecting the FastAPI backend, while new backend services could be introduced without requiring changes to the database schema or the client-side code. This architectural choice also leaves the system in a good position for future extension.
+
+Another major strength was the dual-flow processing design. This decision addressed a core tension identified early in development, namely the trade-off between extraction quality and processing speed. Instead of forcing users to rely on a single method, the system offers two meaningful options. The LLM-based flow uses Mistral OCR together with Mistral 7B to provide stronger semantic interpretation of difficult or noisy labels. The model-based flow uses EasyOCR, the trained box classifier, spatial merging, and OCR correction to provide a faster, largely local alternative. As shown in Chapter 5, both flows exceeded the original accuracy target of 90 percent, with the model-based pipeline achieving a mean F1 score of 96.54 percent and the LLM-based pipeline achieving a merge-level F1 score of 95.17 percent. The model-based flow also satisfied the non-LLM latency target, recording a median total processing time of 8.26 seconds. The inclusion of fallback mechanisms further improved robustness by allowing the system to degrade gracefully rather than fail completely when a particular stage produced no usable result or when an external LLM service was unavailable.
+
+The custom-trained Logistic Regression box classifier also performed well despite the relatively modest scale of the dataset. Its performance suggests that careful feature engineering can still be highly effective in a focused application domain. In this project, contextual TF-IDF character n-grams and manually engineered structural and text-based features proved sufficient to separate ingredient and non-ingredient boxes with strong accuracy. The use of GroupShuffleSplit at image level was also an important methodological choice, since it reduced information leakage and made the reported validation results more credible. In a similar way, the multi-strategy OCR corrector proved valuable in reducing common OCR errors. The combination of alias lookup, vocabulary matching, SymSpell edit-distance correction, and RapidFuzz fuzzy matching provided a practical layered solution that improved extraction quality while still remaining lightweight.
+
+The project also benefited from a strong testing strategy. Automated unit and integration tests, together with in-memory SQLite databases, fixtures, and mocked external services, made the system easier to verify during iterative development. Achieving statement coverage of 94 percent or above across the core service modules provided useful confidence that the major functions of the system behaved as intended.
+
+The main strengths of the project:
+
+- The modular three-tier architecture improved maintainability and supported independent development of system components.
+- The dual-flow design provided a practical balance between semantic robustness and low-latency processing.
+- The model-based pipeline showed that a largely local, LLM-independent approach can still achieve strong extraction accuracy.
+- The classifier and OCR correction stages demonstrated the value of careful feature engineering and layered post-processing.
+- The automated testing strategy improved reliability and supported safer iterative development.
+
+Despite these strengths, several challenges were encountered during development. The most persistent technical issue was OCR inconsistency across different types of packaging. Early experiments with PyTesseract produced unacceptable error rates on curved text, small fonts, and labels with complex backgrounds. Replacing it with EasyOCR improved performance substantially, but some difficult cases remained. Cylindrical packaging, low-contrast printing, reflective surfaces, and multilingual labels in which non-English text is interleaved with English ingredient lists continued to cause errors. Image preprocessing steps such as contrast enhancement and resolution normalisation improved results, but they did not remove all failure modes.
+
+Another important challenge was the latency of LLM-based extraction. When the system relied more heavily on cloud-based extraction, response times were affected by network conditions and API server load. This variability was unsuitable for a user experience that should feel responsive in a retail-style scanning context. The model-based pipeline was therefore not only an additional feature, but also a practical engineering response to this limitation. However, building that pipeline introduced its own complexity, since it required the design and evaluation of the box classifier, merge algorithm, and OCR correction module.
+
+Dataset construction was also one of the most labour-intensive parts of the project. Each of the one hundred source images had to be processed with EasyOCR, after which every detected box was manually labelled as ingredient or non-ingredient. Some cases required careful judgement, especially when allergen warnings, advisory statements, or sub-ingredients appeared near the main ingredient list. Although data augmentation increased the training volume to one thousand samples and helped improve robustness, the process still depended on a relatively small set of original images.
+
+It is also important to note that, although the model-based pipeline performed strongly on the evaluation set, performance on genuinely unseen real-world images may be somewhat lower when packaging formats differ noticeably from those represented in the training data. This is especially relevant for unusual layouts, reflective or transparent materials, and highly non-standard typography. This should not be viewed as a major weakness of the system, but rather as a normal limitation of a supervised model trained on a modest dataset. In future work, this issue could be reduced by collecting a larger and more diverse real-world dataset covering a broader range of packaging styles and imaging conditions.
+
+The principal challenges and residual limitations can therefore be summarised as follows:
+
+- OCR quality remained sensitive to difficult visual conditions such as curved packaging, small fonts, low contrast, and multilingual layouts.
+- The LLM-based flow provided strong semantic extraction, but its latency and network dependence reduced its suitability for fast scanning scenarios.
+- Constructing the labelled dataset required substantial manual effort and consistent judgement on ambiguous cases.
+- The relatively small real-image dataset means that performance on unseen packaging styles may be somewhat lower than the reported evaluation results.
+- Some extraction errors remain tied to visual conditions that cannot be fully solved through preprocessing alone.
+
+Beyond the technical outcomes, the project provided several valuable learning experiences. Developing the model-based pipeline required a complete machine learning workflow, including data collection, annotation, augmentation, feature engineering, model training, evaluation, and integration into a working application. This process reinforced the importance of careful evaluation design, since the reported results are influenced not only by the model itself, but also by the ground-truth format, matching strategy, and scoring rules used during testing. Working with large language models also provided practical understanding of real deployment trade-offs. Model choice could not be based on output quality alone, but had to consider latency, cost, reliability, and integration constraints. More broadly, the project showed that building an effective AI-enabled system depends as much on data design, fallback logic, evaluation methodology, and handling of edge cases as it does on the choice of model.
+
+## 6.2 Summary of Achievements
+
+The project set out four objectives in Section 1.3, and each of them has been achieved.
+
+Summary of the achieved outcomes:
+
+- A complete web application was developed for image-based and barcode-based dietary compliance checking.
+- Two OCR-based extraction flows were implemented, allowing users to choose between cloud-based semantic robustness and faster local processing.
+- The model-based flow achieved a mean F1 score of 96.54 percent, while the LLM-based flow achieved a merge-level F1 score of 95.17 percent.
+- Automated testing achieved statement coverage of 94 percent or above across all core backend service modules.
+
+The first objective was to design and develop a responsive web application with an intuitive interface for dietary profile management and product scanning. This objective was fulfilled through the implementation of a Vue.js 3 Progressive Web Application styled with Tailwind CSS. The system provides five main views: a home page, a scan page supporting both image upload and barcode scanning, a results page showing detailed dietary analysis, a profile page for managing restrictions and processing preferences, and a history page for reviewing previous scans. The front-end supports camera capture, file upload, and barcode scanning through the html5-qrcode library. Users can configure both predefined dietary categories and custom allergens or restrictions.
+
+The second objective was to implement a backend capable of supporting multiple OCR methods, barcode-based lookup, and machine learning assisted ingredient detection. This objective was achieved through the FastAPI backend, which integrates EasyOCR as the local OCR engine and the Mistral OCR cloud API as the alternative OCR service. The system also includes barcode lookup through the Open Food Facts API. In addition, the trained Logistic Regression classifier supports the model-based extraction pipeline by distinguishing ingredient boxes from surrounding non-ingredient text.
+
+The third objective was to develop multiple extraction and correction mechanisms for different usage scenarios. This objective was met through the dual-flow architecture described in Chapter 3 and implemented in Chapter 4. The LLM-based flow, consisting of Mistral OCR followed by Mistral 7B extraction, achieved a merge-level F1 score of 95.17 percent on one hundred test images. The model-based flow, consisting of EasyOCR, the box classifier, the spatial merge algorithm, and the multi-strategy OCR corrector, achieved a mean F1 score of 96.54 percent under exact matching on the same evaluation set. Both flows exceeded the deliverable target of at least 90 percent accuracy on clear images of standard product packaging.
+
+The fourth objective was to conduct systematic evaluation of accuracy, latency, and reliability. This objective was achieved through unit testing, integration testing, and performance testing. Statement coverage across all core backend service modules reached 94 percent or above. Accuracy evaluation was carried out on one hundred test images using defined ground-truth ingredient lists and matching rules. Performance testing on a MacBook Pro M1 Pro recorded a median total processing time of 8.26 seconds for the model-based flow, which satisfied the target of less than 12 seconds per scan for the non-LLM path.
+
+In addition to the four main objectives, the project also met all three deliverable targets specified in Section 1.4.2. Both extraction flows exceeded 90 percent accuracy, the non-LLM flow met the end-to-end processing time target of 12 seconds, and both extraction options are operational and selectable by the user through the application settings.
+
+## 6.3 Suggestions for Extensions
+
+Several useful directions for future work emerge from the limitations identified during evaluation and from features that were outside the current project scope.
+
+The key future extensions are outlined below:
+
+- multilingual ingredient recognition;
+- expansion of the real-world training dataset and broader packaging coverage;
+- context-aware OCR correction;
+- nutritional information extraction and analysis;
+- native mobile deployment with on-device language models;
+- user feedback integration for continuous improvement.
+
+The first and most important extension would be multilingual ingredient recognition. At present, the system processes only English-language ingredient lists. However, many products sold in international markets contain multilingual labels, while some imported products may not provide English ingredient text at all. Extending the system in this direction would require vocabulary expansion, multilingual training data, and possibly language detection so that suitable correction and analysis rules could be selected automatically.
+
+The second extension would be the expansion and diversification of the training dataset. Although the current dataset was sufficient for strong performance in this project, it was drawn from a limited set of packaging styles and product categories. A larger and more varied real-world dataset would improve robustness and help the classifier generalise more reliably to reflective surfaces, unusual layouts, handwritten elements, and curved packaging.
+
+The third extension would be the development of a more context-aware OCR correction module. The current correction pipeline mainly operates at token level. A context-aware method, potentially using a small language model fine-tuned on food-label text, could use surrounding ingredient context to resolve ambiguous errors more accurately and improve handling of compound ingredient names.
+
+The fourth extension would be nutritional information analysis. The current system focuses on ingredient lists and dietary compliance, but it does not analyse the nutritional table commonly found on food packaging. Adding extraction of calories, macronutrients, and micronutrients would make the application more informative and useful to health-conscious users.
+
+The fifth extension would be the development of a native mobile application. Although the Progressive Web Application already offers cross-platform browser access, a dedicated iOS and Android application could provide stronger camera integration, push notifications, and more reliable offline behaviour. This direction is especially interesting if paired with small on-device language models that could reduce or remove dependence on remote LLM services.
+
+The sixth extension would be the introduction of a user feedback loop. At present, users can manually edit extracted ingredient text before analysis, but those corrections are not reused by the system. A validated feedback mechanism could help improve the correction vocabulary, reveal repeated OCR error patterns, and provide additional labelled data for retraining.
+
+## 6.4 Summary
+
+This chapter has provided a critical review of the Smart Ingredients Scanner project, summarised the achievements against the original objectives and deliverable targets, and proposed directions for future extension. The project successfully delivered a functional web application that addresses the research gap identified in Section 1.2 by providing a unified, database-independent platform for dietary compliance verification through direct analysis of ingredient label images. The dual-flow architecture gives users a meaningful choice between a cloud-based accuracy-oriented flow and a faster local flow, with both achieving extraction F1 scores above 95 percent and the model-based flow meeting the sub-12-second latency target. The core technical contributions of the project, namely the trained box classifier, the spatial merge algorithm, and the multi-strategy OCR corrector, show that a largely local ingredient extraction pipeline can achieve performance comparable to that of a cloud-based LLM pipeline while operating at substantially lower latency. The proposed future extensions, including multilingual support, dataset expansion, context-aware correction, nutritional analysis, native mobile deployment, and user feedback integration, provide a clear path for improving the system beyond its current scope.
+
+---
+
+## References
+
+Ahmed, S., Elahi, M., & Ricci, F. (2018). A conversational recommender system for personalized food suggestions. *Information Systems*, *72*, 95–109. https://doi.org/10.1016/j.is.2017.10.003
+
+Assiri, F. Y., Almulhim, M. F., Aldayel, T. S., Alabdulqader, N. A., Almashouq, M. K., & Alrubaish, A. M. (2025). Extract nutritional information from bilingual food labels using OCR and machine learning. *Frontiers in Nutrition*. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10658186/
+
+Baker, E., Foubister, C., Shucksmith, J., Akhter, N., Battista, K., Buxton, D., Fairbrother, H., Hind, D., Hock, E., Jones, G., Limb, E., Machaczek, K. K., McGowan, L., Parretti, H. M., Quirk, H., Sherar, L. B., Wilkinson, S., Zizzo, G., & Relton, C. (2025). The impact of the Change4Life Food Scanner on children's diets and parental psychological outcomes: A randomised pilot and feasibility study. *BMC Public Health*, *25*(1), Article 340. https://doi.org/10.1186/s12889-025-23400-0
+
+Bournhonesque, R. (2023). *Open Food Facts ingredient-detection dataset* (Version 1.1) [Dataset]. Hugging Face. https://huggingface.co/datasets/openfoodfacts/ingredient-detection/tree/v1.1
+
+Chouraqui, J.-P., Turck, D., Briend, A., Darmaun, D., Bocquet, A., Feillet, F., Frelut, M.-L., Girardet, J.-P., Guimber, D., Hankard, R., Lapillonne, A., Peretti, N., Roze, J.-C., Siméoni, U., Dupont, C., & the Committee on Nutrition of the French Society of Pediatrics. (2021). Religious dietary rules and their potential nutritional and health consequences. *International Journal of Epidemiology*, *50*(1), 12–26. https://doi.org/10.1093/ije/dyaa182
+
+Food Allergy Research & Education. (2020). *The food allergy consumer journey*. https://www.foodallergy.org/sites/default/files/2020-07/FARE-Food-Allergy-Consumer-Journey-Study-July2020.pdf
+
+Fujisawa, H. (2008). Forty years of research in character and document recognition—An industrial perspective. *Pattern Recognition*, *41*(8), 2435–2446. https://doi.org/10.1016/j.patcog.2008.03.015
+
+Guo, Q., Tu, D., Li, G., & Lei, J. (2016). Memory matters: Convolutional recurrent neural network for scene text recognition. *arXiv:1601.01100*. https://doi.org/10.48550/arXiv.1601.01100
+
+IBM. (2024, April 18). What is optical character recognition (OCR)? https://www.ibm.com/think/topics/optical-character-recognition
+
+Islam, S. O. ul, Lauscher, A., & Glavas, G. (2025). How much do LLMs hallucinate across languages? On realistic multilingual estimation of LLM hallucination. In *Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing* (pp. 29077–29098). Association for Computational Linguistics.
+
+Khamesian, S., Arefeen, A., Carpenter, M., & Ghasemzadeh, H. (2025). NutriGen: Personalized meal plan generator leveraging large language models to enhance dietary and nutritional adherence. *arXiv:2502.20601*. https://arxiv.org/abs/2502.20601
+
+Leba, E., Faigao, J. A., Magante, M. V., Tamba, V. J. Y., & Bingcang, I. N. E. (2024). Allertify: Android-based mobile application for food allergens identification using barcode scanning and image recognition. *Proceedings of the 11th International Scholars Conference*. https://doi.org/10.35974/isc.v11i5.3669
+
+Li, C., Zhang, C., Cai, Z., & Wang, C. (2021). TrOCR: Transformer-based optical character recognition. *arXiv:2109.10282*. https://doi.org/10.48550/arXiv.2109.10282
+
+Müller-Pérez, J., Acevedo-Duque, A., García-Salirrosas, E. E., Escobar-Farfán, M., Esponda-Pérez, J. A., Cachicatari-Vargas, E., Álvarez-Becerra, R., & Alcina De Fortoul, S. (2025). Factors influencing healthy product consumer behavior: An integrated model of purchase intention. *Frontiers in Public Health*, *13*, Article 1576427. https://doi.org/10.3389/fpubh.2025.1576427
+
+Nagayi, M., Khan, A. S., Frank, T., Swart, R., & Nyirenda, C. (2025). Evaluating OCR performance on food packaging labels in South Africa. *arXiv:2510.03570*. https://arxiv.org/abs/2510.03570
+
+Nossair, A., & El Housni, H. (2024). Eating smart: Advancing health informatics with the Grounding DINO-based dietary assistant app. *arXiv:2406.00848*. https://arxiv.org/abs/2406.00848
+
+ODSC. (2025). The best lightweight LLMs of 2025: Efficiency meets performance. *Open Data Science Conference*. https://odsc.medium.com/the-best-lightweight-llms-of-2025-efficiency-meets-performance-78534ce45ccc
+
+Salehudin, M. A. M., Basah, S. N., Yazid, H., Basaruddin, K. S., Safar, M. J. A., Som, M. H. M., & Sidek, K. A. (2023). Analysis of optical character recognition using EasyOCR under image degradation. *Journal of Physics: Conference Series*, *2641*(1), 012001. https://doi.org/10.1088/1742-6596/2641/1/012001
+
+Shensivam. (n.d.). *Ingredients Image from Food Label* [Dataset]. Kaggle. https://www.kaggle.com/datasets/shensivam/ingredients-image-from-food-label
+
+Shepherd, R., & Raats, M. M. (Eds.). (2006). *The psychology of food choice*. CABI Publishing.
+
+Sinha, R., & Rekha, B. S. (2025). Digitization of document and information extraction using OCR and large language models. *arXiv:2506.11156*. https://arxiv.org/abs/2506.11156
+
+Ueno, L. (2024, March 16). Best OCR models for text recognition in images. *Roboflow Blog*. https://blog.roboflow.com/best-ocr-models-text-recognition/
+
+Ultra Processed Food List. (2026). *Analysis of 1.97 million food products*. https://www.ultraprocessedfoodlist.com/
+
+van der Avoort, C. M., van Lee, L., van Loon, M. R., van Loo, E. J., & Feskens, E. J. (2021). Food identification by barcode scanning in the Netherlands: A quality assessment of labelled food product databases underlying popular nutrition applications. *Public Health Nutrition*, *24*(12), 4000–4007. https://doi.org/10.1017/S1368980021002000
+
+Yamashita, R., Nishio, M., Do, R. K., & Togashi, K. (2018). Convolutional neural networks: An overview and application in radiology. *Insights into Imaging*, *9*(4), 611–629. https://doi.org/10.1007/s13244-018-0639-9
