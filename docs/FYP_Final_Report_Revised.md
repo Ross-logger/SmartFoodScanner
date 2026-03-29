@@ -212,7 +212,7 @@ The testing strategy combines unit, integration, and performance testing, with a
 
 ### 3.5 Summary
 
-The Smart Ingredients Scanner architecture decouples user interaction, processing logic, and data management into distinct layers, supporting maintainability and extensibility. The dual-flow processing design combines a cloud-based Mistral OCR and LLM pipeline for semantically flexible extraction with a locally processed model-based pipeline that achieves high ingredient F1 (96.54 percent) and sub-second mean evaluation time per image on the held-out test set, compared with 95.17 percent F1 and approximately 6.9 seconds per image for the LLM flow on the same one hundred images. The integration of a trained box classifier, a spatial merging algorithm, and a dictionary-constrained OCR corrector within the model-based flow represents the principal technical contribution of this project. Chapter 4 presents the detailed implementation of each component.
+The Smart Ingredients Scanner architecture decouples user interaction, processing logic, and data management into distinct layers, supporting maintainability and extensibility. The dual-flow processing design combines a cloud-based Mistral OCR and LLM pipeline for semantically flexible extraction with a locally processed model-based pipeline. The integration of a trained box classifier, a spatial merging algorithm, and a dictionary-constrained OCR correction module within the model-based flow represents the principal technical contribution of this project. Chapter 4 presents the detailed implementation of each component.
 
 ---
 
