@@ -1,0 +1,432 @@
+{
+  "config": {
+    "images_dir": "/Users/admin/Desktop/FYP/SmartFoodScanner/tests/data/images",
+    "num_images": 10,
+    "timestamp": "2026-03-29T08:25:19.498357+00:00"
+  },
+  "summary": {
+    "model_based": {
+      "total": {
+        "avg": 11.139,
+        "min": 5.6969,
+        "max": 25.9122,
+        "median": 8.255,
+        "stdev": 6.287,
+        "count": 10
+      },
+      "ocr": {
+        "avg": 4.8745,
+        "min": 0.7303,
+        "max": 18.0938,
+        "median": 2.4522,
+        "stdev": 5.4939,
+        "count": 10
+      },
+      "extraction": {
+        "avg": 0.2248,
+        "min": 0.1094,
+        "max": 0.3938,
+        "median": 0.196,
+        "stdev": 0.0939,
+        "count": 10
+      },
+      "analysis": {
+        "avg": 6.0397,
+        "min": 4.7622,
+        "max": 8.772,
+        "median": 5.84,
+        "stdev": 1.2595,
+        "count": 10
+      },
+      "errors": 0
+    },
+    "llm_based": {
+      "total": {
+        "avg": 19.0227,
+        "min": 16.4576,
+        "max": 24.1276,
+        "median": 18.3533,
+        "stdev": 2.296,
+        "count": 10
+      },
+      "ocr": {
+        "avg": 2.1192,
+        "min": 1.3512,
+        "max": 3.1777,
+        "median": 2.0687,
+        "stdev": 0.5956,
+        "count": 10
+      },
+      "extraction": {
+        "avg": 10.8538,
+        "min": 8.5816,
+        "max": 14.6637,
+        "median": 10.6463,
+        "stdev": 2.0248,
+        "count": 10
+      },
+      "analysis": {
+        "avg": 6.0497,
+        "min": 3.9072,
+        "max": 7.9817,
+        "median": 6.1973,
+        "stdev": 1.2846,
+        "count": 10
+      },
+      "errors": 0
+    }
+  },
+  "per_image": [
+    {
+      "image": "IMG_0028.png",
+      "model_based": {
+        "ocr_text": "INGREDIENTS\nsuitablo\nWheatflour (contains Cluten)\nInvert Sugar Syrup\nPalm\nOil\nnut\"\nSugar\nSunflower Oil\nConcentrated Fruit Juice (Redcurrant;\nBlackcurrant; Cherry)\nSalt\nGelling Agent: Pectins (from Fru",
+        "merged_text": "Wheatflour (contains Cluten) Invert Sugar Syrup Palm Oil nut\" Sugar Sunflower Oil Concentrated Fruit Juice (Redcurrant; Blackcurrant; Cherry) Salt Gelling Agent: Pectins (from Fruit) Acidity Regulator",
+        "ingredients": [
+          "wheat flour (contains gluten invert sugar syrup palm oil nut sugar sunflower oil concentrated fruit juice (redcurrant; blackcurrant; cherry) salt gelling agent: pectin (from fruit) acidity regulator: citric acid dried whole milk emulsifier sunflower lecithin)"
+        ],
+        "is_safe": false,
+        "ocr_time": 0.7303,
+        "extraction_time": 0.2043,
+        "analysis_time": 4.7622,
+        "total_time": 5.6969
+      },
+      "llm_based": {
+        "ocr_text": "INGREDIENTS\n\nWheatflour (contains Gluten) · Invert Sugar Syrup · Palm Oil · Sugar · Sunflower Oil · Concentrated Fruit Juice (Redcurrant, Blackcurrant, Cherry) · Salt · Gelling Agent: Pectins (from Fr",
+        "ingredients": [
+          "Wheatflour (contains Gluten) (with Calcium Carbonate, Iron, Niacin, Thiamin)",
+          "Invert Sugar Syrup",
+          "Palm Oil",
+          "Sugar",
+          "Sunflower Oil",
+          "Concentrated Fruit Juice (Redcurrant, Blackcurrant, Cherry)",
+          "Salt",
+          "Gelling Agent: Pectins (from Fruit)",
+          "Acidity Regulator: Citric Acid",
+          "Dried Whole Milk",
+          "Emulsifier: Sunflower Lecithin"
+        ],
+        "is_safe": false,
+        "ocr_time": 1.5646,
+        "extraction_time": 11.5231,
+        "analysis_time": 7.2088,
+        "total_time": 20.2965
+      }
+    },
+    {
+      "image": "IMG_0029.png",
+      "model_based": {
+        "ocr_text": "INGREDIENTS\nsuitable\nWheatflour contains Cluten (with\nnut\nWheatflour; Calcium Carbonate;\nallergy\nNiacin, Thiamin)\nUnsalted\nButter (Milk) (38%)\nCaster Sugar\nCornflour\nSalt:\n2\n8\nIron;",
+        "merged_text": "Wheatflour contains Cluten (with nut Wheatflour; Calcium Carbonate; Iron; Niacin, Thiamin) Unsalted Butter (Milk) (38%) Caster Sugar Cornflour Salt",
+        "ingredients": [
+          "wheat flour contains gluten (with nut wheat flour calcium carbonate; iron niacin thiamin unsalted butter (milk) water sugar corn flour salt)"
+        ],
+        "is_safe": false,
+        "ocr_time": 1.6881,
+        "extraction_time": 0.1453,
+        "analysis_time": 5.0529,
+        "total_time": 6.8863
+      },
+      "llm_based": {
+        "ocr_text": "INGREDIENTS\n\nWheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin) · Unsalted Butter (Milk) (38%) · Caster Sugar · Cornflour · Salt.",
+        "ingredients": [
+          "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+          "Unsalted Butter (Milk)",
+          "Caster Sugar",
+          "Cornflour",
+          "Salt"
+        ],
+        "is_safe": true,
+        "ocr_time": 1.7286,
+        "extraction_time": 8.5816,
+        "analysis_time": 6.3789,
+        "total_time": 16.6892
+      }
+    },
+    {
+      "image": "IMG_0030.png",
+      "model_based": {
+        "ocr_text": "INGREDIENTS\nWheatflour contains Gluten (with\nWheatflour\nCalcium Carbonate;\nIron\nNiacin\n>\nThiamin)\nButter\n(Milk) (35%)\nSugar\nCornflour\nSalt\nDurum\nWheat Semolina\n(contains Cluten)",
+        "merged_text": "Wheatflour contains Gluten (with Wheatflour Calcium Carbonate; Iron Niacin Thiamin) Butter (Milk) (35%) Sugar Cornflour Salt Durum Wheat Semolina (contains Cluten)",
+        "ingredients": [
+          "wheat flour contains gluten (with wheat flour calcium carbonate; iron niacin thiamin butter (milk) sugar corn flour salt durum wheat semolina (contains gluten)"
+        ],
+        "is_safe": false,
+        "ocr_time": 1.7333,
+        "extraction_time": 0.1574,
+        "analysis_time": 5.8116,
+        "total_time": 7.7023
+      },
+      "llm_based": {
+        "ocr_text": "INGREDIENTS\nWheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin) · Butter (Milk) (35%) · Sugar · Cornflour · Salt · Durum Wheat Semolina (contains Gluten).",
+        "ingredients": [
+          "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+          "Butter (Milk)",
+          "Sugar",
+          "Cornflour",
+          "Durum Wheat Semolina (contains Gluten)"
+        ],
+        "is_safe": false,
+        "ocr_time": 1.5578,
+        "extraction_time": 8.8759,
+        "analysis_time": 7.9817,
+        "total_time": 18.4154
+      }
+    },
+    {
+      "image": "IMG_0031.png",
+      "model_based": {
+        "ocr_text": "STORAGE\nStore in a cool dry place; away\nfrom sunlight;\nINGREDIENTS\nWheatflour contains\nsuitablo\n2\nGluten (with Wheatflour;\nnut\nCalcium Carbonate;\nallergy\nNiacin; Thiamin)\nButter\n(Milk) (33%)\nSugar\nCor",
+        "merged_text": "suitablo Wheatflour contains nut Gluten (with Wheatflour; Calcium Carbonate; Iron; Niacin; Thiamin) Butter (Milk) (33%) Sugar Cornflour Rice Flour Salt Raising Agent: Sodium Bicarbonate",
+        "ingredients": [
+          "suitablo wheat flour contains nut gluten (with wheat flour calcium carbonate; iron niacin thiamin butter (milk) sugar corn flour rice flour salt raisins agent: sodium bicarbonate)"
+        ],
+        "is_safe": false,
+        "ocr_time": 2.3902,
+        "extraction_time": 0.1876,
+        "analysis_time": 5.8685,
+        "total_time": 8.4463
+      },
+      "llm_based": {
+        "ocr_text": "STORAGE\nStore in a cool, dry place, away from sunlight.\nINGREDIENTS\n\nWheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin) · Butter (Milk) (33%) · Sugar · Cornflour · ",
+        "ingredients": [
+          "Wheatflour contains Gluten (with Wheatflour, Calcium Carbonate, Iron, Niacin, Thiamin)",
+          "Butter (Milk)",
+          "Sugar",
+          "Cornflour",
+          "Rice Flour",
+          "Salt",
+          "Raising Agent: Sodium Bicarbonate"
+        ],
+        "is_safe": true,
+        "ocr_time": 2.5742,
+        "extraction_time": 9.876,
+        "analysis_time": 5.7412,
+        "total_time": 18.1914
+      }
+    },
+    {
+      "image": "IMG_0033.png",
+      "model_based": {
+        "ocr_text": "INGREDIENTS\nWheatflour (contains\nnut\nGluten)\nSugar\nCoconut Oil\nFat\nReduced Cocoa Powder\nDried\n(Milk)\nEmulsifier: Soya Lecithin\nSalt\nAgent: Sodium Bicarbonate\nVanilla Extract\nquitable\n6\nWhey\nallergy\nRa",
+        "merged_text": "Wheatflour (contains nut Gluten) Sugar Coconut Oil Fat Reduced Cocoa Powder Dried Whey Salt (Milk) Emulsifier: Soya Lecithin Raising Agent: Sodium Bicarbonate Vanilla Extract",
+        "ingredients": [
+          "wheat flour (contains nut gluten sugar coconut oil fat reduced cocoa powder dried whey salt milk emulsifier soy lecithin raisins agent: sodium bicarbonate vanilla extract)"
+        ],
+        "is_safe": false,
+        "ocr_time": 11.0918,
+        "extraction_time": 0.2265,
+        "analysis_time": 5.9301,
+        "total_time": 17.2484
+      },
+      "llm_based": {
+        "ocr_text": "1\nairlight container.\n\nINGREDIENTS Wheatflour (contains Gluten) · Sugar · Coconut Oil · Fat Reduced Cocoa Powder · Dried Whey (Milk) · Emulsifier: Soya Lecithin · Salt · Raising Agent: Sodium Bicarbon",
+        "ingredients": [
+          "Wheatflour (contains Gluten) (with Sugar, Calcium Carbonate, Iron, Niacin, Thiamin)",
+          "Sugar",
+          "Coconut Oil",
+          "Fat Reduced Cocoa Powder",
+          "Dried Whey (Milk)",
+          "Emulsifier: Soya Lecithin",
+          "Salt",
+          "Raising Agent: Sodium Bicarbonate",
+          "Vanilla Extract"
+        ],
+        "is_safe": false,
+        "ocr_time": 1.3512,
+        "extraction_time": 10.3996,
+        "analysis_time": 6.5405,
+        "total_time": 18.2913
+      }
+    },
+    {
+      "image": "IMG_0034.png",
+      "model_based": {
+        "ocr_text": "runchy\nSTORAGE\nwith\nFor Best Before End (BBE); see top of pack\nStore in\na cool\nplace; away from strong odours:\nRefold inner\nto maintain freshness:\nINGREDIENTS\nper\nsuitablo\nMaize\nSugar\nPeanuts (8%)\nHon",
+        "merged_text": "per Maize Sugar Peanuts (8%) Honey (0.6%) Salt nut Caramelised Sugar Syrup Barley Malt Extract Iron Niacin Pantothenic Acid Vitamin B6 Riboflavin Thiamin Folic Acid Vitamin Vitamin B12.",
+        "ingredients": [
+          "per maize sugar peanuts honey salt nut caramelised sugar syrup barley malt extract iron niacin pantothenic acid vitamins b6 riboflavin thiamin folic acid vitamins vitamins b12"
+        ],
+        "is_safe": true,
+        "ocr_time": 2.5142,
+        "extraction_time": 0.1672,
+        "analysis_time": 5.3822,
+        "total_time": 8.0636
+      },
+      "llm_based": {
+        "ocr_text": "STORAGE\nFor Best Before End (BBE), see top of pack.\nStore in a cool, dry place, away from strong odours.\nRefold inner bag to maintain freshness.\nINGREDIENTS\n\nper 30g serving\nMaize · Sugar · Peanuts (8",
+        "ingredients": [
+          "Maize",
+          "Sugar",
+          "Peanuts",
+          "Honey",
+          "Salt",
+          "Caramelised Sugar Syrup",
+          "Barley Malt Extract",
+          "Iron",
+          "Niacin",
+          "Pantothenic Acid",
+          "Vitamin B6",
+          "Riboflavin",
+          "Thiamin",
+          "Folic Acid",
+          "Vitamin D",
+          "Vitamin B12"
+        ],
+        "is_safe": true,
+        "ocr_time": 2.3087,
+        "extraction_time": 10.893,
+        "analysis_time": 4.1292,
+        "total_time": 17.3309
+      }
+    },
+    {
+      "image": "IMG_0035.png",
+      "model_based": {
+        "ocr_text": "INGREDIENTS\nWholewheat (contains Cluten) (95%)\nBarley Malt\nExtract (contains Cluten)\nSugar\nSalt\nNiacin\nIron\nThiamin\nRiboflavins\nFolic\nAcid.\nFor allergens see ingredients in bold\nSuitable for vegans",
+        "merged_text": "Wholewheat (contains Cluten) (95%) Barley Malt Extract (contains Cluten) Sugar Salt Niacin Iron Thiamin Riboflavins Folic",
+        "ingredients": [
+          "whole wheat (contains gluten barley malt extract (contains gluten sugar salt niacin iron thiamin riboflavin folic)"
+        ],
+        "is_safe": false,
+        "ocr_time": 3.3621,
+        "extraction_time": 0.1094,
+        "analysis_time": 6.4615,
+        "total_time": 9.933
+      },
+      "llm_based": {
+        "ocr_text": "INGREDIENTS\nWholewheat (contains Gluten) (95%) · Barley Malt Extract (contains Gluten) · Sugar · Salt · Niacin · Iron · Thiamin · Riboflavins · Folic Acid.\nFor allergens see ingredients in bold.\nSuita",
+        "ingredients": [
+          "Wholewheat (contains Gluten)",
+          "Barley Malt Extract (contains Gluten)",
+          "Sugar",
+          "Salt",
+          "Niacin",
+          "Iron",
+          "Thiamin",
+          "Riboflavins",
+          "Folic Acid"
+        ],
+        "is_safe": false,
+        "ocr_time": 1.8287,
+        "extraction_time": 8.6133,
+        "analysis_time": 6.0156,
+        "total_time": 16.4576
+      }
+    },
+    {
+      "image": "IMG_0036.png",
+      "model_based": {
+        "ocr_text": "INGREDIENTS\nOat Flakes (60%)\nVegetable Oil (Sunflower/Rapeseed)\n6\nSugar\nClucose Syrup\nAlmond Halves (6%)\nCrisped Rice\nnut\n(Rice Flour\nWheatflour\nSugar\nMalted Barley\nSalt)\naliergy\nFreeze-Dried Strawber",
+        "merged_text": "Oat Flakes (60%) Vegetable Oil (Sunflower/Rapeseed) nut Sugar Clucose Syrup Almond Halves (6%) Crisped Rice aliergy (Rice Flour Wheatflour Sugar Malted Barley Salt) Freeze-Dried Strawberry Slices (2%)",
+        "ingredients": [
+          "oat flakes vegetable oil (sunflower/rapeseed) nut sugar clucose syrup almonds halves crisped rice aliergy rice flour wheat flour sugar maltol barley salt freeze-dried strawberry slices (freeze-dried strawberry slices sunflower oil) honey oat flour salt natural flavouring caramelised sugar antioxidant: tocopherol-rich extract: ingrodientein"
+        ],
+        "is_safe": true,
+        "ocr_time": 2.2256,
+        "extraction_time": 0.3325,
+        "analysis_time": 4.862,
+        "total_time": 7.4201
+      },
+      "llm_based": {
+        "ocr_text": "INGREDIENTS\n\nOat Flakes (60%) · Vegetable Oil (Sunflower/Rapeseed) · Sugar · Glucose Syrup · Almond Halves (6%) · Crisped Rice (Rice Flour · Wheatflour · Sugar · Malted Barley · Salt) · Freeze-Dried S",
+        "ingredients": [
+          "Oat Flakes",
+          "Vegetable Oil (Sunflower/Rapeseed)",
+          "Sugar",
+          "Glucose Syrup",
+          "Almond Halves",
+          "Crisped Rice (Rice Flour, Wheatflour, Sugar, Malted Barley, Salt)",
+          "Freeze-Dried Strawberry Slices (Freeze-Dried Strawberry Slices, Sunflower Oil)",
+          "Honey",
+          "Oat Flour",
+          "Salt",
+          "Natural Flavouring",
+          "Caramelised Sugar",
+          "Antioxidant: Tocopherol-Rich Extract"
+        ],
+        "is_safe": true,
+        "ocr_time": 2.615,
+        "extraction_time": 13.2201,
+        "analysis_time": 3.9072,
+        "total_time": 19.7423
+      }
+    },
+    {
+      "image": "IMG_0037.png",
+      "model_based": {
+        "ocr_text": "STORACE\nFor Best Before; see top of\nStore in\na cool\nplace; away from\nstrong odours Refold inner bag to maintain freshness\nThis product is sold by weight; some settling may occur in transit:\nTo enjoy t",
+        "merged_text": "Oat Flakes (53%) Vegetable Oil (Sunflower/Rapeseed) Sugar Almond Halves (6%) Rice Crisp (Rice Flour Wheatflour (contains Cluten) Sugar Malted Barley (contains Cluten) Salt) Glucose Syrup Cornflakes (M",
+        "ingredients": [
+          "oat flakes vegetable oil (sunflower/rapeseed) sugar almonds halves rice crisp rice flour wheat flour (contains gluten sugar maltol barley (contains gluten salt glucose syrup cornflakes (maize flour salt sliced basil nuts chopped roasted hazelnuts chopped pecan nuts oat flour flavourings honey salt caramelised sugar antioxidant tocopherol-rich extract)"
+        ],
+        "is_safe": false,
+        "ocr_time": 4.9155,
+        "extraction_time": 0.3938,
+        "analysis_time": 8.772,
+        "total_time": 14.0814
+      },
+      "llm_based": {
+        "ocr_text": "29\nSTORAGE\nFor Best Before, see top of pack. Store in a cool dry place, away from strong odours. Refold inner bag to maintain freshness.\nThis product is sold by weight, some settling may occur in tran",
+        "ingredients": [
+          "Oat Flakes",
+          "Vegetable Oil (Sunflower/Rapeseed)",
+          "Sugar",
+          "Almond Halves",
+          "Rice Crisp (Rice Flour, Wheatflour (contains Gluten), Sugar, Malted Barley (contains Gluten), Salt)",
+          "Glucose Syrup",
+          "Cornflakes (Maize Flour, Salt)",
+          "Sliced Brazil Nuts",
+          "Chopped Roasted Hazelnuts",
+          "Chopped Pecan Nuts",
+          "Oat Flour",
+          "Flavourings",
+          "Honey",
+          "Salt",
+          "Caramelised Sugar",
+          "Antioxidant : Tocopherol-rich Extract"
+        ],
+        "is_safe": true,
+        "ocr_time": 2.4855,
+        "extraction_time": 14.6637,
+        "analysis_time": 6.9784,
+        "total_time": 24.1276
+      }
+    },
+    {
+      "image": "IMG_0038.png",
+      "model_based": {
+        "ocr_text": "Carbohydrate\nDletributod In Hong Kong by\nof which sugars\nKowloon\nFibre\n0\nProtein\nSalt\nReference intake (adult) Energy 8400kJ/2OOOkcal Fat\nME\nSaturates 20g Sugars 90g Salt 6g\nRa\nSTORAGE\nmz\nFor Best Bef",
+        "merged_text": "Oat Flakes (37%) Maple Flavour Barley Flakes (18%) (Barley Sugar Water Natural Flavouring) Toasted Malted Wheatflakes (16%) (Wheat Barley Malt Extract) Sunflower Seeds (8%) Barley Flakes (5%) Roasted ",
+        "ingredients": [
+          "oat flakes maple flavour barley flakes barley sugar water natural flavouring) toasted maltol wheatflakes wheat barley malt extract) sunflower seeds barley flakes roasted hazelnuts pumpkin seeds almonds chopped cashew nuts sliced almonds"
+        ],
+        "is_safe": true,
+        "ocr_time": 18.0938,
+        "extraction_time": 0.3243,
+        "analysis_time": 7.4941,
+        "total_time": 25.9122
+      },
+      "llm_based": {
+        "ocr_text": "Reference intake (adult) Energy 8400kJ/2000kcal Fat 70g Saturates 20g Sugars 90g Salt 6g\nSTORAGE\nFor Best Before End, see top of pack. Store in a cool, dry place, away from strong odours. Refold inner",
+        "ingredients": [
+          "Oat Flakes",
+          "Maple Flavour Barley Flakes (Barley, Sugar, Water, Natural Flavouring)",
+          "Toasted Malted Wheatflakes (Wheat, Barley Malt Extract)",
+          "Sunflower Seeds",
+          "Barley Flakes",
+          "Roasted Hazelnuts",
+          "Pumpkin Seeds",
+          "Almonds",
+          "Chopped Cashew Nuts",
+          "Sliced Almonds"
+        ],
+        "is_safe": true,
+        "ocr_time": 3.1777,
+        "extraction_time": 11.8919,
+        "analysis_time": 5.6156,
+        "total_time": 20.6852
+      }
+    }
+  ]
+}

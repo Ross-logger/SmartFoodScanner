@@ -395,3 +395,100 @@ The data layer uses PostgreSQL as the primary database, hosted on Supabase for c
 ### 4.7 Summary
 
 This chapter has presented the technical implementation of the Smart Ingredients Scanner, covering the dual-flow processing architecture, database design, algorithm implementations, testing methodology, and problems encountered during development. The dual-flow design offers users a choice between the LLM-based pipeline (Mistral OCR and Mistral 7B extraction) and the model-based pipeline (EasyOCR, Logistic Regression box classifier, merge, and OCR corrector). Quantitative evaluation outcomes for extraction accuracy and latency are presented in the results chapter. The problems encountered during development and their solutions, including the migration from PyTesseract to EasyOCR, the design of the dual-flow architecture to address LLM latency, and the construction of a custom training dataset, illustrate the practical engineering decisions involved in deploying an AI-powered application in a real-world context.
+
+---
+
+## 5. Results and Evaluation
+
+### 5.1 Introduction
+
+This chapter presents the quantitative results of the evaluation conducted on the Smart Ingredients Scanner. Two categories of evaluation are reported. The first is ingredient extraction accuracy, which measures how well each processing flow recovers individual ingredients from food-label images relative to manually curated ground-truth lists. The second is end-to-end processing latency, which measures the wall-clock time from image upload through to dietary analysis result for each flow under realistic conditions. The evaluation methodology, including the scripts, datasets, and metric definitions used to produce these results, was described in Section 4.4.4. A summary of the automated test suite that validates correctness of individual components and integration paths is also provided.
+
+### 5.2 Ingredient Extraction Accuracy
+
+#### 5.2.1 Model-Based Pipeline
+
+The model-based pipeline, consisting of EasyOCR text detection, the Logistic Regression box classifier, the spatial merge algorithm, and the OCR corrector described in Sections 4.3.2 through 4.3.7, was evaluated on one hundred test images drawn from the same image pool used to construct the augmented training dataset described in Section 4.3.3. Ground-truth ingredient lists for these images are stored in `datasets/true_ingredients_augmented_1000.json`, where each entry pairs an image filename with a manually verified list of ingredient strings.
+
+The evaluation was performed using the script `training/evaluate_merge_predictions.py`. This script runs the full extraction pipeline on box-level classifier predictions exported to CSV, applies optional OCR correction, and compares the resulting merged ingredient text against the ground-truth lists. For each ground-truth ingredient, the script computes the maximum fuzzy similarity score across four RapidFuzz measures: `partial_ratio`, `token_set_ratio`, `token_sort_ratio`, and `ratio`. An ingredient is counted as matched if the best score meets or exceeds a configurable fuzzy threshold. Precision is computed by splitting the merged output text on delimiters and checking whether each predicted segment matches any ground-truth ingredient. Recall is the proportion of ground-truth ingredients that are found within the merged text. The F1 score is the harmonic mean of precision and recall, computed per image and then averaged across the test set.
+
+At a fuzzy threshold of 85, the model-based pipeline achieved the following mean scores over one hundred images.
+
+| Metric    | Value   |
+|-----------|---------|
+| Precision | 97.75 % |
+| Recall    | 95.60 % |
+| F1        | 96.54 % |
+
+These results indicate that the combination of box classification, spatial merging, and dictionary-constrained OCR correction recovers ingredient lists with high fidelity on the evaluation set. The most common sources of error are curved or distorted text on cylindrical packaging, where EasyOCR detection boxes may be fragmented or missing, and multi-language labels where non-English ingredient synonyms fall outside the correction vocabulary.
+
+#### 5.2.2 LLM-Based Pipeline
+
+The LLM-based pipeline, consisting of Mistral OCR for text extraction followed by Mistral 7B for structured ingredient extraction as described in Sections 4.3.1 and 4.3.4, was evaluated on the same one hundred test images using the same ground-truth lists. The evaluation was performed by the script `scripts/compare_ingredients_accuracy.py`, which runs the full end-to-end extraction and compares the resulting ingredient list against the ground truth using three matching strategies. Exact matching requires case-normalised string equality. Fuzzy matching uses a similarity threshold of 0.8 to accommodate minor spelling and formatting differences. Merge matching evaluates containment of ground-truth ingredients within the full predicted text.
+
+The following table reports the mean scores over the one hundred test images for each matching strategy.
+
+| Matching strategy | Precision | Recall  | F1      |
+|-------------------|-----------|---------|---------|
+| Exact             | 95.09 %   | 95.05 % | 95.06 % |
+| Fuzzy             | 95.78 %   | 95.74 % | 95.75 % |
+| Merge             | 95.18 %   | 95.19 % | 95.17 % |
+
+The LLM-based flow benefits from the language model's ability to interpret context, resolve ambiguous abbreviations, and handle compound ingredient structures that span multiple lines. Its accuracy is marginally lower than the model-based pipeline under the fuzzy matching protocol used in Section 5.2.1, but it produces more consistently formatted output because the LLM returns a structured JSON list rather than reconstructed OCR text. The primary trade-off is latency, which is examined in the next section.
+
+### 5.3 Processing Latency
+
+End-to-end latency was measured by running both processing flows on ten representative test images through the full application pipeline, from image upload and OCR through ingredient extraction to LLM-based dietary analysis. The test was executed using the performance test suite in `tests/performance/test_performance.py` on a MacBook Pro 16-inch with an Apple M1 Pro processor and 16 GB of RAM.
+
+The following table reports the timing breakdown averaged over the ten images.
+
+| Stage              | Model-based | LLM-based |
+|--------------------|-------------|-----------|
+| Avg total time     | 11.14 s     | 19.02 s   |
+| Avg OCR time       | 4.87 s      | 2.12 s    |
+| Avg extraction time| 0.22 s      | 10.85 s   |
+| Avg analysis time  | 6.04 s      | 6.05 s    |
+| Min total time     | 5.70 s      | 16.46 s   |
+| Max total time     | 25.91 s     | 24.13 s   |
+| Median total time  | 8.26 s      | 18.35 s   |
+| Stdev total time   | 6.29 s      | 2.30 s    |
+
+Several observations follow from these results.
+
+The OCR stage of the model-based flow, which uses EasyOCR, averaged 4.87 seconds per image, approximately 2.3 times slower than Mistral OCR at 2.12 seconds. This difference is attributable to hardware rather than algorithmic capability. EasyOCR performs all inference locally on the M1 Pro processor, which lacks CUDA-compatible GPU acceleration. The PyTorch backend falls back to CPU execution, as confirmed by the runtime warning `'pin_memory' argument is set as true but not supported on MPS now` observed during testing. Mistral OCR, by contrast, is a cloud-hosted API whose inference executes on dedicated GPU servers, returning results over the network with comparatively low round-trip overhead. To contextualise the EasyOCR figure, Nagayi et al. (2025) evaluated EasyOCR on food packaging images of comparable complexity and report an average processing time of 0.81 seconds per image when running on an NVIDIA GeForce RTX 3070 GPU. This confirms that the 4.87-second figure observed in this project reflects the absence of GPU acceleration on the test hardware rather than a limitation of the EasyOCR engine itself.
+
+The extraction stage accounts for the largest difference between the two flows. The model-based extraction, comprising box classification, spatial merging, and OCR correction, completed in an average of 0.22 seconds because all operations run locally using pre-loaded models and a pre-built dictionary. The LLM-based extraction averaged 10.85 seconds because it requires a full inference round-trip to the language model server. The analysis stage, which performs LLM-based dietary evaluation, took approximately 6.0 seconds in both flows because both use the same LLM analysis service regardless of how ingredients were extracted.
+
+The model-based flow recorded a median total time of 8.26 seconds, which falls within the deliverable target of less than 12 seconds per scan for non-LLM-based extraction stated in Section 1.4.2. Its higher variance (standard deviation 6.29 seconds) is driven primarily by variability in EasyOCR processing time across images of different resolutions and text densities. The LLM-based flow averaged 19.02 seconds with lower variance (standard deviation 2.30 seconds), as the cloud inference time dominates and is relatively stable across images.
+
+### 5.4 Unit and Integration Testing
+
+The automated test suite comprises twelve test files organised into three tiers: unit, integration, and performance. Unit tests, located in `tests/unit/`, cover six components. `test_rule_based_analysis.py` validates the rule-based dietary analysis engine across all supported restriction categories, including halal, gluten-free, vegetarian, vegan, nut-free, and dairy-free, with both positive and negative test cases. `test_llm_analysis.py` tests LLM-based dietary analysis, including prompt construction, response validation, and fallback behaviour when the LLM service is unavailable. `test_ingredient_extraction.py` covers the ingredient extraction service, including LLM extraction helpers, format handling, and edge cases such as empty input and percentage removal. `test_ocr_service.py` validates OCR processing, including confidence filtering, text extraction, image format support for JPEG, PNG, and HEIF, and error handling for corrupted images. `test_barcode_service.py` tests the barcode lookup flow, including Open Food Facts API response parsing, ingredient extraction, allergen formatting, and error handling for missing products. `test_easyocr_confidence.py` validates the confidence-based filtering logic used to determine which OCR segments should bypass SymSpell correction.
+
+Integration tests, located in `tests/integration/`, validate interactions between components. `test_full_pipeline.py` exercises end-to-end flows from OCR text through extraction and analysis for both halal and gluten-free scenarios, including accuracy-style test cases evaluated with the `EvaluationMetrics` utility class defined in `tests/utils/metrics.py`. `test_dietary_profiles.py` tests the `analyze_ingredients` function across multiple profile types using synthetic OCR sample data with mocked LLM services. `test_api_endpoints.py` uses the FastAPI `TestClient` to validate all REST endpoints, including authentication, dietary profile management, scan submission, and history retrieval, against an in-memory SQLite database configured in `tests/conftest.py`.
+
+The performance test file `tests/performance/test_performance.py` measures real, non-mocked response times for OCR processing, barcode lookup, ingredient extraction, and dietary analysis under realistic conditions. The latency results reported in Section 5.3 were produced by this test suite.
+
+Test isolation is maintained through fixtures defined in `tests/conftest.py`, which provide an in-memory SQLite database, test user accounts with hashed passwords, pre-configured dietary profiles for common restriction combinations, and mock services that replace external dependencies during unit and integration testing. Statement coverage across all core backend services was measured using Coverage.py, with the generated HTML report stored in `tests/htmlcov/`.
+
+### 5.5 Comparison of the Two Extraction Flows
+
+The following table summarises the key characteristics of the two extraction flows side by side.
+
+| Characteristic         | Model-based pipeline                          | LLM-based pipeline                          |
+|------------------------|-----------------------------------------------|----------------------------------------------|
+| Extraction F1          | 96.54 % (fuzzy, threshold 85)                 | 95.75 % (fuzzy, threshold 0.8)              |
+| Median total latency   | 8.26 s                                        | 18.35 s                                      |
+| OCR engine             | EasyOCR (local)                               | Mistral OCR (cloud API)                      |
+| Extraction method      | Box classifier, merge, OCR corrector (local)  | Mistral 7B LLM (remote inference)            |
+| External dependencies  | None during extraction                        | Mistral OCR API and LLM API                  |
+| Offline capability     | Fully offline for OCR and extraction stages   | Requires network for OCR and extraction      |
+| Output format          | Reconstructed text, delimiter-split           | Structured JSON list                         |
+| Primary strength       | Speed and offline operation                   | Semantic understanding of complex layouts    |
+| Primary weakness       | Sensitive to OCR quality and box fragmentation| Dependent on API availability and latency    |
+
+Both flows exceed the deliverable target of at least 90 percent OCR accuracy on clear images, achieving extraction F1 scores above 95 percent on the evaluation set. The model-based pipeline offers a latency advantage of approximately 2.2 times over the LLM-based pipeline on the test hardware and operates without network dependencies during the extraction stage. The LLM-based pipeline produces more consistently structured output and handles edge cases such as compound ingredients spanning multiple lines and ambiguous abbreviations more reliably, at the cost of higher and less controllable latency. The analysis stage contributes approximately 6 seconds to both flows, as both use the same LLM-based dietary analysis service. Reducing analysis latency, for example by caching common dietary evaluations or using the rule-based analyser as the default, would benefit both flows equally.
+
+### 5.6 Summary
+
+This chapter has presented the quantitative evaluation of the Smart Ingredients Scanner across two dimensions: ingredient extraction accuracy and end-to-end processing latency. The model-based pipeline achieved a mean extraction F1 of 96.54 percent, while the LLM-based pipeline achieved 95.75 percent under fuzzy matching, with both flows comfortably exceeding the 90 percent accuracy target defined in the project deliverables. The model-based flow recorded a median total processing time of 8.26 seconds on a MacBook Pro M1 Pro without GPU acceleration, meeting the deliverable target of less than 12 seconds per scan. EasyOCR's on-device latency, which accounts for the largest share of model-based processing time, would be substantially reduced on hardware with CUDA-compatible GPU support, as demonstrated by the 0.81-second average reported by Nagayi et al. (2025) on an RTX 3070. The automated test suite, comprising six unit test files, three integration test files, and one performance test file, validates the correctness and reliability of all core components. The dual-flow architecture provides users with a meaningful choice between fast, fully offline extraction and semantically robust cloud-based extraction, with both paths delivering high-accuracy dietary compliance verification.

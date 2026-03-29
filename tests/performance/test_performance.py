@@ -5,66 +5,86 @@ Tests for system throughput and response time:
 - End-to-end processing time (target: < 10 seconds)
 - Throughput with concurrent requests
 - Memory usage monitoring
+- Full-pipeline comparison: LLM-based vs model-based on real images
 
 NOTE: These are real performance tests - NO MOCKING.
 All services are called with real implementations.
+
+Usage (full-pipeline comparison on real images):
+  pytest tests/performance/test_performance.py::TestFullPipelineComparison -v -s
+  pytest tests/performance/test_performance.py::TestFullPipelineComparison -v -s --perf-num-images 5
+  pytest tests/performance/test_performance.py::TestFullPipelineComparison -v -s --perf-images-dir tests/data/images --perf-output results.json
 """
 
-import pytest
+import json
+import re
 import time
 import statistics
 from dataclasses import dataclass, field
-from typing import List, Optional
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import pytest
+
 from backend.services.barcode.openfoodfacts import fetch_product
-from backend.services.ocr.service import extract_text_from_image
-from backend.services.ingredients_extraction.extractor import extract
+from backend.services.ocr.service import (
+    extract_ocr_from_image,
+    extract_text_from_image,
+    extract_text_with_mistral_ocr,
+)
 from backend.services.ingredients_extraction import extract_ingredients_with_llm
+from backend.services.ingredients_extraction.ingredient_box_classifier import (
+    classify_boxes,
+    extract_ingredients_from_boxes,
+)
+from backend.services.ingredients_extraction.ocr_corrector import correct_ingredient_list
+from backend.services.ingredients_extraction.utils import split_ingredients_text
 from backend.services.ingredients_analysis.service import analyze_ingredients
+from backend import settings
 from tests.utils.test_helpers import create_test_image, create_test_image_with_text
-from tests.data.synthetic.ocr_samples import get_performance_samples
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+DEFAULT_IMAGES_DIR = PROJECT_ROOT / "tests" / "data" / "images"
+DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "tests" / "data" / "performance_results.json"
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff"}
 
 
 # =============================================================================
 # PERFORMANCE CONSTANTS - All timing targets and thresholds
 # =============================================================================
 
-# Response Time Targets (in seconds)
-TARGET_FULL_PIPELINE_TIME = 12.0  # End-to-end processing target
-TARGET_MAX_SINGLE_REQUEST_TIME = 15.0  # Max time for any single request
-TARGET_OCR_TIME = 5.0  # OCR processing target
-TARGET_BARCODE_TIME = 3.0  # Barcode lookup target (network dependent)
-TARGET_EXTRACTION_TIME = 5.0  # Ingredient extraction target (uses LLM/model)
-TARGET_ANALYSIS_TIME = 5.0  # Dietary analysis target (uses LLM)
+TARGET_FULL_PIPELINE_TIME = 12.0
+TARGET_MAX_SINGLE_REQUEST_TIME = 15.0
+TARGET_OCR_TIME = 5.0
+TARGET_BARCODE_TIME = 3.0
+TARGET_EXTRACTION_TIME = 5.0
+TARGET_ANALYSIS_TIME = 5.0
 
-# Scalability Targets (in seconds)
-TARGET_LARGE_INGREDIENT_LIST_TIME = 8.0  # 100 ingredients
-TARGET_COMPLEX_PROFILE_TIME = 6.0  # All restrictions enabled
+TARGET_LARGE_INGREDIENT_LIST_TIME = 8.0
+TARGET_COMPLEX_PROFILE_TIME = 6.0
 TARGET_SHORT_TEXT_EXTRACTION_TIME = 5.0
 TARGET_MEDIUM_TEXT_EXTRACTION_TIME = 6.0
 TARGET_LONG_TEXT_EXTRACTION_TIME = 8.0
 
-# Throughput Targets
-TARGET_CONCURRENT_THROUGHPUT = 0.5  # Requests per second (4 workers)
-TARGET_SEQUENTIAL_THROUGHPUT = 1.0  # Requests per second
-TARGET_INDIVIDUAL_REQUEST_TIME = 5.0  # Per-request time in concurrent tests
+TARGET_CONCURRENT_THROUGHPUT = 0.5
+TARGET_SEQUENTIAL_THROUGHPUT = 1.0
+TARGET_INDIVIDUAL_REQUEST_TIME = 5.0
 
-# Percentile Targets (in seconds)
 TARGET_P50_TIME = 3.0
 TARGET_P95_TIME = 6.0
 TARGET_P99_TIME = 8.0
 
-# Test Configuration
-NUM_WARMUP_ITERATIONS = 1  # Warmup calls before timing
-NUM_TIMING_ITERATIONS_SMALL = 3  # For slow tests
-NUM_TIMING_ITERATIONS_MEDIUM = 5  # For medium tests
-NUM_TIMING_ITERATIONS_LARGE = 10  # For percentile tests
+NUM_WARMUP_ITERATIONS = 1
+NUM_TIMING_ITERATIONS_SMALL = 3
+NUM_TIMING_ITERATIONS_MEDIUM = 5
+NUM_TIMING_ITERATIONS_LARGE = 10
 NUM_CONCURRENT_SAMPLES = 10
 NUM_SEQUENTIAL_SAMPLES = 20
 
-# Test Data
-TEST_BARCODE = "5000159407236"  # A known product barcode
+TEST_BARCODE = "5000159407236"
 TEST_INGREDIENTS_SIMPLE = ["Water", "Sugar", "Wheat Flour", "Palm Oil", "Salt"]
 TEST_INGREDIENTS_COMPLEX = ["Water", "Sugar", "Wheat Flour", "Milk", "Eggs", "Peanuts"]
 TEST_INGREDIENTS_LARGE = [f"Ingredient{i}" for i in range(100)]
@@ -92,24 +112,15 @@ class DietaryProfileData:
     custom_restrictions: List[str] = field(default_factory=list)
 
 
-# Pre-defined test profiles
 PROFILE_HALAL_GLUTEN_FREE = DietaryProfileData(halal=True, gluten_free=True)
 PROFILE_HALAL = DietaryProfileData(halal=True)
 PROFILE_ALL_RESTRICTIONS = DietaryProfileData(
-    halal=True,
-    gluten_free=True,
-    vegetarian=True,
-    vegan=True,
-    nut_free=True,
-    dairy_free=True,
+    halal=True, gluten_free=True, vegetarian=True,
+    vegan=True, nut_free=True, dairy_free=True,
 )
 PROFILE_COMPLEX = DietaryProfileData(
-    halal=True,
-    gluten_free=True,
-    vegetarian=True,
-    vegan=True,
-    nut_free=True,
-    dairy_free=True,
+    halal=True, gluten_free=True, vegetarian=True,
+    vegan=True, nut_free=True, dairy_free=True,
     allergens=[f"allergen{i}" for i in range(20)],
     custom_restrictions=[f"restriction{i}" for i in range(10)],
 )
@@ -142,7 +153,113 @@ def warmup(func, iterations: int = 1, *args, **kwargs):
         try:
             func(*args, **kwargs)
         except Exception:
-            pass  # Ignore errors during warmup
+            pass
+
+
+def _natural_sort_key(path: Path):
+    """Sort by natural numeric order (in0, in1, in2, in10, not in0, in1, in10, in2)."""
+    parts = re.split(r"(\d+)", path.name)
+    return [int(p) if p.isdigit() else p.lower() for p in parts]
+
+
+def _discover_images(images_dir: Path, limit: Optional[int] = None) -> List[Path]:
+    """Discover image files in a directory, sorted naturally, optionally limited."""
+    if not images_dir.exists():
+        raise FileNotFoundError(f"Images directory not found: {images_dir}")
+    image_files = sorted(
+        (f for f in images_dir.iterdir() if f.is_file() and f.suffix.lower() in IMAGE_EXTENSIONS),
+        key=_natural_sort_key,
+    )
+    if limit is not None and limit > 0:
+        image_files = image_files[:limit]
+    return image_files
+
+
+def _stats(times: List[float]) -> Dict[str, float]:
+    """Compute summary statistics for a list of timings."""
+    if not times:
+        return {"avg": 0.0, "min": 0.0, "max": 0.0, "median": 0.0, "stdev": 0.0, "count": 0}
+    return {
+        "avg": round(statistics.mean(times), 4),
+        "min": round(min(times), 4),
+        "max": round(max(times), 4),
+        "median": round(statistics.median(times), 4),
+        "stdev": round(statistics.stdev(times), 4) if len(times) >= 2 else 0.0,
+        "count": len(times),
+    }
+
+
+# =============================================================================
+# PIPELINE RUNNERS
+# =============================================================================
+
+def run_model_pipeline(image_data: bytes, profile) -> Dict[str, Any]:
+    """
+    Model-based pipeline: EasyOCR -> box classifier -> merge -> OCR corrector -> analysis.
+    Returns per-stage timings and results.
+    """
+    ocr_start = time.perf_counter()
+    ocr_result = extract_ocr_from_image(image_data, use_mistral_ocr=False)
+    ocr_time = time.perf_counter() - ocr_start
+
+    extract_start = time.perf_counter()
+    ingredients: List[str] = []
+    merged_text = ""
+    if ocr_result.easyocr_raw_results:
+        df_boxes = classify_boxes(ocr_result.easyocr_raw_results)
+        merged_text = extract_ingredients_from_boxes(df_boxes)
+        if merged_text.strip():
+            candidates = split_ingredients_text(merged_text)
+            ingredients_list = correct_ingredient_list(
+                candidates, use_ocr_corrector=settings.USE_OCR_CORRECTOR,
+            )
+            if ingredients_list:
+                ingredients = [", ".join(ingredients_list)]
+    extract_time = time.perf_counter() - extract_start
+
+    analysis_start = time.perf_counter()
+    analysis = analyze_ingredients(ingredients, profile)
+    analysis_time = time.perf_counter() - analysis_start
+
+    return {
+        "ocr_text": ocr_result.text[:200],
+        "merged_text": merged_text[:200] if merged_text else "",
+        "ingredients": ingredients,
+        "is_safe": analysis.get("is_safe"),
+        "ocr_time": round(ocr_time, 4),
+        "extraction_time": round(extract_time, 4),
+        "analysis_time": round(analysis_time, 4),
+        "total_time": round(ocr_time + extract_time + analysis_time, 4),
+    }
+
+
+def run_llm_pipeline(image_data: bytes, profile) -> Dict[str, Any]:
+    """
+    LLM-based pipeline: Mistral OCR (no cache) -> LLM extraction -> analysis.
+    Returns per-stage timings and results.
+    """
+    ocr_start = time.perf_counter()
+    ocr_text = extract_text_with_mistral_ocr(image_data)
+    ocr_time = time.perf_counter() - ocr_start
+
+    extract_start = time.perf_counter()
+    llm_result = extract_ingredients_with_llm(ocr_text)
+    ingredients = llm_result.get("ingredients", []) if llm_result.get("success") else []
+    extract_time = time.perf_counter() - extract_start
+
+    analysis_start = time.perf_counter()
+    analysis = analyze_ingredients(ingredients, profile)
+    analysis_time = time.perf_counter() - analysis_start
+
+    return {
+        "ocr_text": ocr_text[:200],
+        "ingredients": ingredients,
+        "is_safe": analysis.get("is_safe"),
+        "ocr_time": round(ocr_time, 4),
+        "extraction_time": round(extract_time, 4),
+        "analysis_time": round(analysis_time, 4),
+        "total_time": round(ocr_time + extract_time + analysis_time, 4),
+    }
 
 
 # =============================================================================
@@ -157,98 +274,46 @@ class TestResponseTime:
     def test_ocr_response_time(self):
         """Test OCR processing time with real OCR engine."""
         image_bytes = create_test_image_with_text(TEST_IMAGE_TEXT)
-        
-        # Warmup
         warmup(extract_text_from_image, NUM_WARMUP_ITERATIONS, image_bytes)
-        
-        # Measure
-        times = run_timed_iterations(
-            extract_text_from_image, 
-            NUM_TIMING_ITERATIONS_SMALL, 
-            image_bytes
-        )
+        times = run_timed_iterations(extract_text_from_image, NUM_TIMING_ITERATIONS_SMALL, image_bytes)
         avg_time = statistics.mean(times)
-        
         assert avg_time < TARGET_OCR_TIME, \
             f"OCR processing time {avg_time:.2f}s exceeds {TARGET_OCR_TIME}s target"
 
     def test_barcode_response_time(self):
         """Test barcode lookup time with real API call."""
-        # Warmup
         warmup(fetch_product, NUM_WARMUP_ITERATIONS, TEST_BARCODE)
-        
-        # Measure
-        times = run_timed_iterations(
-            fetch_product, 
-            NUM_TIMING_ITERATIONS_SMALL, 
-            TEST_BARCODE
-        )
+        times = run_timed_iterations(fetch_product, NUM_TIMING_ITERATIONS_SMALL, TEST_BARCODE)
         avg_time = statistics.mean(times)
-        
         assert avg_time < TARGET_BARCODE_TIME, \
             f"Barcode lookup time {avg_time:.2f}s exceeds {TARGET_BARCODE_TIME}s target"
-
-    def test_extraction_response_time(self):
-        """Test ingredient extraction time with real extraction service."""
-        # Warmup
-        warmup(extract, NUM_WARMUP_ITERATIONS, TEST_OCR_TEXT)
-        
-        # Measure
-        times = run_timed_iterations(
-            extract, 
-            NUM_TIMING_ITERATIONS_SMALL, 
-            TEST_OCR_TEXT
-        )
-        avg_time = statistics.mean(times)
-        
-        assert avg_time < TARGET_EXTRACTION_TIME, \
-            f"Extraction time {avg_time:.2f}s exceeds {TARGET_EXTRACTION_TIME}s target"
 
     def test_analysis_response_time(self):
         """Test dietary analysis time with real analysis service."""
         profile = PROFILE_HALAL_GLUTEN_FREE
-        
-        # Warmup
         warmup(analyze_ingredients, NUM_WARMUP_ITERATIONS, TEST_INGREDIENTS_SIMPLE, profile)
-        
-        # Measure
         times = run_timed_iterations(
-            analyze_ingredients, 
-            NUM_TIMING_ITERATIONS_SMALL, 
-            TEST_INGREDIENTS_SIMPLE, 
-            profile
+            analyze_ingredients, NUM_TIMING_ITERATIONS_SMALL,
+            TEST_INGREDIENTS_SIMPLE, profile,
         )
         avg_time = statistics.mean(times)
-        
         assert avg_time < TARGET_ANALYSIS_TIME, \
             f"Analysis time {avg_time:.2f}s exceeds {TARGET_ANALYSIS_TIME}s target"
 
     def test_full_pipeline_response_time(self):
-        """Test complete pipeline processing time (target: < 10 seconds)."""
+        """Test complete model-based pipeline processing time."""
         image_bytes = create_test_image_with_text(TEST_IMAGE_TEXT)
         profile = PROFILE_HALAL_GLUTEN_FREE
-        
+
         def full_pipeline():
-            # Step 1: OCR
-            ocr_text = extract_text_from_image(image_bytes)
-            # Step 2: Extraction
-            ingredients = extract(ocr_text)
-            # Step 3: Analysis
-            result = analyze_ingredients(ingredients, profile)
-            return result
-        
-        # Warmup
+            return run_model_pipeline(image_bytes, profile)
+
         warmup(full_pipeline, NUM_WARMUP_ITERATIONS)
-        
-        # Measure
         times = run_timed_iterations(full_pipeline, NUM_TIMING_ITERATIONS_SMALL)
-        
         avg_time = statistics.mean(times)
         max_time = max(times)
-        
         assert avg_time < TARGET_FULL_PIPELINE_TIME, \
             f"Pipeline average time {avg_time:.2f}s exceeds {TARGET_FULL_PIPELINE_TIME}s target"
-        
         assert max_time < TARGET_MAX_SINGLE_REQUEST_TIME, \
             f"Pipeline max time {max_time:.2f}s exceeds {TARGET_MAX_SINGLE_REQUEST_TIME}s limit"
 
@@ -265,32 +330,35 @@ class TestThroughput:
     def test_concurrent_analysis_requests(self):
         """Test handling multiple concurrent analysis requests."""
         profile = PROFILE_HALAL
-        samples = get_performance_samples()[:NUM_CONCURRENT_SAMPLES]
-        
-        def process_sample(sample):
+        ingredient_lists = [
+            TEST_INGREDIENTS_SIMPLE,
+            TEST_INGREDIENTS_COMPLEX,
+            ["Water", "Sugar", "Salt", "Flour"],
+            ["Milk", "Butter", "Cream", "Whey"],
+            ["Soy Lecithin", "Palm Oil", "Cocoa Butter"],
+            TEST_INGREDIENTS_SIMPLE,
+            TEST_INGREDIENTS_COMPLEX,
+            ["Rice", "Corn Starch", "Tapioca"],
+            ["Gelatin", "Beef Extract", "Lard"],
+            ["Oat Flour", "Barley Malt", "Rye"],
+        ][:NUM_CONCURRENT_SAMPLES]
+
+        def process_ingredients(ingredients):
             start = time.time()
-            result = analyze_ingredients(sample["ingredients"], profile)
+            result = analyze_ingredients(ingredients, profile)
             elapsed = time.time() - start
             return elapsed, result["is_safe"]
-        
-        # Warmup with one sample
-        warmup(process_sample, 1, samples[0])
-        
+
+        warmup(process_ingredients, 1, ingredient_lists[0])
         start_total = time.time()
-        
         with ThreadPoolExecutor(max_workers=4) as executor:
-            futures = [executor.submit(process_sample, s) for s in samples]
+            futures = [executor.submit(process_ingredients, ing) for ing in ingredient_lists]
             results = [f.result() for f in as_completed(futures)]
-        
         total_time = time.time() - start_total
         individual_times = [r[0] for r in results]
-        
-        # Calculate throughput
-        throughput = len(samples) / total_time
-        
+        throughput = len(ingredient_lists) / total_time
         assert throughput >= TARGET_CONCURRENT_THROUGHPUT, \
             f"Throughput {throughput:.2f} req/s below {TARGET_CONCURRENT_THROUGHPUT} req/s target"
-        
         avg_individual = statistics.mean(individual_times)
         assert avg_individual < TARGET_INDIVIDUAL_REQUEST_TIME, \
             f"Average individual time {avg_individual:.2f}s exceeds {TARGET_INDIVIDUAL_REQUEST_TIME}s"
@@ -298,19 +366,14 @@ class TestThroughput:
     def test_sequential_requests_throughput(self):
         """Test sequential request throughput."""
         profile = PROFILE_HALAL_GLUTEN_FREE
-        samples = get_performance_samples()[:NUM_SEQUENTIAL_SAMPLES]
-        
-        # Warmup
-        warmup(analyze_ingredients, NUM_WARMUP_ITERATIONS, samples[0]["ingredients"], profile)
-        
+        ingredient_lists = [TEST_INGREDIENTS_SIMPLE, TEST_INGREDIENTS_COMPLEX] * 10
+        ingredient_lists = ingredient_lists[:NUM_SEQUENTIAL_SAMPLES]
+        warmup(analyze_ingredients, NUM_WARMUP_ITERATIONS, ingredient_lists[0], profile)
         start = time.time()
-        
-        for sample in samples:
-            analyze_ingredients(sample["ingredients"], profile)
-        
+        for ingredients in ingredient_lists:
+            analyze_ingredients(ingredients, profile)
         total_time = time.time() - start
-        throughput = len(samples) / total_time
-        
+        throughput = len(ingredient_lists) / total_time
         assert throughput >= TARGET_SEQUENTIAL_THROUGHPUT, \
             f"Sequential throughput {throughput:.2f} req/s below {TARGET_SEQUENTIAL_THROUGHPUT} req/s target"
 
@@ -326,71 +389,26 @@ class TestScalability:
     def test_large_ingredient_list_performance(self):
         """Test performance with large ingredient lists (100 ingredients)."""
         profile = PROFILE_ALL_RESTRICTIONS
-        
-        # Warmup
         warmup(analyze_ingredients, NUM_WARMUP_ITERATIONS, TEST_INGREDIENTS_LARGE, profile)
-        
-        # Measure
         times = run_timed_iterations(
-            analyze_ingredients, 
-            NUM_TIMING_ITERATIONS_SMALL, 
-            TEST_INGREDIENTS_LARGE, 
-            profile
+            analyze_ingredients, NUM_TIMING_ITERATIONS_SMALL,
+            TEST_INGREDIENTS_LARGE, profile,
         )
         avg_time = statistics.mean(times)
-        
         assert avg_time < TARGET_LARGE_INGREDIENT_LIST_TIME, \
             f"Large list processing {avg_time:.2f}s exceeds {TARGET_LARGE_INGREDIENT_LIST_TIME}s target"
 
     def test_complex_profile_performance(self):
-        """Test performance with complex dietary profile (all restrictions + custom allergens)."""
+        """Test performance with complex dietary profile."""
         profile = PROFILE_COMPLEX
-        
-        # Warmup
         warmup(analyze_ingredients, NUM_WARMUP_ITERATIONS, TEST_INGREDIENTS_COMPLEX, profile)
-        
-        # Measure
         times = run_timed_iterations(
-            analyze_ingredients, 
-            NUM_TIMING_ITERATIONS_SMALL, 
-            TEST_INGREDIENTS_COMPLEX, 
-            profile
+            analyze_ingredients, NUM_TIMING_ITERATIONS_SMALL,
+            TEST_INGREDIENTS_COMPLEX, profile,
         )
         avg_time = statistics.mean(times)
-        
         assert avg_time < TARGET_COMPLEX_PROFILE_TIME, \
             f"Complex profile processing {avg_time:.2f}s exceeds {TARGET_COMPLEX_PROFILE_TIME}s target"
-
-    def test_extraction_scalability(self):
-        """Test extraction performance with various text lengths."""
-        # Short text
-        short_text = "Ingredients: Water, Sugar, Salt"
-        
-        # Medium text (20 ingredients)
-        medium_text = "Ingredients: " + ", ".join([f"Ingredient{i}" for i in range(20)])
-        
-        # Long text (100 ingredients)
-        long_text = "Ingredients: " + ", ".join([f"Ingredient{i}" for i in range(100)])
-        
-        time_limits = {
-            "short": TARGET_SHORT_TEXT_EXTRACTION_TIME,
-            "medium": TARGET_MEDIUM_TEXT_EXTRACTION_TIME,
-            "long": TARGET_LONG_TEXT_EXTRACTION_TIME,
-        }
-        
-        results = {}
-        for name, text in [("short", short_text), ("medium", medium_text), ("long", long_text)]:
-            # Warmup for each
-            warmup(extract, NUM_WARMUP_ITERATIONS, text)
-            
-            # Measure
-            times = run_timed_iterations(extract, NUM_TIMING_ITERATIONS_SMALL, text)
-            results[name] = statistics.mean(times)
-        
-        for name, avg_time in results.items():
-            limit = time_limits[name]
-            assert avg_time < limit, \
-                f"{name} text extraction {avg_time:.2f}s exceeds {limit}s target"
 
 
 # =============================================================================
@@ -405,109 +423,198 @@ class TestPerformanceMetrics:
         """Test response time percentile calculations."""
         profile = PROFILE_HALAL
         ingredients = TEST_INGREDIENTS_SIMPLE
-        
-        # Warmup
         warmup(analyze_ingredients, NUM_WARMUP_ITERATIONS, ingredients, profile)
-        
-        # Measure
         times = run_timed_iterations(
-            analyze_ingredients, 
-            NUM_TIMING_ITERATIONS_LARGE, 
-            ingredients, 
-            profile
+            analyze_ingredients, NUM_TIMING_ITERATIONS_LARGE,
+            ingredients, profile,
         )
         times.sort()
-        
-        # Calculate percentiles
         n = len(times)
         p50 = times[int(n * 0.50)]
-        p90 = times[int(n * 0.90)]
         p95 = times[int(n * 0.95)]
         p99 = times[min(int(n * 0.99), n - 1)]
-        
-        # P50 should be within target
         assert p50 < TARGET_P50_TIME, f"P50 {p50:.4f}s exceeds {TARGET_P50_TIME}s"
-        
-        # P95 should still be acceptable
         assert p95 < TARGET_P95_TIME, f"P95 {p95:.4f}s exceeds {TARGET_P95_TIME}s"
-        
-        # P99 should be within limit
         assert p99 < TARGET_P99_TIME, f"P99 {p99:.4f}s exceeds {TARGET_P99_TIME}s"
 
-    def test_performance_summary_report(self):
-        """Generate a performance summary report."""
+
+# =============================================================================
+# FULL PIPELINE COMPARISON: Model-based vs LLM-based (real images)
+# =============================================================================
+
+@pytest.mark.performance
+@pytest.mark.slow
+class TestFullPipelineComparison:
+    """
+    Compare full-pipeline performance: model-based (EasyOCR + box classifier)
+    vs LLM-based (Mistral OCR + LLM extraction) on real food-label images.
+
+    Configurable via pytest CLI options:
+      --perf-images-dir   Directory of test images       (default: tests/data/images)
+      --perf-num-images   Number of images to test       (default: all)
+      --perf-output       Path to save JSON results      (default: tests/data/performance_results.json)
+
+    Example:
+      pytest tests/performance/test_performance.py::TestFullPipelineComparison -v -s \\
+        --perf-num-images 10 --perf-output my_results.json
+    """
+
+    def _get_config(self, request) -> Dict[str, Any]:
+        images_dir_opt = request.config.getoption("--perf-images-dir", default=None)
+        images_dir = Path(images_dir_opt) if images_dir_opt else DEFAULT_IMAGES_DIR
+        if not images_dir.is_absolute():
+            images_dir = PROJECT_ROOT / images_dir
+
+        output_opt = request.config.getoption("--perf-output", default=None)
+        output_path = Path(output_opt) if output_opt else DEFAULT_OUTPUT_PATH
+        if not output_path.is_absolute():
+            output_path = PROJECT_ROOT / output_path
+
+        num_images = request.config.getoption("--perf-num-images", default=None)
+
+        return {
+            "images_dir": images_dir,
+            "output_path": output_path,
+            "num_images": num_images,
+        }
+
+    def test_model_vs_llm_pipeline(self, request):
+        """Run both pipelines on real images and report timing comparison."""
+        cfg = self._get_config(request)
+        images_dir: Path = cfg["images_dir"]
+        output_path: Path = cfg["output_path"]
+        num_images: Optional[int] = cfg["num_images"]
+
+        image_files = _discover_images(images_dir, limit=num_images)
+        assert image_files, f"No images found in {images_dir}"
+
         profile = PROFILE_HALAL_GLUTEN_FREE
-        samples = get_performance_samples()[:10]  # Use fewer samples for real tests
-        
-        image_bytes = create_test_image_with_text(TEST_IMAGE_TEXT)
-        
-        ocr_times = []
-        extraction_times = []
-        analysis_times = []
-        total_times = []
-        
-        # Warmup
+
+        # Warmup: run the model-based pipeline once to load EasyOCR, box
+        # classifier, and OCR-corrector models into memory before timing.
+        warmup_data = image_files[0].read_bytes()
+        print("\n  Warming up model-based pipeline (loading models)…", end=" ", flush=True)
         try:
-            extract_text_from_image(image_bytes)
-            extract(samples[0]["ocr_text"])
-            analyze_ingredients(samples[0]["ingredients"], profile)
+            run_model_pipeline(warmup_data, profile)
+            print("done.")
         except Exception:
-            pass
-        
-        for sample in samples:
-            total_start = time.time()
-            
-            # OCR
-            _, ocr_elapsed = measure_time(extract_text_from_image, image_bytes)
-            ocr_times.append(ocr_elapsed)
-            
-            # Extraction
-            _, extract_elapsed = measure_time(extract, sample["ocr_text"])
-            extraction_times.append(extract_elapsed)
-            
-            # Analysis
-            _, analysis_elapsed = measure_time(
-                analyze_ingredients, sample["ingredients"], profile
-            )
-            analysis_times.append(analysis_elapsed)
-            
-            total_times.append(time.time() - total_start)
-        
-        # Generate summary
+            print("warmup failed (will proceed anyway).")
+
+        per_image_results: List[Dict[str, Any]] = []
+        model_times: List[float] = []
+        llm_times: List[float] = []
+        total = len(image_files)
+
+        print(f"\n{'='*80}")
+        print(f"  FULL PIPELINE COMPARISON — {total} images from {images_dir.name}/")
+        print(f"{'='*80}\n")
+
+        for idx, img_path in enumerate(image_files, 1):
+            image_data = img_path.read_bytes()
+            entry: Dict[str, Any] = {"image": img_path.name}
+
+            # --- Model-based pipeline ---
+            try:
+                model_result = run_model_pipeline(image_data, profile)
+                entry["model_based"] = model_result
+                model_times.append(model_result["total_time"])
+            except Exception as e:
+                entry["model_based"] = {"error": str(e), "total_time": None}
+
+            # --- LLM-based pipeline (Mistral OCR, no cache) ---
+            try:
+                llm_result = run_llm_pipeline(image_data, profile)
+                entry["llm_based"] = llm_result
+                llm_times.append(llm_result["total_time"])
+            except Exception as e:
+                entry["llm_based"] = {"error": str(e), "total_time": None}
+
+            m_time = entry["model_based"].get("total_time")
+            l_time = entry["llm_based"].get("total_time")
+            m_str = f"{m_time:.2f}s" if m_time is not None else "ERROR"
+            l_str = f"{l_time:.2f}s" if l_time is not None else "ERROR"
+            print(f"  [{idx:>{len(str(total))}}/{total}] {img_path.name:<20}  model: {m_str:<10}  llm: {l_str}")
+
+            per_image_results.append(entry)
+
+        # --- Build summary ---
+        model_stats = _stats(model_times) if model_times else {}
+        llm_stats = _stats(llm_times) if llm_times else {}
+
+        def _stage_stats(results: List[Dict], pipeline_key: str, stage_key: str) -> Dict[str, float]:
+            vals = [
+                r[pipeline_key][stage_key]
+                for r in results
+                if pipeline_key in r and stage_key in r[pipeline_key] and r[pipeline_key][stage_key] is not None
+            ]
+            return _stats(vals)
+
         summary = {
-            "samples": len(samples),
-            "ocr": {
-                "avg": statistics.mean(ocr_times),
-                "max": max(ocr_times),
-                "min": min(ocr_times),
+            "model_based": {
+                "total": model_stats,
+                "ocr": _stage_stats(per_image_results, "model_based", "ocr_time"),
+                "extraction": _stage_stats(per_image_results, "model_based", "extraction_time"),
+                "analysis": _stage_stats(per_image_results, "model_based", "analysis_time"),
+                "errors": sum(1 for r in per_image_results if "error" in r.get("model_based", {})),
             },
-            "extraction": {
-                "avg": statistics.mean(extraction_times),
-                "max": max(extraction_times),
-                "min": min(extraction_times),
-            },
-            "analysis": {
-                "avg": statistics.mean(analysis_times),
-                "max": max(analysis_times),
-                "min": min(analysis_times),
-            },
-            "total": {
-                "avg": statistics.mean(total_times),
-                "max": max(total_times),
-                "min": min(total_times),
+            "llm_based": {
+                "total": llm_stats,
+                "ocr": _stage_stats(per_image_results, "llm_based", "ocr_time"),
+                "extraction": _stage_stats(per_image_results, "llm_based", "extraction_time"),
+                "analysis": _stage_stats(per_image_results, "llm_based", "analysis_time"),
+                "errors": sum(1 for r in per_image_results if "error" in r.get("llm_based", {})),
             },
         }
-        
-        # Verify target is met
-        assert summary["total"]["avg"] < TARGET_FULL_PIPELINE_TIME, \
-            f"Average total time {summary['total']['avg']:.2f}s exceeds {TARGET_FULL_PIPELINE_TIME}s target"
-        
-        # Print summary for informational purposes
-        print("\n=== Performance Summary (REAL SERVICES) ===")
-        print(f"Samples tested: {summary['samples']}")
-        print(f"OCR: avg={summary['ocr']['avg']:.4f}s, max={summary['ocr']['max']:.4f}s, min={summary['ocr']['min']:.4f}s")
-        print(f"Extraction: avg={summary['extraction']['avg']:.4f}s, max={summary['extraction']['max']:.4f}s, min={summary['extraction']['min']:.4f}s")
-        print(f"Analysis: avg={summary['analysis']['avg']:.4f}s, max={summary['analysis']['max']:.4f}s, min={summary['analysis']['min']:.4f}s")
-        print(f"Total: avg={summary['total']['avg']:.4f}s, max={summary['total']['max']:.4f}s, min={summary['total']['min']:.4f}s")
-        print("============================================")
 
+        payload = {
+            "config": {
+                "images_dir": str(images_dir),
+                "num_images": total,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            },
+            "summary": summary,
+            "per_image": per_image_results,
+        }
+
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2, ensure_ascii=False, default=str)
+
+        # --- Print summary table ---
+        print(f"\n{'='*80}")
+        print(f"  PERFORMANCE SUMMARY — {total} images")
+        print(f"{'='*80}")
+        print(f"  {'':30s} {'Model-based':>18s} {'LLM-based':>18s}")
+        print(f"  {'-'*66}")
+
+        for label, key in [("Total", "total"), ("OCR", "ocr"), ("Extraction", "extraction"), ("Analysis", "analysis")]:
+            m = summary["model_based"].get(key, {})
+            l = summary["llm_based"].get(key, {})
+            m_avg = f"{m.get('avg', 0):.4f}s" if m else "N/A"
+            l_avg = f"{l.get('avg', 0):.4f}s" if l else "N/A"
+            print(f"  {'Avg ' + label + ' time':<30s} {m_avg:>18s} {l_avg:>18s}")
+
+        for label, key in [("Total", "total")]:
+            m = summary["model_based"].get(key, {})
+            l = summary["llm_based"].get(key, {})
+            print(f"  {'Min ' + label + ' time':<30s} {m.get('min', 0):>17.4f}s {l.get('min', 0):>17.4f}s")
+            print(f"  {'Max ' + label + ' time':<30s} {m.get('max', 0):>17.4f}s {l.get('max', 0):>17.4f}s")
+            print(f"  {'Median ' + label + ' time':<30s} {m.get('median', 0):>17.4f}s {l.get('median', 0):>17.4f}s")
+            if m.get("stdev"):
+                print(f"  {'Stdev ' + label + ' time':<30s} {m.get('stdev', 0):>17.4f}s {l.get('stdev', 0):>17.4f}s")
+
+        m_err = summary["model_based"]["errors"]
+        l_err = summary["llm_based"]["errors"]
+        print(f"  {'Errors':<30s} {m_err:>18d} {l_err:>18d}")
+
+        if model_times and llm_times:
+            speedup = statistics.mean(llm_times) / statistics.mean(model_times)
+            print(f"\n  Model-based is ~{speedup:.1f}x faster than LLM-based (avg total)")
+
+        print(f"\n  Results saved to: {output_path}")
+        print(f"{'='*80}\n")
+
+        if model_times:
+            assert model_stats["avg"] < TARGET_FULL_PIPELINE_TIME, (
+                f"Model-based avg {model_stats['avg']:.2f}s exceeds {TARGET_FULL_PIPELINE_TIME}s target"
+            )

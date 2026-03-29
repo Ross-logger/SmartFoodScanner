@@ -403,6 +403,26 @@ def cleanup_uploads():
 # Markers Configuration
 # =============================================================================
 
+def pytest_addoption(parser):
+    """Register custom command-line options for performance tests."""
+    parser.addoption(
+        "--perf-output",
+        default=None,
+        help="Path to save pipeline performance results JSON (default: tests/data/performance_results.json)",
+    )
+    parser.addoption(
+        "--perf-num-images",
+        type=int,
+        default=None,
+        help="Number of images to test (default: all images in the directory)",
+    )
+    parser.addoption(
+        "--perf-images-dir",
+        default=None,
+        help="Directory of test images (default: tests/data/images)",
+    )
+
+
 def pytest_configure(config):
     """Configure custom pytest markers."""
     config.addinivalue_line("markers", "slow: marks tests as slow")
