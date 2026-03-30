@@ -14,11 +14,6 @@ from unittest.mock import patch, MagicMock
 import io
 from PIL import Image
 
-from backend.services.ocr.service import (
-    extract_text_from_image,
-    filter_ocr_results_by_confidence,
-    get_ocr_reader,
-)
 from tests.utils.test_helpers import (
     create_test_image,
     create_test_image_with_text,
@@ -26,6 +21,25 @@ from tests.utils.test_helpers import (
     create_partial_image,
 )
 from tests.utils.metrics import calculate_ocr_accuracy, calculate_word_accuracy
+
+
+def _ocr_service():
+    """Lazy import so collecting tests does not reload NumPy before other unit tests."""
+    from backend.services.ocr import service as svc
+
+    return svc
+
+
+def extract_text_from_image(*args, **kwargs):
+    return _ocr_service().extract_text_from_image(*args, **kwargs)
+
+
+def filter_ocr_results_by_confidence(*args, **kwargs):
+    return _ocr_service().filter_ocr_results_by_confidence(*args, **kwargs)
+
+
+def get_ocr_reader(*args, **kwargs):
+    return _ocr_service().get_ocr_reader(*args, **kwargs)
 
 
 class TestFilterOCRResultsByConfidence:

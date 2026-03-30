@@ -18,6 +18,7 @@ from backend.services.ingredients_extraction.llm_extraction import (
     build_extraction_prompt,
     _validate_extraction_result,
 )
+import backend.services.ingredients_extraction.llm_extraction as llm_mod
 from tests.utils.mock_llm import MockLLMService, MockLLMProvider
 from tests.utils.metrics import calculate_precision, calculate_recall
 
@@ -177,6 +178,12 @@ class TestLLMIngredientExtractor:
         validated = _validate_extraction_result(invalid_result)
         
         assert validated is None
+
+    def test_validate_extraction_result_ingredients_not_list(self):
+        """Non-list ingredients becomes empty list after validation."""
+        out = _validate_extraction_result({"ingredients": "not-a-list"})
+        assert out is not None
+        assert out["ingredients"] == []
     
     def test_validate_extraction_result_cleans_ingredients(self):
         """Test that validation cleans ingredient list."""
@@ -217,9 +224,57 @@ class TestLLMIngredientExtractor:
         
         assert result["success"] == True
 
+    def test_extract_llm_call_returns_none(self):
+        svc = MagicMock()
+        svc.is_available = True
+        svc.call.return_value = None
+        extractor = LLMIngredientExtractor(llm_service=svc)
+        result = extractor.extract("Ingredients: water")
+        assert result["success"] is False
+        assert "Failed to extract" in result["message"]
+
+    def test_extract_invalid_json_shape_after_llm(self):
+        svc = MagicMock()
+        svc.is_available = True
+        svc.call.return_value = {"_provider": "test", "not_ingredients": []}
+        extractor = LLMIngredientExtractor(llm_service=svc)
+        result = extractor.extract("Ingredients: water")
+        assert result["success"] is False
+        assert "Invalid response format" in result["message"]
+
+
+class TestLLMExtractorFromSettings:
+    def test_from_settings_passes_model_override(self):
+        settings = MagicMock()
+        settings.LLM_EXTRACTOR_MODEL = "custom-extract-model"
+        with patch.object(llm_mod, "LLMService") as LMS:
+            LMS.from_settings.return_value = MagicMock()
+            LLMIngredientExtractor.from_settings(settings)
+            LMS.from_settings.assert_called_once_with(settings, "custom-extract-model")
+
+    def test_from_settings_no_model_override_when_empty(self):
+        settings = MagicMock()
+        settings.LLM_EXTRACTOR_MODEL = ""
+        with patch.object(llm_mod, "LLMService") as LMS:
+            LMS.from_settings.return_value = MagicMock()
+            LLMIngredientExtractor.from_settings(settings)
+            LMS.from_settings.assert_called_once_with(settings, None)
+
 
 class TestExtractionWithLLMFunction:
     """Tests for the backward-compatible extraction function."""
+
+    def test_extract_ingredients_with_llm_logs_and_delegates(self):
+        with patch(
+            "backend.services.ingredients_extraction.llm_extraction.LLMIngredientExtractor"
+        ) as MockExtractor:
+            inst = MagicMock()
+            inst.extract.return_value = {"success": True, "ingredients": ["A"]}
+            MockExtractor.from_settings.return_value = inst
+            with patch("backend.services.ingredients_extraction.llm_extraction.logger"):
+                out = extract_ingredients_with_llm("Ingredients: A")
+            assert out["success"] is True
+            inst.extract.assert_called_once()
     
     def test_extract_ingredients_with_llm_basic(self):
         """Test the main extraction function."""

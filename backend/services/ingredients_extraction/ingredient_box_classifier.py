@@ -26,6 +26,21 @@ from backend import settings
 logger = logging.getLogger(__name__)
 
 
+def _df_select_rows(df: pd.DataFrame, mask: pd.Series) -> pd.DataFrame:
+    """
+    Boolean row slice without index ``take`` (coverage + joblib can reload NumPy
+    and break pandas boolean/integer ``take`` on RangeIndex in the same process).
+    """
+    parts: List[pd.DataFrame] = []
+    for i in range(len(df)):
+        if bool(mask.iloc[i]):
+            parts.append(pd.DataFrame([df.iloc[i].to_dict()]))
+    if not parts:
+        return pd.DataFrame(columns=list(df.columns))
+    out = pd.concat(parts, ignore_index=True)
+    return out
+
+
 # ---------------------------------------------------------------------------
 # Lazy singleton for the model bundle
 # ---------------------------------------------------------------------------
@@ -400,7 +415,7 @@ def prepare_boxes(df_image: pd.DataFrame) -> pd.DataFrame:
 
 
 def find_header_box(df: pd.DataFrame) -> Optional[pd.Series]:
-    headers = df[df["text"].apply(is_header)].copy()
+    headers = _df_select_rows(df, df["text"].apply(is_header))
     if len(headers) == 0:
         return None
     headers = headers.sort_values("y_center")
@@ -412,19 +427,20 @@ def filter_positive_boxes(
     threshold: float = 0.4,
     strong_keep_threshold: float = 0.8,
 ) -> pd.DataFrame:
-    pos = df[df["pred_prob"] >= threshold].copy()
+    pos = _df_select_rows(df, df["pred_prob"] >= threshold)
     if len(pos) == 0:
         return pos.reset_index(drop=True)
 
-    pos = pos[~pos["text"].apply(is_header)].copy()
-    pos = pos[~(
-        pos["text"].apply(looks_like_junk_fragment)
-        & (pos["pred_prob"] < strong_keep_threshold)
-    )]
-    pos = pos[~(
-        pos["text"].apply(has_bad_hint)
-        & (pos["pred_prob"] < 0.92)
-    )]
+    pos = _df_select_rows(pos, ~pos["text"].apply(is_header))
+    pos = _df_select_rows(
+        pos,
+        ~(pos["text"].apply(looks_like_junk_fragment)
+          & (pos["pred_prob"] < strong_keep_threshold)),
+    )
+    pos = _df_select_rows(
+        pos,
+        ~(pos["text"].apply(has_bad_hint) & (pos["pred_prob"] < 0.92)),
+    )
     return pos.reset_index(drop=True)
 
 
@@ -435,11 +451,10 @@ def apply_header_constraint(
 ) -> pd.DataFrame:
     if header_row is None or len(pos) == 0:
         return pos
-    return (
-        pos[pos["y_center"] >= header_row["y_center"] - tolerance_above]
-        .copy()
-        .reset_index(drop=True)
-    )
+    cutoff = float(header_row["y_center"]) - tolerance_above
+    return _df_select_rows(
+        pos, pos["y_center"] >= cutoff
+    ).reset_index(drop=True)
 
 
 def remove_isolated_boxes(
@@ -460,7 +475,13 @@ def remove_isolated_boxes(
             keep.append(True)
         else:
             keep.append(False)
-    return pos[np.array(keep)].copy().reset_index(drop=True)
+    parts: List[pd.DataFrame] = []
+    for i in range(len(pos)):
+        if keep[i]:
+            parts.append(pd.DataFrame([pos.iloc[i].to_dict()]))
+    if not parts:
+        return pd.DataFrame(columns=list(pos.columns))
+    return pd.concat(parts, ignore_index=True).reset_index(drop=True)
 
 
 # ---------------------------------------------------------------------------
@@ -519,8 +540,8 @@ def score_cluster(
     score += min(avg_text_len / 50.0, 0.6)
 
     if header_row is not None:
-        cluster_top = cluster["y1"].min()
-        dist = max(0.0, cluster_top - header_row["y2"])
+        cluster_top = float(np.min(cluster["y1"].to_numpy(dtype=np.float64)))
+        dist = max(0.0, cluster_top - float(header_row["y2"]))
         score -= 0.002 * dist
     return float(score)
 
@@ -581,7 +602,13 @@ def cleanup_row_boxes(row_df: pd.DataFrame) -> pd.DataFrame:
             keep.append(False)
             continue
         keep.append(True)
-    return row_df[np.array(keep)].copy().reset_index(drop=True)
+    parts: List[pd.DataFrame] = []
+    for i in range(len(row_df)):
+        if keep[i]:
+            parts.append(pd.DataFrame([row_df.iloc[i].to_dict()]))
+    if not parts:
+        return pd.DataFrame(columns=list(row_df.columns))
+    return pd.concat(parts, ignore_index=True).reset_index(drop=True)
 
 
 def smart_join_row_texts(texts: List[str]) -> str:

@@ -104,12 +104,6 @@ The project targets the following deliverables and performance targets:
 
 The primary deliverable is a functioning web application through which users can scan ingredient labels or barcodes and receive a dietary compliance assessment against their personalised requirements.
 
-### 1.5 Creativity and Original Contribution
-
-The creative core of the project is a single application that supports both image-based scanning of ingredient lists and barcode lookup via Open Food Facts, then routes both inputs through one dietary-compliance pipeline so users receive consistent, personalised safety assessments for multiple restriction types (for example halal, gluten-free, vegetarian, and vegan) from either source. Optional use of large language models is reserved for harder cases at two stages: users may choose a cloud OCR and LLM-based extraction path for noisy or structurally complex labels, and the analysis layer can employ an LLM to reason about hidden ingredients and cross-contamination when rule-based matching is insufficient, with automatic fallback when cloud services are unavailable.
-
-The resulting software is an integrated system—a Vue.js Progressive Web Application, a FastAPI backend, and PostgreSQL on Supabase (with SQLite for testing)—that combines EasyOCR, a custom-trained ingredient-box classifier, spatial text merging, a dictionary-constrained corrector built on SymSpell and RapidFuzz, Open Food Facts, and multiple LLM providers behind a unified interface. Tiered extraction gives a fast, largely local default pipeline and an optional LLM-assisted alternative (plus fallback from the local pipeline when extraction fails), while tiered analysis pairs a rule-based engine with an optional LLM mode. Full scan history and persistent user dietary profiles complete the design, distinguishing the work from barcode-only or single-diet tools described in the literature.
-
 ---
 
 ## 2. Literature Review
@@ -278,15 +272,7 @@ The ingredients text retrieved from the database is parsed using an algorithm th
 
 #### 4.3.3 Dataset Construction and Vocabulary Expansion
 
-A custom dataset was constructed to train the ingredient box classifier described in Section 4.3.5. The dataset comprises one hundred food-label images drawn from two sources: photographs taken directly of product packaging in a retail environment and images manually selected from the Ingredients Image from Food Label dataset published on Kaggle (Shensivam, n.d.). Each image was processed through EasyOCR to obtain per-box text detections with bounding-box coordinates, confidence scores, and text content. Every box was manually labelled as ingredient (1) or non-ingredient (0) based on whether its text content formed part of the product's ingredient list.
-
-To increase training data volume and diversity, the labelled dataset was augmented to one thousand samples through techniques including synthetic variation of box coordinates and the addition of noise to confidence scores. The synthetic samples also incorporated the most frequent ingredient text strings extracted from the Open Food Facts ingredient-detection dataset (Bournhonesque, 2023), which provided additional coverage of ingredient naming conventions across multiple languages and product categories.
-
-In parallel with dataset construction, the ingredient vocabulary used by the OCR corrector was expanded substantially. The top most frequent ingredients were sourced from an analysis of 1.97 million food products conducted by Ultra Processed Food List (2026), and additional terms were drawn from the Open Food Facts ingredient-detection dataset (Bournhonesque, 2023) to improve coverage of ingredients common in European and global markets. Both sources were supplemented with E-number codes, their associated chemical names, and common regional spelling variants. The resulting vocabulary contains approximately 1,900 terms organised into four tiers: very common ingredients (assigned the highest correction priority), general food ingredients, E-number additives, and ingredient aliases that map OCR-typical misspellings and regional variants to their canonical forms.
-
-**Box-level training data.** The classifier is trained from tabular exports of EasyOCR output with the manual labels described above. Each row corresponds to one text detection box. Typical fields are: an image identifier; a box index within that image; the recognised text string; the detector confidence; axis-aligned bounding-box coordinates (for example top-left and bottom-right in pixels); and the binary ingredient versus non-ingredient label.
-
-**Ground truth for extraction metrics.** Ingredient reference lists used to score extraction accuracy are stored as structured records (for example JSON), each linking an image identifier to an array of true ingredient strings. Two conventions are used. For the **model-based pipeline**, strings are kept in **flat atomic** form: compound ingredients are split into separate entries so that scoring matches the pipeline’s comma-separated output. For the **LLM-based pipeline**, a parallel reference uses **nested wording** where appropriate (for example a single entry that preserves a full additive phrase), which aligns with the LLM’s instructed output shape and with merge-level scoring described in Chapter 5. The headline accuracy figures in Chapter 5 are means over **one hundred** test images; the distinction between flat and nested reference lists is what makes the two pipelines comparable yet fairly scored under their respective output formats.
+ид
 
 **Ancillary test data.** Automated tests may rely on cached OCR transcripts, API snapshots, and timing logs so that runs are reproducible without repeated live calls. These are supporting artefacts rather than part of the manually labelled image and box corpus described in the preceding paragraphs.
 
