@@ -2,15 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Smart Ingredients Scanner — A0 Exhibition Poster</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet" />
   <!--
-    Print: Chrome/Edge → Print → Destination "Save as PDF" → Paper size A0, Margins None or Minimum,
-    Background graphics ON. Logo: docs/poster-assets/CS_Logo_Eng_CMYK.png (Department of Computer Science, CityU).
-    Raster export at 300 dpi: ~9933 × 14043 px for 841 × 1189 mm (use browser zoom or external tool if needed).
+    ISO A0 portrait: 841 mm × 1189 mm (fixed .poster box). Print: Chrome/Edge → Save as PDF → A0, margins none/minimum, background on.
+    Logo: docs/poster-assets/CS_Logo_Eng_CMYK.png
   -->
   <style>
     :root {
@@ -29,7 +27,7 @@
     }
 
     @page {
-      size: 841mm 1189mm;
+      size: A0 portrait;
       margin: 0;
     }
 
@@ -41,12 +39,21 @@
       margin: 0;
       padding: 0;
       background: #ccc;
+      width: 841mm;
+      max-width: 841mm;
+      min-width: 841mm;
+      overflow-x: hidden;
     }
 
+    /* Exact ISO A0 portrait; padding is inside this box (border-box) */
     .poster {
       width: 841mm;
+      max-width: 841mm;
+      min-width: 841mm;
+      height: 1189mm;
       min-height: 1189mm;
-      margin: 0 auto;
+      max-height: 1189mm;
+      margin: 0;
       background: var(--bg);
       font-family: "Open Sans", "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
       color: var(--ink);
@@ -75,8 +82,8 @@
     /* —— Header —— */
     .banner {
       display: grid;
-      grid-template-columns: 52mm 1fr;
-      gap: 6mm;
+      grid-template-columns: 72mm 1fr;
+      gap: 5mm;
       align-items: center;
       margin-bottom: 5mm;
       padding-bottom: 4mm;
@@ -84,7 +91,8 @@
     }
 
     .logo-wrap {
-      max-width: 52mm;
+      width: 72mm;
+      max-width: 72mm;
       display: flex;
       align-items: center;
       justify-content: flex-start;
@@ -93,7 +101,7 @@
     .logo-wrap img {
       width: 100%;
       height: auto;
-      max-height: 26mm;
+      max-height: 36mm;
       object-fit: contain;
       object-position: left center;
       display: block;
@@ -481,9 +489,13 @@
     @media print {
       html, body {
         background: #fff;
+        width: 841mm;
+        max-width: 841mm;
+        min-width: 841mm;
       }
       .poster {
         box-shadow: none;
+        margin: 0;
       }
     }
   </style>
