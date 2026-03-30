@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet" />
   <!--
     Print: Chrome/Edge → Print → Destination "Save as PDF" → Paper size A0, Margins None or Minimum,
-    Background graphics ON. Replace .logo-slot with official CityU Department of Computing logo (PNG/SVG).
+    Background graphics ON. Logo: docs/poster-assets/CS_Logo_Eng_CMYK.png (Department of Computer Science, CityU).
     Raster export at 300 dpi: ~9933 × 14043 px for 841 × 1189 mm (use browser zoom or external tool if needed).
   -->
   <style>
@@ -83,31 +83,20 @@
       border-bottom: 0.5mm solid rgba(15, 52, 96, 0.15);
     }
 
-    .logo-slot {
-      width: 48mm;
-      min-height: 22mm;
-      border: 0.35mm dashed rgba(15, 52, 96, 0.25);
-      border-radius: 2mm;
+    .logo-wrap {
+      max-width: 52mm;
       display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 2mm 2.5mm;
-      background: rgba(255, 255, 255, 0.85);
+      align-items: center;
+      justify-content: flex-start;
     }
 
-    .logo-slot strong {
-      font-size: 6.5pt;
-      line-height: 1.15;
-      color: var(--blue);
-      font-weight: 800;
-      letter-spacing: 0.02em;
-    }
-
-    .logo-slot span {
-      font-size: 5.2pt;
-      color: var(--muted);
-      margin-top: 1mm;
-      line-height: 1.2;
+    .logo-wrap img {
+      width: 100%;
+      height: auto;
+      max-height: 26mm;
+      object-fit: contain;
+      object-position: left center;
+      display: block;
     }
 
     .banner-center {
@@ -502,9 +491,11 @@
 <body>
   <div class="poster">
     <header class="banner">
-      <div class="logo-slot" aria-label="Official logo placeholder">
-        <strong>City University<br />of Hong Kong</strong>
-        <span>Department of Computing<br /><em>Insert official logo image here</em></span>
+      <div class="logo-wrap">
+        <img
+          src="poster-assets/CS_Logo_Eng_CMYK.png"
+          alt="Department of Computer Science, City University of Hong Kong"
+        />
       </div>
       <div class="banner-center">
         <h1 class="title-main">Smart Ingredients Scanner</h1>
@@ -791,7 +782,7 @@
     </div>
 
     <footer class="footer">
-      Department of Computing, City University of Hong Kong · Academic Year 2025/2026 · 25CS120
+      Department of Computer Science, City University of Hong Kong · Academic Year 2025/2026 · 25CS120
     </footer>
   </div>
 </body>

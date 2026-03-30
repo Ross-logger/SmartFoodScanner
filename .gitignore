@@ -24,6 +24,9 @@ uploads/
 *.jpg
 *.png
 *.jpeg
+# Official poster asset (exception to *.png)
+!docs/poster-assets/
+!docs/poster-assets/*.png
 
 # Database
 *.db
