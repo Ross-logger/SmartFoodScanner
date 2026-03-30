@@ -77,7 +77,7 @@ OCR_PREPROCESS_MAX_LONG_EDGE = int(os.getenv("OCR_PREPROCESS_MAX_LONG_EDGE", "24
 EASYOCR_USE_GPU = True
 
 # Mistral OCR — cloud-based OCR via the Mistral AI API (mistral-ocr-latest).
-# Per-user toggle lives in DietaryProfile.use_mistral_ocr.
+# Enabled together with LLM ingredient extraction when DietaryProfile.use_llm is true.
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY") or None
 MISTRAL_OCR_MODEL = os.getenv("MISTRAL_OCR_MODEL", "mistral-ocr-latest")
 # Mistral is fronted by Cloudflare; 502/520 often mean origin timeout or transient failure.

@@ -56,8 +56,7 @@ class DietaryProfileCreate(BaseModel):
     dairy_free: bool = False
     allergens: List[str] = []
     custom_restrictions: List[str] = []
-    use_llm_ingredient_extractor: bool = False
-    use_mistral_ocr: bool = False
+    use_llm: bool = False
 
     class Config:
         json_schema_extra = {
@@ -70,8 +69,7 @@ class DietaryProfileCreate(BaseModel):
                 "dairy_free": False,
                 "allergens": [],
                 "custom_restrictions": [],
-                "use_llm_ingredient_extractor": False,
-                "use_mistral_ocr": False,
+                "use_llm": False,
             }
         }
 
@@ -85,8 +83,7 @@ class DietaryProfileUpdate(BaseModel):
     dairy_free: Optional[bool] = None
     allergens: Optional[List[str]] = None
     custom_restrictions: Optional[List[str]] = None
-    use_llm_ingredient_extractor: Optional[bool] = None
-    use_mistral_ocr: Optional[bool] = None
+    use_llm: Optional[bool] = None
 
     class Config:
         json_schema_extra = {
@@ -99,8 +96,7 @@ class DietaryProfileUpdate(BaseModel):
                 "dairy_free": False,
                 "allergens": [],
                 "custom_restrictions": [],
-                "use_llm_ingredient_extractor": False,
-                "use_mistral_ocr": False,
+                "use_llm": False,
             }
         }
 
@@ -116,8 +112,7 @@ class DietaryProfileResponse(BaseModel):
     dairy_free: bool
     allergens: List[str]
     custom_restrictions: List[str]
-    use_llm_ingredient_extractor: bool
-    use_mistral_ocr: bool
+    use_llm: bool
     created_at: datetime
     updated_at: Optional[datetime]
     

@@ -74,13 +74,13 @@ def scan_ocr(
         DietaryProfile.user_id == current_user.id
     ).first()
 
-    use_mistral_ocr = bool(dietary_profile and dietary_profile.use_mistral_ocr)
+    use_llm = bool(dietary_profile and dietary_profile.use_llm)
 
     # Extract text using OCR (EasyOCR yields per-line confidences for SymSpell skip)
     try:
-        ocr_result = extract_ocr_from_image(image_data, use_mistral_ocr=use_mistral_ocr)
+        ocr_result = extract_ocr_from_image(image_data, use_mistral_ocr=use_llm)
         ocr_text = ocr_result.text
-        ocr_engine = "Mistral OCR" if use_mistral_ocr else "EasyOCR"
+        ocr_engine = "Mistral OCR" if use_llm else "EasyOCR"
         print(f"OCR Text ({ocr_engine}): ", ocr_text)
     except Exception as e:
         raise HTTPException(
@@ -100,14 +100,14 @@ def scan_ocr(
         print(f"{label} (LLM fallback also failed)")
         return []
 
-    if dietary_profile and dietary_profile.use_llm_ingredient_extractor:
+    if dietary_profile and dietary_profile.use_llm:
         # --- LLM extraction ---
         llm_result = extract_ingredients_with_llm(ocr_text)
         if llm_result["success"] and llm_result["ingredients"]:
             ingredients = _normalize_llm_ingredients(llm_result["ingredients"])
             print(f"LLM Extracted Ingredients: {ingredients}")
 
-    elif ocr_result.easyocr_raw_results and not use_mistral_ocr:
+    elif ocr_result.easyocr_raw_results and not use_llm:
         # --- Box classifier extraction (default when LLM is off) ---
         try:
             from backend.services.ingredients_extraction.ingredient_box_classifier import classify_boxes, extract_ingredients_from_boxes
@@ -137,8 +137,8 @@ def scan_ocr(
             ingredients = _llm_fallback("Box classifier error")
 
     else:
-        # --- Mistral OCR path: no EasyOCR boxes available ---
-        ingredients = _llm_fallback("Mistral OCR path – no box classifier")
+        # --- No EasyOCR boxes (e.g. Mistral path or empty OCR) ---
+        ingredients = _llm_fallback("No EasyOCR boxes – LLM fallback")
 
     # Analyze ingredients
     analysis = analyze_ingredients(ingredients, dietary_profile)

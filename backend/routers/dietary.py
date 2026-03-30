@@ -34,17 +34,14 @@ def get_dietary_profile(
             vegan=False,
             nut_free=False,
             dairy_free=False,
-            use_llm_ingredient_extractor=False,
-            use_mistral_ocr=False,
+            use_llm=False,
         )
         db.add(profile)
         db.commit()
         db.refresh(profile)
 
-    if profile.use_llm_ingredient_extractor is None:
-        profile.use_llm_ingredient_extractor = False
-    if profile.use_mistral_ocr is None:
-        profile.use_mistral_ocr = False
+    if profile.use_llm is None:
+        profile.use_llm = False
 
     return profile
 
