@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Ingredients Scanner — A0 Exhibition Poster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet" />
+  <!--
+    Print: Chrome/Edge → Print → Destination "Save as PDF" → Paper size A0, Margins None or Minimum,
+    Background graphics ON. Replace .logo-slot with official CityU Department of Computing logo (PNG/SVG).
+    Raster export at 300 dpi: ~9933 × 14043 px for 841 × 1189 mm (use browser zoom or external tool if needed).
+  -->
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --bg-card: #ffffff;
+      --ink: #1c1c28;
+      --muted: #5c6370;
+      --blue: #0f3460;
+      --teal: #1a7f7e;
+      --teal-light: #2a9d8f;
+      --green: #1b9e5a;
+      --red: #c0392b;
+      --header-h: 3.2mm;
+      --radius: 4mm;
+      --shadow: 0 0.6mm 2mm rgba(15, 52, 96, 0.08);
+    }
+
+    @page {
+      size: 841mm 1189mm;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #ccc;
+    }
+
+    .poster {
+      width: 841mm;
+      min-height: 1189mm;
+      margin: 0 auto;
+      background: var(--bg);
+      font-family: "Open Sans", "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
+      color: var(--ink);
+      position: relative;
+      overflow: hidden;
+      padding: 16mm 18mm 14mm;
+    }
+
+    /* Subtle grocery / ingredient silhouettes */
+    .poster::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Ccircle cx='20' cy='30' r='8' fill='%230f3460' opacity='0.04'/%3E%3Crect x='70' y='20' width='24' height='32' rx='4' fill='%231a7f7e' opacity='0.035'/%3E%3Cpath d='M40 85 Q60 65 80 85' stroke='%231b9e5a' stroke-width='3' fill='none' opacity='0.05'/%3E%3C/svg%3E");
+      background-size: 140mm 140mm;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .poster > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* —— Header —— */
+    .banner {
+      display: grid;
+      grid-template-columns: 52mm 1fr;
+      gap: 6mm;
+      align-items: center;
+      margin-bottom: 5mm;
+      padding-bottom: 4mm;
+      border-bottom: 0.5mm solid rgba(15, 52, 96, 0.15);
+    }
+
+    .logo-slot {
+      width: 48mm;
+      min-height: 22mm;
+      border: 0.35mm dashed rgba(15, 52, 96, 0.25);
+      border-radius: 2mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 2mm 2.5mm;
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    .logo-slot strong {
+      font-size: 6.5pt;
+      line-height: 1.15;
+      color: var(--blue);
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .logo-slot span {
+      font-size: 5.2pt;
+      color: var(--muted);
+      margin-top: 1mm;
+      line-height: 1.2;
+    }
+
+    .banner-center {
+      text-align: center;
+    }
+
+    .title-main {
+      font-size: 86pt;
+      font-weight: 800;
+      line-height: 0.98;
+      color: var(--blue);
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+
+    .title-sub {
+      font-size: 28pt;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--teal);
+      margin: 2mm 0 0;
+    }
+
+    .meta-line {
+      font-size: 18pt;
+      color: var(--muted);
+      margin-top: 3mm;
+      font-weight: 600;
+    }
+
+    /* —— Grid —— */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1.05fr 0.88fr;
+      gap: 4.5mm;
+      align-items: start;
+    }
+
+    .section {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 4mm;
+    }
+
+    .section-h {
+      display: flex;
+      align-items: center;
+      gap: 2.5mm;
+      padding: 2.2mm 3.5mm;
+      background: linear-gradient(105deg, var(--blue) 0%, var(--teal) 100%);
+      color: #fff;
+      font-size: 38pt;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .section-h svg {
+      width: 10mm;
+      height: 10mm;
+      flex-shrink: 0;
+    }
+
+    .section-body {
+      padding: 3.2mm 3.8mm 3.8mm;
+      font-size: 22pt;
+      line-height: 1.35;
+      color: var(--ink);
+    }
+
+    .section-body ul {
+      margin: 0;
+      padding-left: 5.5mm;
+    }
+
+    .section-body li {
+      margin-bottom: 2mm;
+    }
+
+    .section-body li:last-child {
+      margin-bottom: 0;
+    }
+
+    .tight {
+      font-size: 20pt;
+      line-height: 1.32;
+    }
+
+    .caption {
+      font-size: 16pt;
+      color: var(--muted);
+      margin-top: 2mm;
+    }
+
+    /* Overview visual */
+    .overview-visual {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      margin-top: 3mm;
+      padding: 2mm;
+      background: linear-gradient(180deg, #f0f4f8 0%, #fff 100%);
+      border-radius: 2.5mm;
+      border: 0.25mm solid rgba(15, 52, 96, 0.08);
+    }
+
+    .phone-mock {
+      width: 22mm;
+      height: 38mm;
+      border-radius: 3mm;
+      border: 0.6mm solid var(--blue);
+      background: #fff;
+      position: relative;
+      box-shadow: inset 0 1mm 0 rgba(0, 0, 0, 0.06);
+    }
+
+    .phone-mock::after {
+      content: "";
+      position: absolute;
+      bottom: 2mm;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 8mm;
+      height: 1mm;
+      background: #ddd;
+      border-radius: 0.5mm;
+    }
+
+    .label-strip {
+      width: 28mm;
+      height: 34mm;
+      background: linear-gradient(135deg, #e8eef5 0%, #dce6f0 100%);
+      border-radius: 1.5mm;
+      border: 0.35mm solid rgba(15, 52, 96, 0.12);
+      display: flex;
+      flex-direction: column;
+      padding: 2mm;
+      font-size: 5pt;
+      color: var(--muted);
+      line-height: 1.2;
+    }
+
+    .badges {
+      display: flex;
+      flex-direction: column;
+      gap: 2mm;
+    }
+
+    .badge {
+      font-size: 18pt;
+      font-weight: 800;
+      padding: 1.5mm 3mm;
+      border-radius: 2mm;
+      text-align: center;
+      min-width: 14mm;
+    }
+
+    .badge.ok {
+      background: rgba(27, 158, 90, 0.15);
+      color: var(--green);
+      border: 0.35mm solid var(--green);
+    }
+
+    .badge.warn {
+      background: rgba(192, 57, 43, 0.1);
+      color: var(--red);
+      border: 0.35mm solid var(--red);
+    }
+
+    /* Architecture diagram */
+    .arch-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin-top: 2mm;
+    }
+
+    /* Pipeline swimlanes */
+    .lanes {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5mm;
+    }
+
+    .lane {
+      border-radius: 2mm;
+      border: 0.35mm solid rgba(26, 127, 126, 0.35);
+      overflow: hidden;
+      background: #fafcfd;
+    }
+
+    .lane-top {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+      padding: 1.5mm 2.5mm;
+      background: rgba(15, 52, 96, 0.07);
+      font-size: 17pt;
+      font-weight: 800;
+      color: var(--blue);
+    }
+
+    .lane-top svg {
+      width: 6mm;
+      height: 6mm;
+    }
+
+    .lane-steps {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1.5mm;
+      padding: 2mm 2.5mm 2.5mm;
+      font-size: 15pt;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .step {
+      background: #fff;
+      border: 0.25mm solid rgba(15, 52, 96, 0.12);
+      padding: 1mm 2mm;
+      border-radius: 1.5mm;
+      white-space: nowrap;
+    }
+
+    .arrow {
+      color: var(--teal-light);
+      font-weight: 800;
+      font-size: 16pt;
+    }
+
+    /* Tech stack grid */
+    .stack-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 2mm;
+    }
+
+    .stack-row {
+      display: grid;
+      grid-template-columns: 8mm 1fr;
+      align-items: center;
+      gap: 2mm;
+      font-size: 17pt;
+      font-weight: 600;
+      padding: 1.8mm 2mm;
+      background: #f4f7fa;
+      border-radius: 2mm;
+      border-left: 1.2mm solid var(--teal);
+    }
+
+    .stack-row svg {
+      width: 6mm;
+      height: 6mm;
+      justify-self: center;
+    }
+
+    /* KPI cards */
+    .kpi-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3mm;
+    }
+
+    .kpi {
+      background: linear-gradient(145deg, #fff 0%, #f0f7f6 100%);
+      border: 0.45mm solid var(--teal);
+      border-radius: var(--radius);
+      padding: 4mm 4.5mm;
+      text-align: center;
+    }
+
+    .kpi-label {
+      font-size: 18pt;
+      font-weight: 700;
+      color: var(--blue);
+      margin-bottom: 2mm;
+      line-height: 1.2;
+    }
+
+    .kpi-val {
+      font-size: 56pt;
+      font-weight: 800;
+      color: var(--teal);
+      line-height: 1;
+    }
+
+    .kpi-note {
+      font-size: 15pt;
+      color: var(--muted);
+      margin-top: 2mm;
+    }
+
+    /* Latency chart */
+    .latency-wrap {
+      margin-top: 3mm;
+      padding: 3mm;
+      background: #fff;
+      border-radius: 2.5mm;
+      border: 0.3mm solid rgba(15, 52, 96, 0.1);
+    }
+
+    .latency-title {
+      font-size: 20pt;
+      font-weight: 800;
+      color: var(--blue);
+      margin-bottom: 2.5mm;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 38mm 1fr;
+      align-items: center;
+      gap: 2mm;
+      margin-bottom: 2mm;
+      font-size: 15pt;
+      font-weight: 600;
+    }
+
+    .bar-track {
+      height: 7mm;
+      background: #e9eef3;
+      border-radius: 1mm;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 1mm;
+    }
+
+    .bar-fill.model {
+      background: linear-gradient(90deg, var(--blue), var(--teal-light));
+    }
+
+    .bar-fill.llm {
+      background: linear-gradient(90deg, #5c6bc0, #7e57c2);
+    }
+
+    /* Keep tiny values visible on print (extraction 0.22 s vs 10.85 s) */
+    .bar-fill.model.mini {
+      width: 2.03% !important;
+      min-width: 5mm;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3mm;
+      margin-top: 3mm;
+      font-size: 14pt;
+      color: var(--muted);
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 1.5mm;
+    }
+
+    .dot {
+      width: 3mm;
+      height: 3mm;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 4mm;
+      padding-top: 3mm;
+      border-top: 0.4mm solid rgba(15, 52, 96, 0.12);
+      text-align: center;
+      font-size: 16pt;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    @media print {
+      html, body {
+        background: #fff;
+      }
+      .poster {
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="poster">
+    <header class="banner">
+      <div class="logo-slot" aria-label="Official logo placeholder">
+        <strong>City University<br />of Hong Kong</strong>
+        <span>Department of Computing<br /><em>Insert official logo image here</em></span>
+      </div>
+      <div class="banner-center">
+        <h1 class="title-main">Smart Ingredients Scanner</h1>
+        <p class="title-sub">Smart Food Scanner for Smart You</p>
+        <p class="meta-line">
+          Project Code 25CS120 · Student Iusuf Naumov · Supervisor Prof. Chen Ma · Academic Year 2025/2026
+        </p>
+      </div>
+    </header>
+
+    <div class="main-grid">
+      <!-- Column 1 -->
+      <div class="col">
+        <section class="section">
+          <div class="section-h">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+            Project Overview
+          </div>
+          <div class="section-body tight">
+            <ul>
+              <li><strong>Answers in seconds</strong> — end-to-end scans feel instant on the fast local path; optional LLM path for deeper parsing of messy labels.</li>
+              <li><strong>Your diet, your rules</strong> — halal, gluten-free, vegan, vegetarian, nut-free, dairy-free, plus custom allergens and restrictions.</li>
+              <li><strong>Snap or scan</strong> — camera / upload for any packaging; Open Food Facts when the product is in the database.</li>
+            </ul>
+            <div class="overview-visual" aria-hidden="true">
+              <div class="phone-mock"></div>
+              <div class="label-strip">INGREDIENTS:<br />Water, flour…</div>
+              <div class="badges">
+                <div class="badge ok">✓</div>
+                <div class="badge warn">⚠</div>
+              </div>
+            </div>
+            <p class="caption">Phone + label + safe / warning badges</p>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-h">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="4" />
+            </svg>
+            Objectives
+          </div>
+          <div class="section-body tight">
+            <ul>
+              <li><strong>Vue 3 mobile web</strong> — capture, upload, barcode, profile, history.</li>
+              <li><strong>Dual-flow backend</strong> — EasyOCR + ML classifier + OCR corrector <em>vs</em> Mistral OCR + Mistral 7B extraction.</li>
+              <li><strong>Dietary analysis</strong> — rule-based or LLM.</li>
+              <li><strong>Evaluation</strong> — extraction accuracy, end-to-end latency, reliability (automated tests, high statement coverage on core services).</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-h">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="4" width="16" height="5" rx="1" />
+              <rect x="4" y="11" width="16" height="5" rx="1" />
+              <rect x="4" y="18" width="16" height="5" rx="1" />
+              <circle cx="18" cy="6" r="2.5" opacity="0.85" />
+              <path d="M18 8.5v2M16.5 10h3" opacity="0.85" />
+            </svg>
+            System Architecture
+          </div>
+          <div class="section-body" style="padding-top: 2mm;">
+            <svg class="arch-svg" viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg" aria-label="Three-tier architecture">
+              <defs>
+                <linearGradient id="posterArchGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#0f3460" />
+                  <stop offset="100%" style="stop-color:#1a7f7e" />
+                </linearGradient>
+                <marker id="posterArchArrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                  <polygon points="0 0, 8 3, 0 6" fill="#2a9d8f" />
+                </marker>
+              </defs>
+              <rect x="8" y="70" width="110" height="60" rx="6" fill="#fff" stroke="#0f3460" stroke-width="2" />
+              <text x="63" y="95" text-anchor="middle" font-size="11" font-weight="700" fill="#0f3460" font-family="Open Sans, sans-serif">Client</text>
+              <text x="63" y="112" text-anchor="middle" font-size="9" fill="#5c6370" font-family="Open Sans, sans-serif">Vue 3 PWA</text>
+              <path d="M128 100 L168 100" stroke="#2a9d8f" stroke-width="3" marker-end="url(#posterArchArrow)" />
+              <rect x="172" y="70" width="110" height="60" rx="6" fill="#fff" stroke="#0f3460" stroke-width="2" />
+              <text x="227" y="95" text-anchor="middle" font-size="11" font-weight="700" fill="#0f3460" font-family="Open Sans, sans-serif">API</text>
+              <text x="227" y="112" text-anchor="middle" font-size="9" fill="#5c6370" font-family="Open Sans, sans-serif">FastAPI</text>
+              <path d="M292 100 L332 100" stroke="#2a9d8f" stroke-width="3" marker-end="url(#posterArchArrow)" />
+              <rect x="336" y="55" width="170" height="90" rx="6" fill="#f7f8fa" stroke="#1a7f7e" stroke-width="2" />
+              <text x="421" y="78" text-anchor="middle" font-size="11" font-weight="700" fill="#0f3460" font-family="Open Sans, sans-serif">Services</text>
+              <text x="421" y="96" text-anchor="middle" font-size="8" fill="#5c6370" font-family="Open Sans, sans-serif">OCR · Extraction · Barcode · Analysis</text>
+              <path d="M421 148 L421 168 L260 168 L260 148" fill="none" stroke="#2a9d8f" stroke-width="2" />
+              <rect x="175" y="172" width="170" height="22" rx="4" fill="#fff" stroke="#0f3460" stroke-width="1.5" />
+              <text x="260" y="187" text-anchor="middle" font-size="9" font-weight="600" fill="#0f3460" font-family="Open Sans, sans-serif">Data · PostgreSQL / Supabase</text>
+            </svg>
+          </div>
+        </section>
+      </div>
+
+      <!-- Column 2 -->
+      <div class="col">
+        <section class="section">
+          <div class="section-h">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M3 18c4-8 8-8 12-4s8 4 12-2" />
+              <polygon points="22 10 26 12 22 14" fill="currentColor" stroke="none" />
+            </svg>
+            Ingredient Extraction Pipeline
+          </div>
+          <div class="section-body tight">
+            <div class="lanes">
+              <div class="lane">
+                <div class="lane-top">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v12H4z" opacity="0.2"/><rect x="6" y="8" width="12" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                  Image · Custom model
+                </div>
+                <div class="lane-steps">
+                  <span class="step">Preprocess</span><span class="arrow">→</span>
+                  <span class="step">OCR</span><span class="arrow">→</span>
+                  <span class="step">Ingredient boxes</span><span class="arrow">→</span>
+                  <span class="step">Analysis</span><span class="arrow">→</span>
+                  <span class="step">Result</span>
+                </div>
+              </div>
+              <div class="lane">
+                <div class="lane-top">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                  Image · LLM
+                </div>
+                <div class="lane-steps">
+                  <span class="step">Mistral OCR</span><span class="arrow">→</span>
+                  <span class="step">LLM extract</span><span class="arrow">→</span>
+                  <span class="step">Analysis</span><span class="arrow">→</span>
+                  <span class="step">Result</span>
+                </div>
+              </div>
+              <div class="lane">
+                <div class="lane-top">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h10M7 13h6"/></svg>
+                  Barcode
+                </div>
+                <div class="lane-steps">
+                  <span class="step">Scan</span><span class="arrow">→</span>
+                  <span class="step">Open Food Facts</span><span class="arrow">→</span>
+                  <span class="step">Parse</span><span class="arrow">→</span>
+                  <span class="step">Analysis</span><span class="arrow">→</span>
+                  <span class="step">Result</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-h">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+            </svg>
+            Technology Stack
+          </div>
+          <div class="section-body tight">
+            <div class="stack-rows">
+              <div class="stack-row">
+                <svg viewBox="0 0 24 24" fill="#1a7f7e"><polygon points="12,2 22,8 22,16 12,22 2,16 2,8" fill="none" stroke="#1a7f7e" stroke-width="1.5"/></svg>
+                <span>Vue 3 · Tailwind · Pinia · PWA</span>
+              </div>
+              <div class="stack-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#1a7f7e" stroke-width="2"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></svg>
+                <span>FastAPI · SQLAlchemy · Pydantic</span>
+              </div>
+              <div class="stack-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#1a7f7e" stroke-width="2"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6"/><path d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3V12"/></svg>
+                <span>PostgreSQL</span>
+              </div>
+              <div class="stack-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#1a7f7e" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h12M6 12h8"/></svg>
+                <span>EasyOCR · Mistral OCR · SymSpell · RapidFuzz</span>
+              </div>
+              <div class="stack-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#1a7f7e" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>Open Food Facts · JWT · multi-provider LLM (optional)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Column 3 — hero results -->
+      <div class="col">
+        <section class="section">
+          <div class="section-h">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="12" width="4" height="8" /><rect x="10" y="8" width="4" height="12" /><rect x="16" y="4" width="4" height="16" />
+            </svg>
+            Key Results
+          </div>
+          <div class="section-body">
+            <div class="kpi-row">
+              <div class="kpi">
+                <div class="kpi-label">Model-based pipeline<br /><span style="font-weight:600;font-size:15pt;">Exact match · mean F1</span></div>
+                <div class="kpi-val">96.54%</div>
+                <div class="kpi-note">F1 on evaluation set</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">LLM-based pipeline<br /><span style="font-weight:600;font-size:15pt;">Merge-level · stricter nested GT</span></div>
+                <div class="kpi-val">95.17%</div>
+                <div class="kpi-note">F1</div>
+              </div>
+            </div>
+
+            <div class="latency-wrap">
+              <div class="latency-title">End-to-end latency (full pipeline incl. analysis)</div>
+              <div class="bar-row">
+                <span>Median total</span>
+                <div>
+                  <div style="display:flex;gap:2mm;align-items:center;margin-bottom:1.5mm;">
+                    <span style="width:38mm;font-size:14pt;">Model</span>
+                    <div class="bar-track" style="flex:1;"><div class="bar-fill model" style="width:45%;"></div></div>
+                    <span style="min-width:18mm;text-align:right;font-size:14pt;">8.26 s</span>
+                  </div>
+                  <div style="display:flex;gap:2mm;align-items:center;">
+                    <span style="width:38mm;font-size:14pt;">LLM</span>
+                    <div class="bar-track" style="flex:1;"><div class="bar-fill llm" style="width:100%;"></div></div>
+                    <span style="min-width:18mm;text-align:right;font-size:14pt;">18.35 s</span>
+                  </div>
+                </div>
+              </div>
+              <div class="bar-row">
+                <span>Avg total</span>
+                <div>
+                  <div style="display:flex;gap:2mm;align-items:center;margin-bottom:1.5mm;">
+                    <span style="width:38mm;font-size:14pt;">Model</span>
+                    <div class="bar-track" style="flex:1;"><div class="bar-fill model" style="width:59%;"></div></div>
+                    <span style="min-width:18mm;text-align:right;font-size:14pt;">11.14 s</span>
+                  </div>
+                  <div style="display:flex;gap:2mm;align-items:center;">
+                    <span style="width:38mm;font-size:14pt;">LLM</span>
+                    <div class="bar-track" style="flex:1;"><div class="bar-fill llm" style="width:100%;"></div></div>
+                    <span style="min-width:18mm;text-align:right;font-size:14pt;">19.02 s</span>
+                  </div>
+                </div>
+              </div>
+              <div class="bar-row" style="margin-bottom:0;">
+                <span>Avg extraction</span>
+                <div>
+                  <div style="display:flex;gap:2mm;align-items:center;margin-bottom:1.5mm;">
+                    <span style="width:38mm;font-size:14pt;">Model</span>
+                    <div class="bar-track" style="flex:1;"><div class="bar-fill model mini"></div></div>
+                    <span style="min-width:18mm;text-align:right;font-size:14pt;">0.22 s</span>
+                  </div>
+                  <div style="display:flex;gap:2mm;align-items:center;">
+                    <span style="width:38mm;font-size:14pt;">LLM</span>
+                    <div class="bar-track" style="flex:1;"><div class="bar-fill llm" style="width:100%;"></div></div>
+                    <span style="min-width:18mm;text-align:right;font-size:14pt;">10.85 s</span>
+                  </div>
+                </div>
+              </div>
+              <div class="legend">
+                <span><i class="dot" style="background:linear-gradient(90deg,#0f3460,#2a9d8f);"></i> Model-based</span>
+                <span><i class="dot" style="background:linear-gradient(90deg,#5c6bc0,#7e57c2);"></i> LLM-based</span>
+                <span>Totals scaled to max 19.02 s; extraction row scaled to max 10.85 s</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-h">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+              <line x1="4" y1="22" x2="4" y2="15" />
+            </svg>
+            Conclusion
+          </div>
+          <div class="section-body tight">
+            <ul>
+              <li><strong>Dual-flow</strong> delivers strong extraction F1 with a <strong>faster median local path</strong> vs the LLM path.</li>
+              <li><strong>Database-independent</strong> label reading plus <strong>barcode</strong> when OFF data exists.</li>
+              <li><strong>Future work:</strong> harder labels, richer dictionaries, hybrid policies, real-world deployment.</li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <footer class="footer">
+      Department of Computing, City University of Hong Kong · Academic Year 2025/2026 · 25CS120
+    </footer>
+  </div>
+</body>
+</html>
