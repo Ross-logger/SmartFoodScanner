@@ -143,23 +143,3 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
 LMSTUDIO_BASE_URL = os.getenv("LMSTUDIO_BASE_URL", "http://localhost:1234/v1")
 LMSTUDIO_MODEL = os.getenv("LMSTUDIO_MODEL", "mistral-7b-instruct-v0.2")
 LMSTUDIO_JSON_MODE = os.getenv("LMSTUDIO_JSON_MODE", "false").lower() in ("true", "1", "yes")
-
-# =============================================================================
-# Startup Status
-# =============================================================================
-
-_provider = LLM_PROVIDER.lower()
-if _provider == "groq":
-    print(f"✅ Groq LLM configured (Model: {GROQ_MODEL})" if GROQ_API_KEY else "⚠️  GROQ_API_KEY not set")
-elif _provider == "gemini":
-    print(f"✅ Gemini LLM configured (Model: {GEMINI_MODEL})" if GEMINI_API_KEY else "⚠️  GEMINI_API_KEY not set")
-elif _provider == "openai":
-    print(f"✅ OpenAI LLM configured (Model: {OPENAI_MODEL})" if OPENAI_API_KEY else "⚠️  OPENAI_API_KEY not set")
-elif _provider == "anthropic":
-    print(f"✅ Anthropic LLM configured (Model: {ANTHROPIC_MODEL})" if ANTHROPIC_API_KEY else "⚠️  ANTHROPIC_API_KEY not set")
-elif _provider == "ollama":
-    print(f"✅ Ollama LLM configured (Model: {OLLAMA_MODEL})")
-elif _provider == "lmstudio":
-    print(f"✅ LM Studio configured (Model: {LMSTUDIO_MODEL} @ localhost:1234)")
-else:
-    print(f"⚠️  Unknown LLM provider: {LLM_PROVIDER}")

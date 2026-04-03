@@ -265,24 +265,24 @@ def main() -> None:
     p.add_argument(
         "--predictions",
         type=Path,
-        default=_TRAINING_DIR / "outputs" / "test_box_predictions.csv",
+        default=_TRAINING_DIR / "outputs" / "model_predictions.csv",
         help="Box-level CSV with image_id, text, coords, pred_prob",
     )
     p.add_argument(
         "--ground-truth-json",
         type=Path,
-        default=_REPO_ROOT / "tests/data/true_ingredients_for_box_classifier.json",
+        default=_REPO_ROOT / "training/datasets/true_ingredients_augmented_1000.json",
         help="JSON array of {image, true_ingredients}",
     )
     p.add_argument(
         "--output",
         type=Path,
-        default=_TRAINING_DIR / "outputs" / "merge_evaluation_review_fuzzy.csv",
+        default=_TRAINING_DIR / "outputs" / "model_evaluation_results.csv",
     )
     p.add_argument("--threshold", type=float, default=0.4)
     p.add_argument("--row-gap", type=float, default=90.0, dest="row_gap")
     p.add_argument("--cluster-gap", type=float, default=120.0, dest="cluster_gap")
-    p.add_argument("--fuzzy-threshold", type=float, default=85.0, dest="fuzzy_threshold")
+    p.add_argument("--fuzzy-threshold", type=float, default=100.0, dest="fuzzy_threshold")
     p.add_argument(
         "--use-ocr-corrector",
         action="store_true",

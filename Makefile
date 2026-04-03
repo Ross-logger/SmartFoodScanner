@@ -2,9 +2,10 @@
 
 # Variables
 VENV = .venv
-PYTHON = $(VENV)/bin/python
-PIP = $(VENV)/bin/pip
+# Repo-root venv (paths must work after recipe `cd` into training/ or frontend/)
 PROJECT_ROOT = $(shell pwd)
+PYTHON = $(PROJECT_ROOT)/$(VENV)/bin/python
+PIP = $(PROJECT_ROOT)/$(VENV)/bin/pip
 SCREEN_VLLM = vllm
 
 shell: ## Start Python shell with project imports and backend.services pre-loaded
@@ -26,8 +27,6 @@ run: ## Start backend in background, then frontend in foreground (same terminal)
 	@echo "Backend in background; frontend in foreground. Ctrl+C stops frontend; run make stop-backend if needed."
 	@( cd $(PROJECT_ROOT) && source $(VENV)/bin/activate && uvicorn backend.main:app --reload ) & \
 	cd $(PROJECT_ROOT)/frontend && exec npm run dev
-
-dev: run ## Alias for run
 
 backend: ## Run backend server (foreground)
 	@cd $(PROJECT_ROOT) && source $(VENV)/bin/activate && exec uvicorn backend.main:app --reload
@@ -60,7 +59,7 @@ stop: stop-backend stop-frontend stop-vllm ## Stop backend, frontend (processes)
 # =============================================================================
 # Database migrations (Alembic)
 # =============================================================================
-ALEMBIC = PYTHONPATH=$(PROJECT_ROOT) $(VENV)/bin/alembic
+ALEMBIC = PYTHONPATH=$(PROJECT_ROOT) $(PROJECT_ROOT)/$(VENV)/bin/alembic
 
 make-migrations: ## Generate a new migration: make migrate-generate m="describe_your_change"
 	@if [ -z "$(m)" ]; then echo "Usage: make migrate-generate m=\"describe_your_change\""; exit 1; fi
