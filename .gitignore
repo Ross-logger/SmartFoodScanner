@@ -10,6 +10,7 @@ ENV/
 .venv
 
 # IDE
+.cursor/
 .vscode/
 .idea/
 *.swp
@@ -38,5 +39,16 @@ uploads/
 # OS
 .DS_Store
 Thumbs.db
+
+# Coverage (pytest-cov / coverage.py; HTML reports)
+.coverage
+.coverage.*
+htmlcov/
+htmlcov_unit/
+tests/htmlcov/
+coverage.xml
+
+# Pytest
+.pytest_cache/
 
 tmp/

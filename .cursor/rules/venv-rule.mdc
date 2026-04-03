@@ -1,5 +1,0 @@
----
-alwaysApply: true
----
-1) Use .venv folder for virtual environment.
-2) When writing documentation store the files in the docs directory, except README.md
