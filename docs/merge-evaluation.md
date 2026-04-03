@@ -2,7 +2,7 @@
 
 ## What This Script Does
 
-`training/evaluate_merge_predictions.py` measures how well the **merge pipeline** (box classifier + spatial merge) reconstructs ingredient text from OCR boxes, by comparing the merged output against a human-labelled ground truth.
+`training/evaluate.py` measures how well the **merge pipeline** (box classifier + spatial merge) reconstructs ingredient text from OCR boxes, by comparing the merged output against a human-labelled ground truth.
 
 It answers two questions:
 
@@ -204,18 +204,18 @@ This lets you measure whether the spelling corrector improves or hurts the final
 
 ```bash
 # Basic evaluation (default fuzzy threshold = 85)
-python3 evaluate_merge_predictions.py \
+python3 evaluate.py \
   --predictions outputs/model_predictions.csv \
   --ground-truth-json datasets/true_ingredients_augmented_1000.json
 
 # Strict exact-match evaluation
-python3 evaluate_merge_predictions.py \
+python3 evaluate.py \
   --predictions outputs/model_predictions.csv \
   --ground-truth-json datasets/true_ingredients_augmented_1000.json \
   --fuzzy-threshold 100
 
 # With OCR spelling correction
-python3 evaluate_merge_predictions.py \
+python3 evaluate.py \
   --predictions outputs/model_predictions.csv \
   --ground-truth-json datasets/true_ingredients_augmented_1000.json \
   --fuzzy-threshold 100 \
