@@ -1,4 +1,4 @@
-.PHONY: help shell install run dev frontend backend vllm stop-frontend stop-backend stop-vllm stop screens migrate-generate migrate migrate-downgrade migrate-history run-unit-test run-integration-test run-performance-test run-all-tests
+.PHONY: help shell install run dev frontend backend vllm stop-frontend stop-backend stop-vllm stop screens migrate-generate migrate migrate-downgrade migrate-history run-unit-test run-integration-test run-performance-test run-all-tests training evaluation training-filter-jsonl training-keep-only-text
 
 # Variables
 VENV = .venv
@@ -91,3 +91,23 @@ run-performance-test: ## Run performance tests (tests/performance)
 
 run-all-tests: ## Run unit, integration, and performance tests in order
 	$(PYTEST) tests/unit tests/integration tests/performance
+
+# =============================================================================
+# Training (ingredient box classifier + merge evaluation)
+# =============================================================================
+# Run from repo root. Uses .venv; evaluate.py needs PYTHONPATH for backend imports.
+TRAINING_RUN = cd $(PROJECT_ROOT)/training && PYTHONPATH=$(PROJECT_ROOT) $(PYTHON)
+
+training: ## Train box classifier (training/training_code.py → models/, outputs/)
+	$(TRAINING_RUN) training_code.py
+
+evaluation: ## Evaluate merge vs ground truth (training/evaluate.py); optional ARGS="--flag ..."
+	$(TRAINING_RUN) evaluate.py $(ARGS)
+
+training-filter-jsonl: ## Keep English JSONL rows (utils/filter_jsonl_english.py); ARGS="in.jsonl [-o out.jsonl]"
+	@if [ -z "$(ARGS)" ]; then echo 'Usage: make training-filter-jsonl ARGS="input.jsonl [-o out.jsonl]"'; exit 1; fi
+	@cd $(PROJECT_ROOT)/training && $(PYTHON) utils/filter_jsonl_english.py $(ARGS)
+
+training-keep-only-text: ## JSONL → text-only JSONL (utils/keep_only_text.py); ARGS="in.jsonl out.jsonl"
+	@if [ -z "$(ARGS)" ]; then echo 'Usage: make training-keep-only-text ARGS="input.jsonl output.jsonl"'; exit 1; fi
+	@cd $(PROJECT_ROOT)/training && $(PYTHON) utils/keep_only_text.py $(ARGS)
