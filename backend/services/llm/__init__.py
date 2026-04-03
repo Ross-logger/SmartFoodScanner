@@ -10,7 +10,7 @@ from backend.services.llm.llm_base import (
     OpenAIProvider,
     AnthropicProvider,
     OllamaProvider,
-    LMStudioProvider,
+    LocalLLMProvider,
     LLMProviderFactory,
     LLMService,
 )
@@ -22,7 +22,7 @@ __all__ = [
     'OpenAIProvider',
     'AnthropicProvider',
     'OllamaProvider',
-    'LMStudioProvider',
+    'LocalLLMProvider',
     'LLMProviderFactory',
     'LLMService',
 ]

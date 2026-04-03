@@ -1,4 +1,4 @@
-.PHONY: help shell install run dev frontend backend vllm stop-frontend stop-backend stop-vllm stop screens migrate-generate migrate migrate-downgrade migrate-history run-unit-test run-integration-test run-performance-test run-all-tests training evaluation training-filter-jsonl training-keep-only-text
+.PHONY: help shell install run dev frontend backend vllm-mistral7B stop-frontend stop-backend stop migrate-generate migrate migrate-downgrade migrate-history run-unit-test run-integration-test run-performance-test run-all-tests training evaluation training-filter-jsonl training-keep-only-text
 
 # Variables
 VENV = .venv
@@ -6,8 +6,6 @@ VENV = .venv
 PROJECT_ROOT = $(shell pwd)
 PYTHON = $(PROJECT_ROOT)/$(VENV)/bin/python
 PIP = $(PROJECT_ROOT)/$(VENV)/bin/pip
-SCREEN_VLLM = vllm
-
 shell: ## Start Python shell with project imports and backend.services pre-loaded
 	@cd $(PROJECT_ROOT) && \
 		source $(VENV)/bin/activate && \
@@ -34,12 +32,9 @@ backend: ## Run backend server (foreground)
 frontend: ## Run frontend dev server (foreground)
 	@cd $(PROJECT_ROOT)/frontend && exec npm run dev
 
-vllm: ## Start LLM spellcheck corrector via vLLM (detached screen: $(SCREEN_VLLM))
+vllm-mistral7B:
 	@echo "Starting vLLM in screen session $(SCREEN_VLLM)..."
-	@screen -dmS $(SCREEN_VLLM) bash -lc 'cd $(PROJECT_ROOT) && source $(VENV)/bin/activate && exec vllm serve "openfoodfacts/spellcheck-mistral-7b"'
-
-screens: ## List vLLM GNU screen session (if any)
-	@screen -ls | grep -E '$(SCREEN_VLLM)' || echo "No vLLM screen session."
+	@screen -dmS $(SCREEN_VLLM) bash -lc 'cd $(PROJECT_ROOT) && source $(VENV)/bin/activate && exec vllm serve "mistralai/Mistral-7B-Instruct-v0.2" --tool-call-parser mistral --enable-auto-tool-choice --port 1234'
 
 stop-backend: ## Stop uvicorn backend process
 	@echo "Stopping backend..."
@@ -49,12 +44,8 @@ stop-frontend: ## Stop Vite dev server for this project’s frontend
 	@echo "Stopping frontend dev server..."
 	@-pkill -f '$(PROJECT_ROOT)/frontend/node_modules/vite' 2>/dev/null || echo "No frontend dev server found."
 
-stop-vllm: ## Stop vLLM screen session ($(SCREEN_VLLM))
-	@echo "Stopping vLLM screen session..."
-	@-screen -S $(SCREEN_VLLM) -X quit 2>/dev/null || echo "No session $(SCREEN_VLLM)."
-
-stop: stop-backend stop-frontend stop-vllm ## Stop backend, frontend (processes), and vLLM screen session
-	@echo "Backend, frontend, and vLLM stopped (as applicable)."
+stop: stop-backend stop-frontend ## Stop backend and frontend dev processes
+	@echo "Backend and frontend stopped (as applicable)."
 
 # =============================================================================
 # Database migrations (Alembic)

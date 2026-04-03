@@ -110,7 +110,7 @@ COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN") or None
 # LLM Configuration
 # =============================================================================
 
-# Provider to use (groq, gemini, openai, anthropic, ollama, lmstudio)
+# Provider to use (groq, gemini, openai, anthropic, ollama, local_llm)
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")
 LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.3"))
 
@@ -139,7 +139,10 @@ ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
 
-# LM Studio
-LMSTUDIO_BASE_URL = os.getenv("LMSTUDIO_BASE_URL", "http://localhost:1234/v1")
-LMSTUDIO_MODEL = os.getenv("LMSTUDIO_MODEL", "mistral-7b-instruct-v0.2")
-LMSTUDIO_JSON_MODE = os.getenv("LMSTUDIO_JSON_MODE", "false").lower() in ("true", "1", "yes")
+# Local OpenAI-compatible server (e.g. LM Studio, llama.cpp) — default port 1234
+LOCAL_LLM_BASE_URL = os.getenv("LOCAL_LLM_BASE_URL", "http://localhost:1234/v1")
+LOCAL_LLM_MODEL = os.getenv(
+    "LOCAL_LLM_MODEL",
+    "mistralai/Mistral-7B-Instruct-v0.2",
+)
+LOCAL_LLM_JSON_MODE = os.getenv("LOCAL_LLM_JSON_MODE", "false").lower() in ("true", "1", "yes")

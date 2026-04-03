@@ -503,27 +503,27 @@ class OllamaProvider(BaseLLMProvider):
         return response.json().get("response", "")
 
 
-class LMStudioProvider(BaseLLMProvider):
-    """LM Studio local LLM provider (FREE, OpenAI-compatible API)."""
-    
+class LocalLLMProvider(BaseLLMProvider):
+    """Local OpenAI-compatible chat API (e.g. LM Studio, llama.cpp server on :1234)."""
+
     def __init__(
-        self, 
-        base_url: str = "http://localhost:1234/v1", 
+        self,
+        base_url: str = "http://localhost:1234/v1",
         model: str = "local-model",
         temperature: float = 0.1,
-        use_json_mode: bool = False
+        use_json_mode: bool = False,
     ):
         super().__init__(model, temperature)
         self.base_url = base_url.rstrip("/")
         self.use_json_mode = use_json_mode
         self._client = None
-    
+
     @property
     def name(self) -> str:
-        return "LMStudio"
-    
+        return "local_llm"
+
     def is_available(self) -> bool:
-        """Check if LM Studio server is reachable."""
+        """Check if the local OpenAI-compatible server is reachable."""
         try:
             import requests
             url = f"{self.base_url}/models"
@@ -538,8 +538,8 @@ class LMStudioProvider(BaseLLMProvider):
             try:
                 from openai import OpenAI
                 self._client = OpenAI(
-                    api_key="lm-studio",
-                    base_url=self.base_url
+                    api_key="local",
+                    base_url=self.base_url,
                 )
             except ImportError:
                 logger.warning("OpenAI library not installed. Run: pip install openai")
@@ -578,7 +578,7 @@ class LLMProviderFactory:
         "openai": OpenAIProvider,
         "anthropic": AnthropicProvider,
         "ollama": OllamaProvider,
-        "lmstudio": LMStudioProvider,
+        "local_llm": LocalLLMProvider,
     }
     
     @classmethod
@@ -605,7 +605,9 @@ class LLMProviderFactory:
             Provider instance or None if not available
         """
         provider_name = provider_name.lower()
-        
+        if provider_name == "lmstudio":
+            provider_name = "local_llm"
+
         if provider_name == "groq":
             return GroqProvider(
                 api_key=settings.GROQ_API_KEY,
@@ -636,12 +638,12 @@ class LLMProviderFactory:
                 model=model_override or settings.OLLAMA_MODEL,
                 temperature=settings.LLM_TEMPERATURE
             )
-        elif provider_name == "lmstudio":
-            return LMStudioProvider(
-                base_url=settings.LMSTUDIO_BASE_URL,
-                model=model_override or settings.LMSTUDIO_MODEL,
+        elif provider_name == "local_llm":
+            return LocalLLMProvider(
+                base_url=settings.LOCAL_LLM_BASE_URL,
+                model=model_override or settings.LOCAL_LLM_MODEL,
                 temperature=settings.LLM_TEMPERATURE,
-                use_json_mode=settings.LMSTUDIO_JSON_MODE
+                use_json_mode=settings.LOCAL_LLM_JSON_MODE,
             )
         else:
             logger.warning(f"Unknown provider: {provider_name}")
