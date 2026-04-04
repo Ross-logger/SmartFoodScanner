@@ -14,10 +14,6 @@ from backend.services.llm import LLMService
 logger = logging.getLogger(__name__)
 
 
-# =============================================================================
-# Analysis Prompts
-# =============================================================================
-
 ANALYSIS_SYSTEM_PROMPT = (
     "You are a dietary analysis expert. "
     "Always respond with valid JSON only, no additional text."
@@ -53,7 +49,7 @@ User's Dietary Restrictions: {restrictions_text}
 Ingredients List:
 {json.dumps(ingredients, indent=2)}
 
-Please analyze these ingredients and provide:
+Analyze these ingredients and provide:
 1. Whether the product is SAFE (is_safe: true/false) for the user's dietary restrictions
 2. Any specific warnings (warnings: array of warning messages) about ingredients that violate restrictions
 3. A clear, user-friendly analysis result (analysis_result: string) explaining the safety assessment
@@ -64,11 +60,28 @@ Consider:
 - Ambiguous ingredient names
 - Common allergens and their variations
 
+In the response, write the analysis from your POV to the user. e.g. "... The product is safe for your dietary restrictions ..."
+DO NOT write and explain the safety of a product by writing "The product is safe because it does not contain cinnamon, oil, sugar, etc.", no need to list the restricted ingredients of a user.
+
 Respond ONLY with valid JSON in this exact format:
 {{
     "is_safe": true/false,
     "warnings": ["warning1", "warning2"],
-    "analysis_result": "Detailed explanation here"
+    "analysis_result": "Brief explanation here"
+}}
+
+Example — product is safe (tone and specificity; adapt to the actual list above):
+{{
+    "is_safe": true,
+    "warnings": [],
+    "analysis_result": "This product looks fine for your restrictions. Ingredients that would clearly conflict are not present."; if your needs are strict (e.g. severe allergy), still confirm on the package and with the manufacturer when unsure."
+}}
+
+Example — product is not safe:
+{{
+    "is_safe": false,
+    "warnings": ["Contains whey (milk derivative), which is not compatible with dairy-free."],
+    "analysis_result": "This product is not safe for your restrictions. The label includes dairy-derived components. Consider choosing a product without milk or whey, or one explicitly marked for your diet."
 }}"""
 
 

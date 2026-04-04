@@ -1,309 +1,187 @@
-# Smart Food Scanner Backend - Implementation Summary
+# Smart Ingredients Scanner
 
-## What Was Built
+A full-stack application that reads food labels from photos or barcodes and checks ingredients against your dietary profile.
 
-This is a simple FastAPI backend for a Smart Food Scanner application. The backend allows users to upload images of food product ingredient lists, extract text using OCR, and analyze ingredients against their dietary preferences.
+## Description
+
+Smart Ingredients Scanner helps people make safer food choices when shopping or at home. Many packaged foods list long, technical ingredient names that are hard to parse quickly, and common allergens or dietary conflicts are easy to miss. This project combines optical character recognition (OCR) on label images with barcode lookup against a public product database, then analyzes the ingredient list against each user’s restrictions and preferences. The main goals are to reduce the effort of reading labels, surface clear safety warnings, and keep a personal history of scans for later reference. Users benefit from a mobile-friendly web app, optional AI-assisted extraction and analysis when configured, and a rule-based fallback so the app still works when cloud models are unavailable.
+
+## Features
+
+- **Photo scan (OCR)** — Extracts text from ingredient-label images using EasyOCR, with preprocessing and SymSpell-based cleanup; optional LLM-based extraction when enabled in the user profile.
+- **Barcode scan** — Looks up products via the **Open Food Facts** API and uses returned ingredient and allergen data.
+- **Dietary profiles** — Supports common flags (e.g. halal, gluten-free, vegetarian, vegan, nut-free, dairy-free) plus custom allergens and restrictions.
+- **Ingredient analysis** — Rule-based matching with **LLM-based analysis** when a provider is configured, automatically falling back if the model call fails.
+- **Flexible LLM backends** — Groq, Google Gemini, OpenAI, Anthropic, Ollama, or a **local OpenAI-compatible** server (e.g. LM Studio, vLLM).
+- **Accounts and history** — JWT-based authentication, refresh tokens, and stored scan history.
+- **Vue PWA frontend** — Mobile-first progressive web app with camera/upload and barcode scanning (Vite + Tailwind).
+- **Optional ML pipeline** — Train an ingredient **box classifier** and related evaluation from the `training/` directory (`make training`, `make evaluation`).
+
+## Technologies Used
+
+- **Backend:** Python, FastAPI, Uvicorn, SQLAlchemy, Alembic, Pydantic, PostgreSQL (local or Supabase)
+- **Auth:** JWT (python-jose), bcrypt/passlib, HTTP-only cookies (configurable)
+- **OCR & vision:** EasyOCR, OpenCV, Pillow; optional Mistral OCR API when LLM profile features are enabled
+- **NLP / heuristics:** SymSpell, scikit-learn, RapidFuzz, Levenshtein
+- **LLM clients:** OpenAI-compatible SDK patterns, `groq`, `google-generativeai`, provider abstraction in `backend/services/llm/`
+- **Frontend:** Vue 3, Pinia, Vue Router, Axios, Vite, Tailwind CSS, vite-plugin-pwa, html5-qrcode
+- **Deep learning stack (dependencies):** PyTorch, Torchvision (used by EasyOCR and training scripts)
+
+## Getting Started
+
+### Prerequisites
+
+- **Python 3.10+** (3.11 recommended; the project uses a `.venv` virtual environment)
+- **Node.js** and **npm** (for the frontend)
+- **Database:** **SQLite** (simplest — no server), **PostgreSQL** locally, **or** a **Supabase** project
+- **Git**
+- **Optional:** API keys for the LLM or OCR features you enable (e.g. Groq, Gemini, OpenAI, Anthropic); **Mistral OCR** needs `MISTRAL_API_KEY` when that path is enabled (prefer your own key; shared keys can expire or exceed limits)
+- **Optional:** **Ollama**, **LM Studio**, or **vLLM** for local / OpenAI-compatible inference (`local_llm` in settings)
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/Ross-logger/SmartFoodScanner.git
+   cd SmartFoodScanner
+   ```
+
+2. **Create and activate a virtual environment** (project convention: `.venv`)
+
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate   # Windows: .venv\Scripts\activate
+   ```
+
+3. **Install Python dependencies**
+
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+
+4. **Configure environment variables**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Edit `.env` with your database URL or Supabase fields, `SECRET_KEY`, and any LLM API keys. Set `LLM_PROVIDER` (e.g. `groq`, `gemini`, `openai`, `anthropic`, `ollama`, `local_llm`) as needed.
+
+   **Database — pick one:**
+
+   - **SQLite (simplest for local demos)** — No database server to install. In `.env` set `IS_LOCAL_DATABASE=True` and point `LOCAL_DATABASE_URL` at a file in the project directory, for example:
+
+     ```bash
+     LOCAL_DATABASE_URL=sqlite:///./smartfoodscanner.db
+     ```
+
+     Then run `make migrate` as usual. The schema is created/updated by Alembic; the `.db` file appears next to your repo root (patterns like `*.db` are gitignored). This is ideal for coursework, quick onboarding, and laptops without PostgreSQL. **Caveats:** SQLite uses a single file and one writer at a time; it is fine for development and light use, but PostgreSQL (local or Supabase) is a better fit if you expect many concurrent users or deploy to production.
+
+   - **Local PostgreSQL** — Install and start PostgreSQL yourself (the project does not start the server for you). Typical steps: install PostgreSQL for your OS, start the service, and create an empty database (e.g. named `smartfoodscanner`). Use a database user and password you configure in Postgres. Then in `.env` set `IS_LOCAL_DATABASE=True` and update **`LOCAL_DATABASE_URL`** so it matches that server. After copying from `.env.example`, this is the `LOCAL_DATABASE_URL=...` line (usually **line 5**). The default value is only an example:
+
+     ```text
+     postgresql://USER:PASSWORD@HOST:PORT/DATABASE_NAME
+     ```
+
+     Replace `USER`, `PASSWORD`, `HOST` (often `localhost`), `PORT` (often `5432`), and `DATABASE_NAME` with your real settings. Homebrew installs on macOS often use your macOS username and no password in the URL for local trust/peer setups; Docker or Linux packages often use `postgres` / `postgres`. If this line does not match a running PostgreSQL instance, `make migrate` and the API will fail to connect.
+
+   - **Supabase (hosted PostgreSQL)** — Create a project at [supabase.com](https://supabase.com), open **Project Settings → Database**, copy the host, database name, user, password, and port. In `.env` set `IS_LOCAL_DATABASE=False` and fill `SUPABASE_DB_HOST`, `SUPABASE_DB_PORT`, `SUPABASE_DB_NAME`, `SUPABASE_DB_USER`, `SUPABASE_DB_PASSWORD` (and optional `SUPABASE_PROJECT_URL` / `SUPABASE_API_KEY` if you use other Supabase features). The app builds `DATABASE_URL` from these values.
+
+   For PostgreSQL and Supabase you must have the server reachable before migrations succeed. For SQLite, only the file path matters.
+
+   **Mistral OCR API key (`MISTRAL_API_KEY`)** — Cloud **Mistral OCR** runs only when a user turns on the LLM-related option on their dietary profile (see `backend/settings.py` and the OCR service). Set `MISTRAL_API_KEY` in your `.env`. **Recommended:** create your own key in the [Mistral AI console](https://console.mistral.ai/) so you are not affected by anyone else’s usage. **If you do not create your own key**, you may use a key supplied by the project maintainer (for example shared in class or in private notes alongside the repo); that is only for convenience and is **not guaranteed**: the key can **expire**, be **revoked**, or hit **rate limits / quota**, and Mistral OCR will stop working until a valid key is configured. For production or demos you care about, always use your own key.
+
+5. **Apply database migrations** (Alembic)
+
+   ```bash
+   make migrate
+   ```
+
+   Or run `alembic upgrade head` from the repo root with `PYTHONPATH` set to the project root (the Makefile does this for you).
+
+6. **Install frontend dependencies**
+
+   ```bash
+   cd frontend && npm install && cd ..
+   ```
+
+7. **Optional — train the box classifier** (improves pipeline components that depend on `training/models/`)
+
+   ```bash
+   make training
+   ```
+
+## Quickstart
+
+**Backend API** (interactive docs at [http://localhost:8000/docs](http://localhost:8000/docs)):
+
+```bash
+source .venv/bin/activate
+uvicorn backend.main:app --reload
+```
+
+**Frontend dev server:**
+
+```bash
+cd frontend
+npm run dev
+```
+
+**Install everything and run backend + frontend** (backend in background, frontend in foreground):
+
+```bash
+make install
+make run
+```
+
+**Run tests:**
+
+```bash
+make run-all-tests
+```
+
+**Optional local OpenAI-compatible server (example: vLLM via Makefile target):**
+
+```bash
+make vllm-mistral7B
+```
+
+Then set `LLM_PROVIDER=local_llm` and align `LOCAL_LLM_BASE_URL` / `LOCAL_LLM_MODEL` in `.env` with your server.
+
+## How It Works
+
+Users sign in and save a **dietary profile**. For a **photo scan**, the backend receives the image, runs **OCR** to obtain raw text, then **normalizes and splits** that text into ingredients (SymSpell and related heuristics by default; optional **LLM extraction** when enabled). For a **barcode scan**, the app fetches structured product data from **Open Food Facts** and derives an ingredient list from there. The **analysis** step compares ingredients to the user’s restrictions using **rules**, and can augment or replace parts of that logic with an **LLM** when configured, falling back to rules if the model is missing or errors. Results and metadata are stored so users can review **scan history** in the app.
 
 ## Project Structure
 
 ```
 SmartFoodScanner/
-├── main.py                 # FastAPI application entry point
-├── requirements.txt        # Python dependencies
-├── app/
-│   ├── __init__.py
-│   ├── config.py          # Configuration settings (database, JWT, etc.)
-│   ├── database.py        # SQLAlchemy database setup
-│   ├── models.py          # Database models (User, DietaryProfile, Scan)
-│   ├── schemas.py         # Pydantic schemas for request/response validation
-│   ├── security.py        # JWT authentication and password hashing
-│   ├── routers/
-│   │   ├── auth.py        # Authentication endpoints (register, login)
-│   │   ├── users.py       # User profile endpoints
-│   │   ├── scans.py       # Scanning endpoints (OCR, barcode)
-│   │   ├── history.py     # Scan history endpoints
-│   │   ├── dietary.py     # Dietary profile endpoints
-│   │   └── utils.py       # Utility endpoints (health check)
-│   └── services/
-│       ├── ocr.py         # OCR text extraction and correction
-│       └── analysis.py    # Ingredient analysis against dietary restrictions
-├── ML/                     # 🆕 Machine Learning for OCR correction
-│   ├── README.md          # ML documentation
-│   ├── QUICKSTART.md      # Quick start guide
-│   ├── STRATEGIES.md      # Model comparison & strategies
-│   ├── requirements.txt   # ML dependencies
-│   ├── data_preparation.py
-│   ├── generate_errors.py
-│   ├── train_*.py         # Training scripts (hybrid, seq2seq, transformer)
-│   ├── inference_*.py     # Inference functions
-│   └── fastapi_integration.py  # Integration examples
+├── backend/           # FastAPI app, routers, services (OCR, barcode, LLM, analysis)
+├── frontend/          # Vue 3 PWA (Vite)
+├── training/          # Box classifier training and evaluation scripts
+├── scripts/           # Helper scripts
+├── tests/             # Unit, integration, and performance tests
+├── docs/              # Additional documentation
+├── alembic/           # Database migrations
+├── requirements.txt   # Python dependencies
+├── Makefile           # Common dev commands
+└── .env.example       # Environment template
 ```
 
-## Why This Structure?
+## Results / Demo
 
-1. **Separation of Concerns**: Each module has a clear responsibility
-   - `routers/` handle HTTP requests/responses
-   - `services/` contain business logic
-   - `models.py` defines database structure
-   - `schemas.py` handles data validation
+- Use the running app to capture label photos or barcodes and inspect JSON responses in the API docs (`/docs`) or the PWA UI.
+- Performance-oriented comparisons (e.g. SymSpell vs LLM extraction timing) are described in `docs/methodology-and-implementation.md` and can be reproduced with the project’s **performance** tests.
+- **Screenshots / GIFs:** Add images here (e.g. `docs/images/scan-demo.png`) once you have captures from your own runs.
 
-2. **Easy to Understand**: Student-friendly structure with clear naming
-3. **Maintainable**: Easy to add new features or modify existing ones
+## Future Improvements
 
-## Key Features Implemented
+- Stronger **offline-first** behaviour and clearer degradation when Open Food Facts or LLM endpoints are slow.
+- Richer **label understanding** (nutrition panels, “may contain” parsing) with evaluation on a fixed benchmark set.
+- **Production hardening**: stricter CORS, rate limiting, automated upload lifecycle, and deployment guides for a chosen host.
 
-### 1. Authentication (`/auth`)
-- **POST /auth/register**: User registration with email, username, password
-- **POST /auth/login**: Login and get JWT access token
-- Uses bcrypt for password hashing and JWT for token-based auth
+## License
 
-### 2. User Profile (`/users`)
-- **GET /users/profile**: Get current user's profile
-- **GET /users/profile/restrictions**: Get dietary restrictions
-- **PUT /users/profile/restrictions**: Update dietary restrictions
-
-### 3. Scanning (`/scan`)
-- **POST /scan/ocr**: Upload image, extract text via OCR, correct OCR errors, analyze ingredients
-- **POST /scan/barcode**: Scan barcode (placeholder implementation)
-
-### 4. History (`/scans`)
-- **GET /scans**: Get user's scan history (paginated)
-- **GET /scans/{scan_id}**: Get specific scan details
-
-### 5. Dietary Profiles (`/dietary-profiles`)
-- **GET /dietary-profiles**: Get user's dietary profile
-- **POST /dietary-profiles/custom**: Create/update custom dietary profile
-
-### 6. Utilities (`/health`)
-- **GET /health**: Health check endpoint
-
-## Database Schema
-
-### Users Table
-- Stores user accounts (email, username, hashed password)
-
-### Dietary Profiles Table
-- Stores user dietary restrictions (halal, gluten-free, vegetarian, vegan, nut-free, dairy-free)
-- Custom allergens list and custom restrictions text
-
-### Scans Table
-- Stores scan history with OCR text, corrected text, ingredients list
-- Analysis results (is_safe, warnings, analysis_result)
-
-## How It Works
-
-1. **User Registration/Login**: Users register and login to get JWT tokens
-2. **Set Dietary Preferences**: Users set their dietary restrictions in their profile
-3. **Upload Image**: User uploads image of ingredient list
-4. **OCR Processing**: 
-   - Image is processed with pytesseract to extract text
-   - Simple rule-based correction fixes common OCR mistakes (e.g., "s0y licethin" → "soy lecithin")
-   - Ingredients are extracted from the text
-5. **Analysis**: Ingredients are checked against user's dietary profile
-   - Rule-based matching against common allergens/restrictions
-   - Results indicate if product is safe and any warnings
-6. **History**: All scans are saved to database for user to review later
-
-## Technical Decisions
-
-### Why These Choices?
-
-1. **FastAPI**: Modern, fast, easy-to-learn framework with automatic API docs
-2. **SQLAlchemy**: Industry-standard ORM, easy database operations
-3. **PostgreSQL/Supabase**: Reliable relational database with cloud hosting option
-4. **JWT**: Stateless authentication, no session storage needed
-5. **pytesseract**: Simple OCR library, easy to integrate
-6. **Rule-based Analysis**: Simple and understandable (vs ML model for student project)
-
-### ML-Enhanced Features
-
-- **OCR Correction**: ✅ **NEW!** Complete ML solution in `/ML` directory
-  - Three approaches: Hybrid (recommended), Seq2Seq, Transformer
-  - 90-98% accuracy on ingredient correction
-  - See `ML/README.md` for setup and usage
-- **Ingredient Analysis**: Rule-based matching (simple and effective)
-- **Barcode Scanning**: Placeholder endpoint (would integrate with barcode API)
-
-### Simplifications Made
-
-- **No Background Jobs**: Synchronous processing
-- **No Caching**: Direct database queries
-- **No Docker**: Simple local setup
-
-## Setup Instructions
-
-### Database Configuration
-
-#### Option 1: Supabase Database (Default - Recommended)
-
-1. **Configure environment**:
-   - Copy `.env.example` to `.env` (already created for you)
-   - Update `SUPABASE_DB_PASSWORD` in `.env` with your Supabase database password
-   - Get your password from: Supabase Dashboard > Project Settings > Database
-   - Set `IS_LOCAL_DATABASE=False` (already set)
-
-
-#### Option 2: Local PostgreSQL Database
-
-1. **Install PostgreSQL** and create database:
-   ```bash
-   createdb smartfoodscanner
-   ```
-
-2. **Configure environment**:
-   - Set `IS_LOCAL_DATABASE=True` in `.env`
-   - Update `LOCAL_DATABASE_URL` if needed
-
-### Application Setup
-
-1. **Install Python dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. **Install Tesseract OCR** (required for pytesseract):
-   - macOS: `brew install tesseract`
-   - Ubuntu: `sudo apt-get install tesseract-ocr`
-   - Windows: Download from GitHub
-
-3. **Run the application**:
-   ```bash
-   uvicorn main:app --reload
-   ```
-   Database tables will be created automatically on first run.
-
-4. **Access API documentation**:
-   - Swagger UI: http://localhost:8000/docs
-   - ReDoc: http://localhost:8000/redoc
-
-## API Usage Example
-
-1. Register a user:
-   ```bash
-   POST /auth/register
-   {
-     "email": "user@example.com",
-     "username": "testuser",
-     "password": "password123",
-     "full_name": "Test User"
-   }
-   ```
-
-2. Login:
-   ```bash
-   POST /auth/login
-   {
-     "username": "testuser",
-     "password": "password123"
-   }
-   # Returns: {"access_token": "...", "token_type": "bearer"}
-   ```
-
-3. Set dietary restrictions:
-   ```bash
-   PUT /users/profile/restrictions
-   Authorization: Bearer <token>
-   {
-     "halal": true,
-     "gluten_free": false,
-     "vegetarian": false,
-     ...
-   }
-   ```
-
-4. Scan an image:
-   ```bash
-   POST /scan/ocr
-   Authorization: Bearer <token>
-   Form-data: file=<image_file>
-   ```
-
-5. View scan history:
-   ```bash
-   GET /scans
-   Authorization: Bearer <token>
-   ```
-
-## 🤖 ML-Powered OCR Correction (NEW!)
-
-A complete machine learning solution for correcting OCR errors in food ingredient lists has been added to the `/ML` directory.
-
-### Quick Start
-
-```bash
-cd ML
-pip install -r requirements.txt
-python data_preparation.py
-python generate_errors.py
-python train_hybrid.py  # Recommended: fast, no GPU needed
-```
-
-### Integration Example
-
-```python
-from ML.inference_hybrid import OcrCorrector
-
-# Initialize corrector
-corrector = OcrCorrector(model_dir="ML/models/hybrid")
-
-# Correct OCR text
-corrected = corrector.correct("s0y lec1th1n")
-# Returns: "soy lecithin"
-```
-
-### Features
-
-- ✅ **Three ML approaches**: Hybrid (recommended), Seq2Seq, Transformer (T5)
-- ✅ **90-98% accuracy** on ingredient correction
-- ✅ **Fast inference**: <1ms per ingredient (hybrid)
-- ✅ **Easy integration**: Drop-in replacement for rule-based correction
-- ✅ **Complete training pipeline**: Data generation, training, inference
-- ✅ **Well documented**: Comprehensive guides and examples
-
-### Documentation
-
-- `ML/README.md` - Overview and setup
-- `ML/QUICKSTART.md` - Get started in 10 minutes
-- `ML/STRATEGIES.md` - Model comparison and selection guide
-- `ML/ARCHITECTURE.md` - Technical architecture details
-- `ML/COLAB_TRAINING.md` - GPU training with Google Colab
-- `ML/fastapi_integration.py` - FastAPI integration examples
-
-### Model Comparison
-
-| Model | Accuracy | Speed | Model Size | GPU Required |
-|-------|----------|-------|------------|--------------|
-| **Hybrid (Recommended)** | 90-95% | <1ms | 5-10 MB | ❌ No |
-| Seq2Seq LSTM | 85-92% | 10-50ms | 10-50 MB | Optional |
-| Transformer (T5) | 95-98% | 50-200ms | 200-500 MB | ✅ Yes (training) |
-
-### Why Hybrid is Recommended
-
-- Fast training (5-15 minutes on CPU)
-- Ultra-fast inference (<1ms)
-- Small model size (5-10 MB)
-- No GPU required
-- Easy to understand and debug
-- Perfect for student FYP projects
-
-For more details, see `ML/README.md` and `ML/STRATEGIES.md`.
-
-## Future Enhancements
-
-- ✅ ~~Replace rule-based OCR correction with ML model~~ **COMPLETED! See ML/ directory**
-- Replace rule-based analysis with LLM API call
-- Add barcode API integration
-- Add image preprocessing for better OCR accuracy
-- Add rate limiting
-- Add file cleanup for old images
-
-## Notes
-
-- Images are stored in `uploads/` directory (consider cleanup in production)
-- All passwords are hashed using bcrypt
-- JWT tokens expire after 30 minutes (configurable)
-- Database tables are auto-created on first run
-- CORS is enabled for all origins (restrict in production)
-- **Supabase Integration**: App is configured to use Supabase by default. See `.env` and `SUPABASE_SETUP.md`
-- **Database Switching**: Change `IS_LOCAL_DATABASE` in `.env` to switch between Supabase and local database
-
+MIT License
