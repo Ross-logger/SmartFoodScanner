@@ -6,6 +6,9 @@ VENV = .venv
 PROJECT_ROOT = $(shell pwd)
 PYTHON = $(PROJECT_ROOT)/$(VENV)/bin/python
 PIP = $(PROJECT_ROOT)/$(VENV)/bin/pip
+# Detached GNU screen session name for vLLM (must be non-empty; override: make vllm-mistral7B SCREEN_VLLM=myname)
+SCREEN_VLLM ?= smartfood-vllm
+
 shell: ## Start Python shell with project imports and backend.services pre-loaded
 	@cd $(PROJECT_ROOT) && \
 		source $(VENV)/bin/activate && \
@@ -23,18 +26,20 @@ install:
 
 run: ## Start backend in background, then frontend in foreground (same terminal)
 	@echo "Backend in background; frontend in foreground. Ctrl+C stops frontend; run make stop-backend if needed."
-	@( cd $(PROJECT_ROOT) && source $(VENV)/bin/activate && uvicorn backend.main:app --reload ) & \
+	@( cd $(PROJECT_ROOT) && source $(VENV)/bin/activate && uvicorn backend.main:app) & \
 	cd $(PROJECT_ROOT)/frontend && exec npm run dev
 
 backend: ## Run backend server (foreground)
-	@cd $(PROJECT_ROOT) && source $(VENV)/bin/activate && exec uvicorn backend.main:app --reload
+	@cd $(PROJECT_ROOT) && source $(VENV)/bin/activate && exec uvicorn backend.main:app
 
+backend-dev:
+	@cd $(PROJECT_ROOT) && source $(VENV)/bin/activate && exec uvicorn backend.main:app --reload
 frontend: ## Run frontend dev server (foreground)
 	@cd $(PROJECT_ROOT)/frontend && exec npm run dev
 
-vllm-mistral7B:
+vllm-mistral7B: ## Start Mistral-7B via vLLM in detached screen (needs: pip install -r requirements-vllm.txt)
 	@echo "Starting vLLM in screen session $(SCREEN_VLLM)..."
-	@screen -dmS $(SCREEN_VLLM) bash -lc 'cd $(PROJECT_ROOT) && source $(VENV)/bin/activate && exec vllm serve "mistralai/Mistral-7B-Instruct-v0.2" --tool-call-parser mistral --enable-auto-tool-choice --port 1234'
+	@screen -dmS "$(SCREEN_VLLM)" bash -lc 'cd $(PROJECT_ROOT) && source $(VENV)/bin/activate && exec vllm serve "mistralai/Mistral-7B-Instruct-v0.2" --tool-call-parser mistral --enable-auto-tool-choice --port 1234'
 
 stop-backend: ## Stop uvicorn backend process
 	@echo "Stopping backend..."

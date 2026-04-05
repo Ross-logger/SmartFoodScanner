@@ -36,7 +36,7 @@ Smart Ingredients Scanner helps people make safer food choices when shopping or 
 - **Database:** **SQLite** (simplest — no server), **PostgreSQL** locally, **or** a **Supabase** project
 - **Git**
 - **Optional:** API keys for the LLM or OCR features you enable (e.g. Groq, Gemini, OpenAI, Anthropic); **Mistral OCR** needs `MISTRAL_API_KEY` when that path is enabled (prefer your own key; shared keys can expire or exceed limits)
-- **Optional:** **Ollama**, **LM Studio**, or **vLLM** for local / OpenAI-compatible inference (`local_llm` in settings)
+- **Optional:** **Ollama**, **[LM Studio](https://lmstudio.ai/)** (recommended for local OpenAI-compatible inference), or **vLLM** via `make vllm-mistral7B` after `pip install -r requirements-vllm.txt` (`local_llm` in settings)
 
 ### Installation
 
@@ -142,13 +142,18 @@ make run
 make run-all-tests
 ```
 
-**Optional local OpenAI-compatible server (example: vLLM via Makefile target):**
+**Optional local OpenAI-compatible LLM** — set `LLM_PROVIDER=local_llm` and align `LOCAL_LLM_BASE_URL` / `LOCAL_LLM_MODEL` in `.env` with whatever server you run.
 
-```bash
-make vllm-mistral7B
-```
+- **Recommended: [LM Studio](https://lmstudio.ai/)** — Install from the official site, load a model in the app, and enable the local server (OpenAI-compatible). It is usually the simplest way to try `local_llm` on a laptop without wrestling with Python GPU stacks.
 
-Then set `LLM_PROVIDER=local_llm` and align `LOCAL_LLM_BASE_URL` / `LOCAL_LLM_MODEL` in `.env` with your server.
+- **Alternative: Mistral 7B via vLLM** — The repo includes a Makefile target that starts a detached **GNU screen** session running vLLM:
+
+  ```bash
+  pip install -r requirements-vllm.txt   # once, optional extra
+  make vllm-mistral7B
+  ```
+
+  This workflow has **not been fully verified**: pulling and loading the model can take a long time (often network-bound on the first download), so a complete end-to-end check was not completed. If startup is impractically slow or flaky, prefer **[LM Studio](https://lmstudio.ai/)** or another OpenAI-compatible endpoint you already trust.
 
 ## How It Works
 
