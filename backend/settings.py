@@ -90,7 +90,7 @@ MISTRAL_OCR_MAX_LONG_EDGE = int(os.getenv("MISTRAL_OCR_MAX_LONG_EDGE", "0"))
 # Box Classifier + OCR Corrector
 # =============================================================================
 
-USE_OCR_CORRECTOR = os.getenv("USE_OCR_CORRECTOR", "true").lower() in ("true", "1", "yes")
+USE_OCR_CORRECTOR = os.getenv("USE_OCR_CORRECTOR", False)
 BOX_CLASSIFIER_MODEL_PATH = os.getenv(
     "BOX_CLASSIFIER_MODEL_PATH",
     str(Path(__file__).resolve().parent.parent / "training" / "models" / "ingredient_box_classifier.joblib"),
