@@ -42,26 +42,28 @@ def build_dietary_prompt(ingredients: List[str], dietary_profile: DietaryProfile
     
     restrictions_text = ", ".join(restrictions) if restrictions else "no specific dietary restrictions"
     
-    return f"""You are a dietary analysis expert. Analyze the following ingredients list against the user's dietary restrictions and provide a detailed assessment.
+    return f"""You are a dietary analysis expert. Analyze the ingredients ONLY against the restrictions listed below. Those restrictions are the complete rule set for this task.
 
 User's Dietary Restrictions: {restrictions_text}
 
 Ingredients List:
 {json.dumps(ingredients, indent=2)}
 
-Analyze these ingredients and provide:
-1. Whether the product is SAFE (is_safe: true/false) for the user's dietary restrictions
-2. Any specific warnings (warnings: array of warning messages) about ingredients that violate restrictions
-3. A clear, user-friendly analysis result (analysis_result: string) explaining the safety assessment
+Rules (follow strictly):
+- Set is_safe to true if nothing in the ingredients conflicts with the restrictions above. Set is_safe to false only when a listed restriction is clearly violated (or plausibly violated for ambiguous names).
+- Do NOT treat dairy, eggs, nuts, gluten, halal, vegan, etc. as restrictions unless they appear explicitly in "User's Dietary Restrictions" above (including profile-derived labels like dairy-free, nut-free, or allergens listed there).
+- Warnings must only mention ingredients that actually conflict with those restrictions. Never warn about milk, eggs, or other allergens unless the user restricted them.
+- When matching custom restriction words (e.g. oil, cinnamon), treat obvious matches: e.g. "palm oil", "vegetable oil" for "oil"; "cinnamon" or clear cinnamon derivatives for "cinnamon"; "agar" or agar-derived terms for "agar". If the text is OCR-noisy, use reasonable inference but still only for the stated restrictions.
+- Optional nuance: if restrictions are empty or "no specific dietary restrictions", is_safe is true and warnings empty unless you find a clear self-contradiction in the prompt.
 
-Consider:
-- Hidden ingredients and derivatives (e.g., whey contains dairy, lecithin may contain eggs)
-- Cross-contamination risks
-- Ambiguous ingredient names
-- Common allergens and their variations
+Provide:
+1. is_safe: true/false relative ONLY to the user's restrictions
+2. warnings: only violations of those restrictions
+3. analysis_result: short, second-person explanation; do not enumerate every restriction the user does NOT have
 
-In the response, write the analysis from your POV to the user. e.g. "... The product is safe for your dietary restrictions ..."
-DO NOT write and explain the safety of a product by writing "The product is safe because it does not contain cinnamon, oil, sugar, etc.", no need to list the restricted ingredients of a user.
+In the response, write the analysis from your POV to the user.
+
+DO NOT explain safety by listing every restricted ingredient the user avoids (e.g. "safe because no cinnamon, oil...").
 
 Respond ONLY with valid JSON in this exact format:
 {{
@@ -70,18 +72,18 @@ Respond ONLY with valid JSON in this exact format:
     "analysis_result": "Brief explanation here"
 }}
 
-Example — product is safe (tone and specificity; adapt to the actual list above):
+Example — safe for the stated restrictions only (adapt to the actual list):
 {{
     "is_safe": true,
     "warnings": [],
-    "analysis_result": "This product looks fine for your restrictions. Ingredients that would clearly conflict are not present."; if your needs are strict (e.g. severe allergy), still confirm on the package and with the manufacturer when unsure."
+    "analysis_result": "This product looks fine for your restrictions. Nothing on the label clearly conflicts with what you asked to avoid. If you have other medical needs beyond this list, double-check the packaging."
 }}
 
-Example — product is not safe:
+Example — not safe (user is dairy-free in restrictions):
 {{
     "is_safe": false,
-    "warnings": ["Contains whey (milk derivative), which is not compatible with dairy-free."],
-    "analysis_result": "This product is not safe for your restrictions. The label includes dairy-derived components. Consider choosing a product without milk or whey, or one explicitly marked for your diet."
+    "warnings": ["Contains whey (milk derivative), which conflicts with dairy-free."],
+    "analysis_result": "This product is not safe for your restrictions because it includes milk-derived ingredients. Consider an alternative that fits your diet."
 }}"""
 
 
