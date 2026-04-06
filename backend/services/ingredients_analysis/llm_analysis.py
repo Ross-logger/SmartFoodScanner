@@ -4,7 +4,6 @@ Uses LLM to analyze ingredients against user's dietary restrictions.
 """
 
 from typing import List, Optional
-import json
 import logging
 
 from backend.models import DietaryProfile
@@ -15,92 +14,132 @@ logger = logging.getLogger(__name__)
 
 
 ANALYSIS_SYSTEM_PROMPT = (
-    "You are a dietary analysis expert. "
+    "You are a food safety checker. "
     "Always respond with valid JSON only, no additional text."
 )
 
+# Flat banned-term lists per restriction — short and scannable for small models.
+_BANNED: dict[str, list[str]] = {
+    "vegan": [
+        "meat", "chicken", "beef", "pork", "lamb", "turkey", "duck", "venison",
+        "fish", "salmon", "tuna", "cod", "anchovy", "anchovies", "sardine", "herring",
+        "shrimp", "prawn", "crab", "lobster", "shellfish", "squid",
+        "egg", "eggs", "albumin", "ovalbumin",
+        "milk", "cream", "butter", "cheese", "yoghurt", "yogurt", "whey", "casein",
+        "lactose", "ghee", "buttermilk",
+        "honey", "beeswax", "royal jelly",
+        "gelatin", "gelatine", "lard", "suet", "animal fat", "tallow",
+        "chicken stock", "beef stock", "fish stock", "bone broth", "rennet",
+        "carmine", "cochineal", "isinglass",
+    ],
+    "vegetarian": [
+        "meat", "chicken", "beef", "pork", "lamb", "turkey", "duck", "venison",
+        "fish", "salmon", "tuna", "cod", "anchovy", "anchovies", "sardine", "herring",
+        "shrimp", "prawn", "crab", "lobster", "shellfish", "squid",
+        "gelatin", "gelatine", "lard", "suet", "animal fat", "tallow",
+        "chicken stock", "beef stock", "fish stock", "bone broth",
+        "chicken extract", "beef extract", "meat extract", "rennet",
+    ],
+    "halal": [
+        "pork", "pig", "ham", "bacon", "lard", "pepperoni", "salami", "chorizo",
+        "prosciutto", "pancetta", "mortadella",
+        "gelatin", "gelatine", "blood",
+        "alcohol", "wine", "beer", "rum", "vodka", "whisky", "whiskey",
+        "brandy", "liqueur", "ethanol", "mirin", "cooking wine",
+    ],
+    "gluten-free": [
+        "wheat", "wheat flour", "barley", "rye", "oats", "oat flakes", "spelt",
+        "semolina", "durum", "bulgur", "couscous", "malt", "malt extract",
+        "gluten", "seitan", "breadcrumbs",
+    ],
+    "dairy-free": [
+        "milk", "whole milk", "skimmed milk", "cream", "butter", "cheese",
+        "yoghurt", "yogurt", "whey", "casein", "caseinate", "lactose",
+        "ghee", "buttermilk", "custard", "kefir",
+    ],
+    "nut-free": [
+        "almond", "almonds", "walnut", "walnuts", "cashew", "cashews",
+        "hazelnut", "hazelnuts", "pecan", "pecans", "pistachio", "pistachios",
+        "peanut", "peanuts", "groundnut", "groundnuts", "macadamia",
+        "brazil nut", "pine nut", "chestnut", "nut", "nuts",
+    ],
+}
+
 
 def build_dietary_prompt(ingredients: List[str], dietary_profile: DietaryProfile) -> str:
-    """Build the prompt for dietary analysis."""
-    restrictions = []
-    if dietary_profile.gluten_free:
-        restrictions.append("gluten-free")
-    if dietary_profile.dairy_free:
-        restrictions.append("dairy-free")
-    if dietary_profile.nut_free:
-        restrictions.append("nut-free")
-    if dietary_profile.halal:
-        restrictions.append("halal")
-    if dietary_profile.vegetarian:
-        restrictions.append("vegetarian")
+    """Build a short, small-model-friendly prompt for dietary analysis."""
+    restriction_labels: list[str] = []
+    banned_terms: list[str] = []
+
     if dietary_profile.vegan:
-        restrictions.append("vegan")
+        restriction_labels.append("vegan")
+        banned_terms.extend(_BANNED["vegan"])
+    if dietary_profile.vegetarian:
+        restriction_labels.append("vegetarian")
+        banned_terms.extend(_BANNED["vegetarian"])
+    if dietary_profile.halal:
+        restriction_labels.append("halal")
+        banned_terms.extend(_BANNED["halal"])
+    if dietary_profile.gluten_free:
+        restriction_labels.append("gluten-free")
+        banned_terms.extend(_BANNED["gluten-free"])
+    if dietary_profile.dairy_free:
+        restriction_labels.append("dairy-free")
+        banned_terms.extend(_BANNED["dairy-free"])
+    if dietary_profile.nut_free:
+        restriction_labels.append("nut-free")
+        banned_terms.extend(_BANNED["nut-free"])
     if dietary_profile.allergens:
-        restrictions.append(f"allergic to: {', '.join(dietary_profile.allergens)}")
+        restriction_labels.append(f"allergic to {', '.join(dietary_profile.allergens)}")
+        banned_terms.extend(dietary_profile.allergens)
     if dietary_profile.custom_restrictions:
-        restrictions.append(f"custom restrictions: {', '.join(dietary_profile.custom_restrictions)}")
-    
-    restrictions_text = ", ".join(restrictions) if restrictions else "no specific dietary restrictions"
-    
-    return f"""You are a dietary analysis expert. Analyze the ingredients ONLY against the restrictions listed below. Those restrictions are the complete rule set for this task.
+        restriction_labels.append(f"custom: {', '.join(dietary_profile.custom_restrictions)}")
+        banned_terms.extend(dietary_profile.custom_restrictions)
 
-User's Dietary Restrictions: {restrictions_text}
+    # Deduplicate while preserving order
+    seen: set[str] = set()
+    unique_banned: list[str] = []
+    for t in banned_terms:
+        if t.lower() not in seen:
+            seen.add(t.lower())
+            unique_banned.append(t)
 
-Ingredients List:
-{json.dumps(ingredients, indent=2)}
+    if not restriction_labels:
+        return (
+            f'Ingredients: {", ".join(ingredients)}\n'
+            f'Reply with JSON: {{"is_safe": true, "warnings": [], "analysis_result": "No dietary restrictions set."}}'
+        )
 
-Rules (follow strictly):
-- Set is_safe to true if nothing in the ingredients conflicts with the restrictions above. Set is_safe to false only when a listed restriction is clearly violated (or plausibly violated for ambiguous names).
-- Do NOT treat dairy, eggs, nuts, gluten, halal, vegan, etc. as restrictions unless they appear explicitly in "User's Dietary Restrictions" above (including profile-derived labels like dairy-free, nut-free, or allergens listed there).
-- Warnings must only mention ingredients that actually conflict with those restrictions. Never warn about milk, eggs, or other allergens unless the user restricted them.
-- When matching custom restriction words (e.g. oil, cinnamon), treat obvious matches: e.g. "palm oil", "vegetable oil" for "oil"; "cinnamon" or clear cinnamon derivatives for "cinnamon"; "agar" or agar-derived terms for "agar". If the text is OCR-noisy, use reasonable inference but still only for the stated restrictions.
-- Optional nuance: if restrictions are empty or "no specific dietary restrictions", is_safe is true and warnings empty unless you find a clear self-contradiction in the prompt.
+    diet = ", ".join(restriction_labels)
+    banned_str = ", ".join(unique_banned)
+    ingredients_str = ", ".join(ingredients)
 
-Provide:
-1. is_safe: true/false relative ONLY to the user's restrictions
-2. warnings: only violations of those restrictions
-3. analysis_result: short, second-person explanation; do not enumerate every restriction the user does NOT have
-
-In the response, write the analysis from your POV to the user.
-
-DO NOT explain safety by listing every restricted ingredient the user avoids (e.g. "safe because no cinnamon, oil...").
-
-Respond ONLY with valid JSON in this exact format:
-{{
-    "is_safe": true/false,
-    "warnings": ["warning1", "warning2"],
-    "analysis_result": "Brief explanation here"
-}}
-
-Example — safe for the stated restrictions only (adapt to the actual list):
-{{
-    "is_safe": true,
-    "warnings": [],
-    "analysis_result": "This product looks fine for your restrictions. Nothing on the label clearly conflicts with what you asked to avoid. If you have other medical needs beyond this list, double-check the packaging."
-}}
-
-Example — not safe (user is dairy-free in restrictions):
-{{
-    "is_safe": false,
-    "warnings": ["Contains whey (milk derivative), which conflicts with dairy-free."],
-    "analysis_result": "This product is not safe for your restrictions because it includes milk-derived ingredients. Consider an alternative that fits your diet."
-}}"""
+    return (
+        f"Is this food safe for someone who is {diet}?\n"
+        f"NOT ALLOWED: {banned_str}\n"
+        f"Ingredients: {ingredients_str}\n"
+        f'Reply with JSON only: {{"is_safe": true/false, "warnings": ["item: reason"], "analysis_result": "one sentence"}}'
+    )
 
 
 def _validate_analysis_result(result: dict) -> Optional[dict]:
-    """Validate and normalize LLM analysis response."""
-    # Validate response structure
+    """Validate and normalise LLM analysis response."""
     if not all(key in result for key in ["is_safe", "warnings", "analysis_result"]):
         logger.warning("LLM response missing required fields")
         return None
-    
-    # Ensure warnings is a list
+
     if not isinstance(result["warnings"], list):
         result["warnings"] = []
-    
-    # Ensure is_safe is boolean
+
     result["is_safe"] = bool(result["is_safe"])
-    
+
+    # Hard consistency fix: warnings present → must be unsafe.
+    if result["warnings"] and result["is_safe"]:
+        logger.warning(
+            "LLM contradiction: warnings present but is_safe=True — forcing is_safe=False."
+        )
+        result["is_safe"] = False
+
     return result
 
 
@@ -110,38 +149,40 @@ def analyze_with_llm(
 ) -> Optional[dict]:
     """
     Analyze ingredients using LLM via the unified service.
-    
+
     Args:
         ingredients: List of ingredient names
         dietary_profile: User's dietary profile with restrictions
-        
+
     Returns:
         Analysis result dict or None if LLM is not available or fails.
     """
-    # Use LLM_ANALYZE_MODEL if set, otherwise use provider's default
     model_override = settings.LLM_ANALYZE_MODEL if settings.LLM_ANALYZE_MODEL else None
     llm_service = LLMService.from_settings(settings, model_override)
-    
+
     if not llm_service.is_available:
         logger.warning("No LLM provider available for analysis")
         return None
-    
+
     prompt = build_dietary_prompt(ingredients, dietary_profile)
+    logger.info(f"LLM analysis request — ingredients ({len(ingredients)}): {ingredients}")
+    logger.info(f"LLM prompt:\n{prompt}")
     result = llm_service.call(
         prompt=prompt,
         system_prompt=ANALYSIS_SYSTEM_PROMPT,
         parse_json=True
     )
-    
+
     if result is None:
         return None
-    
-    # Get provider name and remove internal key
+
     provider_name = result.pop("_provider", "unknown")
-    
-    # Validate the result
+
     validated = _validate_analysis_result(result)
     if validated:
-        logger.info(f"LLM analysis completed with {provider_name}: is_safe={validated['is_safe']}, warnings={len(validated['warnings'])}")
-    
+        logger.info(
+            f"LLM analysis completed with {provider_name}: "
+            f"is_safe={validated['is_safe']}, warnings={len(validated['warnings'])}"
+        )
+
     return validated
